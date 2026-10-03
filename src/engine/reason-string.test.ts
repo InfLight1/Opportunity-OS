@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import opps from '../data/opportunities.json';
-import { runEngine, ProfileInput } from './run-engine';
+import { runEngine, type ProfileInput } from './run-engine';
 import { TODAY } from './fixtures';
 
 describe('M-D4: reason strings in tiered opportunities', () => {
@@ -10,7 +10,7 @@ describe('M-D4: reason strings in tiered opportunities', () => {
       grade,
       region: 'IE-D',
       interests: [],
-      skills: [] as string[],
+      skills: [],
       assets: [],
       weekly_capacity_hours: 8,
       busy_weeks: [],
@@ -60,7 +60,7 @@ describe('M-D4: reason strings in tiered opportunities', () => {
       grade: 10,
       region: 'IE-D',
       interests: [],
-      skills: [] as string[],
+      skills: [],
       assets: [{ id: 'tmp-asset', title: 'test', description: '', kind: 'project', tags: ['python'], supports: [], reuse_count: 0 }],
       weekly_capacity_hours: 4, // very low capacity
       busy_weeks: [],

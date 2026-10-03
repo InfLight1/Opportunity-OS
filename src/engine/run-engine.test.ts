@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { runEngine, type ProfileInput } from './run-engine'
-import type { Asset, BusyPeriod, Opportunity } from './types'
+import type { Asset, BusyPeriod, Opportunity, Tag } from './types'
 
 const today = '2026-09-29'
 
@@ -8,7 +8,7 @@ function busyWeek(start: string, end: string): BusyPeriod {
   return { start, end }
 }
 
-function makeAsset(id: string, tags: string[]): Asset {
+function makeAsset(id: string, tags: Tag[]): Asset {
   return { id, title: `${id} asset`, description: '', kind: 'project', tags, supports: [], reuse_count: 0 }
 }
 
@@ -21,7 +21,7 @@ function makeOpp(overrides: Partial<Opportunity> = {}): Opportunity {
     description: '',
     grade_range: overrides.grade_range ?? { min: 1, max: 12 },
     location: overrides.location ?? { remote_ok: true, region: null },
-    prerequisites: (overrides.prerequisites as string[]) ?? [],
+    prerequisites: overrides.prerequisites ?? [],
     required_tags: overrides.required_tags ?? [],
     helpful_tags: overrides.helpful_tags ?? [],
     deadline: overrides.deadline ?? '2027-06-01',

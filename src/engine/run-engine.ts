@@ -1,4 +1,4 @@
-import type { Asset, BusyPeriod, MatchResult, Opportunity, Plan, Profile, Tag, TieredOpportunity } from './types'
+import type { Asset, BusyPeriod, InterestTag, MatchResult, Opportunity, Plan, Profile, SkillTag, Tag, TieredOpportunity } from './types'
 import { isEligible, filterEligibility, matchTags } from './eligibility'
 import { buildAssetsWithSupports } from './reuse'
 import { detectCollisions } from './collision'
@@ -9,8 +9,8 @@ export interface ProfileInput {
   name: string
   grade: number
   region: string
-  interests: Tag[]
-  skills: Tag[]
+  interests: InterestTag[]
+  skills: SkillTag[]
   assets: Asset[]
   weekly_capacity_hours: number
   busy_weeks: BusyPeriod[]

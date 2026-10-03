@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { describe, it } from 'vitest';
 import type { Tag, Opportunity } from './types';
 import opps from '../data/opportunities.json';

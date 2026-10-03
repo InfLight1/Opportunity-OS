@@ -1,21 +1,25 @@
 import { describe, it, expect } from 'vitest'
-import type { Asset, Plan as EnginePlan, Opportunity } from './types'
+import type { Asset, Plan as EnginePlan, Opportunity } from '../engine/types'
 import { buildReuseView } from './reuse-view'
 
 // Helper: build minimal engine plan with tiers
-function makePlan(tiered: Array<{ oppId: string; tier: 'FOCUS' | 'CONSIDER' | 'SKIP' }>, assetsList: Asset[] = []): EnginePlan {
+function makePlan(tiered: Array<{ oppId: string; tier: 'FOCUS' | 'CONSIDER' | 'SKIP' }>): EnginePlan {
   const opportunities: Opportunity[] = tiered.map(({ oppId }) => ({
     id: oppId,
     title: `Opp ${oppId}`,
     organization: 'Org',
-    type: 'competition' as const,
+    type: 'competition',
+    description: '',
+    grade_range: { min: 9, max: 12 },
+    location: { remote_ok: true, region: null },
+    prerequisites: [],
+    required_tags: [],
+    helpful_tags: [],
     deadline: '2026-12-01',
     effort_hours: 10,
-    location: 'Any',
-    grade_range: { min: 9, max: 12 },
-    target_audience: '',
-    required_tags: [],
-    helpful_tags: [] as string[],
+    participation: 'individual',
+    submission_format: 'submission-format:demo',
+    requirements: [],
     source_url: '#',
   }))
 
@@ -23,22 +27,22 @@ function makePlan(tiered: Array<{ oppId: string; tier: 'FOCUS' | 'CONSIDER' | 'S
     weekly_capacity_hours: 20,
     busy_weeks: [],
     tiered_opportunities: tiered.map(({ oppId, tier }) => ({
-      id: `${oppId}-${tier}`,
       opportunity: opportunities.find(o => o.id === oppId)!,
       tier,
-      eligibility_ok: true,
-      matched_tags: [] as string[],
+      match: { matched_required: [], helpful_match_count: 0, matched_helpful: [], gap_count: 0, reason: '' },
       reuse_count: 0,
+      gap_count: 0,
+      has_busy_week_collision: false,
+      eligible: true,
     })),
     shared_gaps: [],
     next_action: null,
     weekly_load_warnings: [],
-    assets: assetsList,
   }
 }
 
 function makeAsset(id: string, title: string, supports: string[]): Asset {
-  return { id, title, description: '', kind: 'project', tags: [] as string[], supports, reuse_count: supports.length }
+  return { id, title, description: '', kind: 'project', tags: [], supports, reuse_count: supports.length }
 }
 
 describe('buildReuseView', () => {

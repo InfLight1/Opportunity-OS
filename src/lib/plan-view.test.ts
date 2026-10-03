@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { Plan as EnginePlan } from '../engine/types'
-import { buildPlanView, type PlanRow } from './plan-view'
+import { buildPlanView } from './plan-view'
 
 function makePlan(overrides: Partial<EnginePlan> & { tiered_opportunities: NonNullable<EnginePlan['tiered_opportunities']> }): EnginePlan {
   return {

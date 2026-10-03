@@ -1,14 +1,15 @@
 import { describe, it, expect } from 'vitest'
-import { emptyFormData, saveFormData, ProfileFormData } from './form-data'
+import { emptyFormData, loadFormData, saveFormData, type ProfileFormData } from './form-data'
 
+const store = new Map<string, string>()
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-;(global as any).localStorage = {
-  getItem: () => null,
-  setItem: () => {},
-  removeItem: () => {},
-  clear: () => {},
+;(globalThis as any).localStorage = {
+  getItem: (k: string) => store.get(k) ?? null,
+  setItem: (k: string, v: string) => { store.set(k, v) },
+  removeItem: (k: string) => { store.delete(k) },
+  clear: () => { store.clear() },
   key: () => null,
-  get length(): number { return 0 },
+  get length(): number { return store.size },
 }
 
 describe('emptyFormData', () => {
@@ -52,5 +53,53 @@ describe('saveFormData no-throw on clean storage', () => {
     form.region = 'US'
 
     expect(() => saveFormData(form)).not.toThrow()
+  })
+})
+
+describe('loadFormData with a saved profile', () => {
+  it('loads a saved profile with projects and busy weeks from key opportunity-os:profile', () => {
+    store.clear()
+    const saved: ProfileFormData = {
+      name: 'Test',
+      grade: 10,
+      region: 'US',
+      interests: ['ai-interest'],
+      skills: ['python'],
+      projects: [
+        { id: 'p1', title: 'Tennis Analytics App', description: 'cv', tags: ['computer-vision', 'python'] },
+        { id: 'p2', title: 'Essay', description: '', tags: ['writing-sample'] },
+      ],
+      weekly_capacity_hours: 10,
+      busy_weeks: [{ start: '2026-10-20', end: '2026-10-27', label: 'Midterms' }],
+    }
+    store.set('opportunity-os:profile', JSON.stringify(saved))
+
+    const loaded = loadFormData()
+
+    expect(loaded).not.toBeNull()
+    expect(loaded).toEqual(saved)
+  })
+
+  it('round-trips through saveFormData under the same key', () => {
+    store.clear()
+    const form = emptyFormData()
+    form.name = 'Test'
+    form.projects = [{ id: 'p1', title: 'Project', description: '', tags: ['python'] }]
+    saveFormData(form)
+
+    expect(store.has('opportunity-os:profile')).toBe(true)
+    expect(loadFormData()).toEqual(form)
+  })
+
+  it('drops malformed project entries and non-string tags', () => {
+    store.clear()
+    store.set('opportunity-os:profile', JSON.stringify({
+      name: 'Test',
+      projects: [null, 5, { id: 'p1', title: 'Ok', description: 'd', tags: ['python', 7] }],
+    }))
+
+    const loaded = loadFormData()
+
+    expect(loaded?.projects).toEqual([{ id: 'p1', title: 'Ok', description: 'd', tags: ['python'] }])
   })
 })

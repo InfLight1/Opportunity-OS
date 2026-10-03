@@ -14,7 +14,7 @@ describe('computeTier — normal cases', () => {
   it('SKIP when effort_hours > remaining_capacity', () => { const t = makeOpp(); t.match.matched_required = ['python']; computeTier(t, 3); expect(t.tier).toBe('SKIP'); });
   it('FOCUS when >=1 required match AND no collision AND reuse_count>=2', () => { const t = makeOpp(); t.match.matched_required = ['python']; t.reuse_count = 2; computeTier(t, 8); expect(t.tier).toBe('FOCUS'); });
   it('FOCUS when >=1 required match AND no collision AND gap_count==0', () => { const t = makeOpp(); t.match.matched_required = ['python']; t.gap_count = 0; computeTier(t, 8); expect(t.tier).toBe('FOCUS'); });
-  it('CONSIDER when collision blocks FOCUS but has match', () => { const t = makeOpp({ required_tags: ['python'], helpful_tags: [], gap_count: 1, reuse_count: 0}); t.match.matched_required = ['python']; t.has_busy_week_collision = true; computeTier(t, 8); expect(t.tier).toBe('CONSIDER'); });
+  it('CONSIDER when collision blocks FOCUS but has match', () => { const t = makeOpp({ required_tags: ['python'], helpful_tags: [] }); t.gap_count = 1; t.reuse_count = 0; t.match.matched_required = ['python']; t.has_busy_week_collision = true; computeTier(t, 8); expect(t.tier).toBe('CONSIDER'); });
   it('CONSIDER when has match and no collision but reuse<2 AND gaps>0', () => { const t = makeOpp({ required_tags: ['python'], helpful_tags: [] }); t.match.matched_required = ['python']; t.reuse_count = 1; t.gap_count = 1; computeTier(t, 8); expect(t.tier).toBe('CONSIDER'); });
 });
 
@@ -26,7 +26,7 @@ describe('computeTier — boundary cases', () => {
 
 describe('computeTier — edge cases', () => {
   it('no required tags on opportunity at all → SKIP', () => { const t = makeOpp({ required_tags: [] }); computeTier(t, 8); expect(t.tier).toBe('SKIP'); });
-  it('collision AND zero matches → SKIP (first SKIP condition wins)', () => { const t = makeOpp({ required_tags: ['web-dev'], helpful_tags: [], gap_count: 1}); t.match.matched_required = []; t.has_busy_week_collision = true; computeTier(t, 8); expect(t.tier).toBe('SKIP'); });
+  it('collision AND zero matches → SKIP (first SKIP condition wins)', () => { const t = makeOpp({ required_tags: ['web-dev'], helpful_tags: [] }); t.gap_count = 1; t.match.matched_required = []; t.has_busy_week_collision = true; computeTier(t, 8); expect(t.tier).toBe('SKIP'); });
   it('eligible=false AND matched → SKIP (eligibility checked before match)', () => { const t = makeOpp({ required_tags: ['python'], helpful_tags: []}); t.match.matched_required = ['python']; t.eligible = false; computeTier(t, 8); expect(t.tier).toBe('SKIP'); });
 });
 

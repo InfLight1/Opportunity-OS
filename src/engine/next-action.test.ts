@@ -36,7 +36,7 @@ describe('selectNextAction - normal cases', () => {
 
   it('returns null when no asset matches any focus opp', () => {
     const f1 = makeFocusOpp('o1', '2026-11-01', ['python'], []);
-    const assets = new Map([['a1', makeAsset('a1', ['java'])]]);
+    const assets = new Map([['a1', makeAsset('a1', ['leadership'])]]);
     expect(selectNextAction([f1], assets)).toBeNull();
   });
 });

@@ -1,4 +1,4 @@
-import type { Plan as EnginePlan, Asset } from './types'
+import type { Plan as EnginePlan, Asset } from '../engine/types'
 
 export interface ReuseCategory {
   asset_id: string

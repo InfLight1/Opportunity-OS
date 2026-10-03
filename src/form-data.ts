@@ -1,4 +1,4 @@
-import type { SkillTag, ExperienceTag, InterestTag, BusyPeriod } from './engine/types'
+import type { SkillTag, InterestTag, BusyPeriod, Tag } from './engine/types'
 
 export interface ProfileFormData {
   name: string
@@ -11,11 +11,11 @@ export interface ProfileFormData {
   busy_weeks: BusyPeriod[]
 }
 
-interface ProjectData {
+export interface ProjectData {
   id: string
   title: string
   description: string
-  tags: import('./engine/types').Tag[]
+  tags: Tag[]
 }
 
 export function emptyProject(): ProjectData {
@@ -51,7 +51,7 @@ export function loadFormData(): ProfileFormData | null {
     const normalizeProjects = (): ProjectData[] => {
       const raw = p.projects
       if (!Array.isArray(raw)) return [emptyProject()]
-      const result: ProjectData[] = []
+      let result: ProjectData[] = []
       for (const item of raw) {
         if (item === null || typeof item !== 'object') continue
         const obj = item as Record<string, unknown>
@@ -60,11 +60,11 @@ export function loadFormData(): ProfileFormData | null {
         else id = emptyProject().id
         const title = normalizeStringOrEmpty(obj.title)
         const description = normalizeStringOrEmpty(obj.description)
-        let tags: import('./engine/types').Tag[]
+        let tags: Tag[]
         if (Array.isArray(obj.tags)) {
           tags = []
           for (const t of obj.tags as unknown[]) {
-            if (typeof t === 'string') tags = [...tags, t]
+            if (typeof t === 'string') tags = [...tags, t as Tag]
           }
         } else {
           tags = []
@@ -77,7 +77,7 @@ export function loadFormData(): ProfileFormData | null {
     const normalizeBusyWeeks = (): BusyPeriod[] => {
       const raw = p.busy_weeks
       if (!Array.isArray(raw)) return DEFAULT_FORM.busy_weeks
-      const result: BusyPeriod[] = []
+      let result: BusyPeriod[] = []
       for (const item of raw) {
         if (item === null || typeof item !== 'object') continue
         const obj = item as Record<string, unknown>
@@ -92,9 +92,9 @@ export function loadFormData(): ProfileFormData | null {
     }
     const normalizeTagArray = <T extends string>(raw: unknown): T[] => {
       if (!Array.isArray(raw)) return []
-      const result: T[] = []
+      let result: T[] = []
       for (const item of raw as unknown[]) {
-        if (typeof item === 'string') result = [...result, item]
+        if (typeof item === 'string') result = [...result, item as T]
       }
       return result
     }

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { fixtureProfile } from './fixtures';
-import type { ProfileFormData } from '../App';
+import type { ProfileFormData } from '../form-data';
 
 // Re-implementation of App.tsx fixtureToFormData — keep engine tests isolated
 function fixtureToFormData(fixture: typeof fixtureProfile): ProfileFormData {
