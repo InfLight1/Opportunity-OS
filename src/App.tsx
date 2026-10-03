@@ -6,7 +6,10 @@ import { fixtureProfile } from '@/engine/fixtures'
 import opportunitiesData from '@/data/opportunities.json'
 import { autoUncommit, committedOpportunities, droppedCommits, loadCommitState, saveCommitState, toggleCommit } from '@/lib/commit-state'
 import { planForForm, profileToFormData } from '@/lib/profile-model'
-import { buildCards, buildThisWeek, buildTimeline, cardLockReason, nextActionText, type ToolProfile } from '@/lib/tool-view'
+import { buildCards, buildPlanSummary, buildThisWeek, buildTimeline, cardLockReason, nextActionText, type ToolProfile } from '@/lib/tool-view'
+import { shortDate } from '@/lib/exit-reason'
+import { PlanSummary } from '@/components/tool/PlanSummary'
+import { SectionHeader } from '@/components/tool/SectionHeader'
 import { buildReuseWeb } from '@/lib/reuse-web'
 import { anyCombinationOverloads } from '@/lib/what-if'
 import { useReducedMotion } from '@/hooks/use-reduced-motion'
@@ -86,6 +89,7 @@ export function App() {
   )
   const cards = useMemo(() => buildCards(plan, assets, profile, commits, schedule, today), [plan, assets, profile, commits, schedule, today])
   const thisWeek = buildThisWeek(schedule)
+  const summary = useMemo(() => buildPlanSummary(cards, profile.busyWeeks, today), [cards, profile, today])
   const nextAction = nextActionText(plan, assets, schedule)
 
   const skipReasons = useMemo(
@@ -226,26 +230,42 @@ export function App() {
     <div className="min-h-screen bg-background text-foreground">
       <Header mode={mode} onToggleMode={switchMode} onOpenProfile={openProfile} />
       {mode === 'story' && <Story data={storyData} onOpenPlanner={openPlanner} reducedMotion={reducedMotion} />}
-      <main id="tool" className="mx-auto max-w-[1120px] scroll-mt-14 space-y-12 px-8 py-12">
-        <div className="space-y-4">
-          <h1 tabIndex={-1} id="tool-heading" className="text-[28px] font-semibold leading-[1.2] tracking-[-0.01em] outline-none">Your plan</h1>
+      <main id="tool" className="mx-auto max-w-[1120px] scroll-mt-14 space-y-16 px-8 py-12">
+        <section aria-labelledby="tool-heading" className="space-y-4">
+          <div>
+            <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground tabular-nums">Today · {shortDate(today)}</p>
+            <h1 tabIndex={-1} id="tool-heading" className="mt-1 text-[28px] font-semibold leading-[1.2] tracking-[-0.01em] outline-none">Your plan</h1>
+          </div>
           {notice && <Notice {...notice} onDismiss={() => setNotice(null)} />}
+          <PlanSummary summary={summary} />
           <ThisWeekStrip week={thisWeek} nextAction={nextAction} />
-        </div>
-        <section aria-labelledby="opps" className="space-y-4">
-          <h2 id="opps" className="text-[28px] font-semibold leading-[1.2] tracking-[-0.01em]">Opportunities</h2>
+        </section>
+        <section id="opportunities" aria-labelledby="opps" className="scroll-mt-20 space-y-6">
+          <SectionHeader
+            id="opps"
+            eyebrow="Sorted by fixed rules"
+            title="Opportunities"
+            description="Focus: your projects already show what it asks for and the hours fit. Consider: possible, with a catch. Not now: locked, with the reason."
+          />
           <OpportunityList cards={cards} onToggleCommit={handleToggleCommit} onAskWhy={handleAskWhy} onRemove={handleRemoveUserOpp} />
         </section>
-        <WhatIfPreview
-          savedHours={profile.weeklyCapacityHours}
-          previewHours={previewHours ?? profile.weeklyCapacityHours}
-          dropped={preview?.dropped ?? []}
-          overloadedWeeks={columns.filter((c) => c.bucket.overloaded).map((c) => c.label)}
-          savedNeverOverloads={savedNeverOverloads}
-          onPreviewChange={setPreviewHours}
-          onSave={handleSaveHours}
+        <WeeksTimeline
+          columns={columns}
+          hasCommits={shownSchedule.items.length > 0}
+          titles={TITLES}
+          previewHours={preview ? previewHours : null}
+          controls={
+            <WhatIfPreview
+              savedHours={profile.weeklyCapacityHours}
+              previewHours={previewHours ?? profile.weeklyCapacityHours}
+              dropped={preview?.dropped ?? []}
+              overloadedWeeks={columns.filter((c) => c.bucket.overloaded).map((c) => c.label)}
+              savedNeverOverloads={savedNeverOverloads}
+              onPreviewChange={setPreviewHours}
+              onSave={handleSaveHours}
+            />
+          }
         />
-        <WeeksTimeline columns={columns} hasCommits={shownSchedule.items.length > 0} titles={TITLES} previewHours={preview ? previewHours : null} />
         <ReuseWeb model={reuseWeb} reducedMotion={reducedMotion} />
         <AddYourOwn draft={draft} onSubmitManual={setDraftFields} onAdd={handleAddDraft} onDiscard={() => setDraftFields(null)} profileRegion={formData.region} />
       </main>

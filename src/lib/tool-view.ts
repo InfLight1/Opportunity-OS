@@ -193,12 +193,15 @@ export function overloadSentence(bucket: ScheduleBucket, segments: TimelineSegme
   return `${head}: ${names} ${verb} here.`
 }
 
+const MIDDLE_DOT = String.fromCharCode(183)
+
 function busyLabel(bucket: WeekBucket, busyWeeks: BusyPeriod[]): string | null {
   if (bucket.busy_days === 0) return null
   const end = addDays(bucket.start, 6)
   const bw = busyWeeks.find(b => b.start && b.end && b.start <= end && b.end >= bucket.start)
-  const days = bucket.busy_days === 1 ? '1 busy day' : `${bucket.busy_days} busy days`
-  return bw?.label ? `${bw.label}, ${days}` : days
+  // Short enough for a timeline pill: "Midterms - 4 days" (with a middle dot).
+  const days = bucket.busy_days === 1 ? '1 day' : `${bucket.busy_days} days`
+  return `${bw?.label || 'Busy'} ${MIDDLE_DOT} ${days}`
 }
 
 export function buildTimeline(
@@ -228,4 +231,38 @@ export function buildTimeline(
   }
   for (const c of columns) if (c.bucket.overloaded) c.overloadSentence = overloadSentence(c.bucket, c.segments)
   return columns
+}
+
+// --- Plan summary row (plain counts and dates; never a score) ---
+
+export type PlanSummary = {
+  committedCount: number
+  committableCount: number
+  committedHours: number
+  nextDeadline: { title: string; date: string; daysLeft: number } | null
+  nextBusy: { label: string; start: string; end: string; daysUntil: number } | null
+}
+
+/**
+ * Next deadline = earliest committed deadline on or after today, else the
+ * earliest committable one. Next busy = the first complete busy period that
+ * has not ended yet (daysUntil 0 when it is under way).
+ */
+export function buildPlanSummary(cards: OpportunityCardModel[], busyWeeks: BusyPeriod[], today: string): PlanSummary {
+  const committed = cards.filter(c => c.committed)
+  const committable = cards.filter(c => c.committable)
+  const pool = (committed.length > 0 ? committed : committable).filter(c => c.deadline && c.deadline >= today)
+  const next = [...pool].sort((a, b) => (a.deadline < b.deadline ? -1 : a.deadline > b.deadline ? 1 : 0))[0]
+  const busy = busyWeeks
+    .filter(b => b.start && b.end && b.end >= today)
+    .sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0))[0]
+  return {
+    committedCount: committed.length,
+    committableCount: committable.length,
+    committedHours: committed.reduce((n, c) => n + c.effortHours, 0),
+    nextDeadline: next ? { title: next.title, date: next.deadline, daysLeft: daysBetween(today, next.deadline) } : null,
+    nextBusy: busy
+      ? { label: busy.label || 'Busy period', start: busy.start, end: busy.end, daysUntil: Math.max(0, daysBetween(today, busy.start)) }
+      : null,
+  }
 }

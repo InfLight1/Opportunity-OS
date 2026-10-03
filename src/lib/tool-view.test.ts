@@ -6,7 +6,7 @@ import type { CommitState, Opportunity } from '../engine/types'
 import { committedOpportunities } from './commit-state'
 import { planForForm, profileToFormData } from './profile-model'
 import {
-  buildCards, buildThisWeek, buildTimeline, formatHours, formatRange, nextActionText, relativeDays, TIER_WORD, type ToolProfile,
+  buildCards, buildPlanSummary, buildThisWeek, buildTimeline, formatHours, formatRange, nextActionText, relativeDays, TIER_WORD, type ToolProfile,
 } from './tool-view'
 
 const TODAY = '2026-10-03'
@@ -107,7 +107,7 @@ describe('buildTimeline', () => {
     const cols = buildTimeline(s.schedule, s.titles, s.deadlines, s.profile.busyWeeks)
     expect(cols).toHaveLength(26)
     expect(cols.some(c => c.overloadSentence !== null)).toBe(false)
-    expect(cols[2].busyLabel).toBe('Midterms, 4 busy days')
+    expect(cols[2].busyLabel).toBe(`Midterms ${String.fromCharCode(183)} 4 days`)
     expect(cols[3].deadlineIds).toContain('opp-cac')
   })
 
@@ -128,5 +128,33 @@ describe('buildTimeline', () => {
       const total = cols.flatMap(c => c.segments).filter(seg => seg.id === id).reduce((n, seg) => n + seg.hours, 0)
       expect(total).toBe(OPPS.find(o => o.id === id)!.effort_hours)
     }
+  })
+})
+
+describe('buildPlanSummary', () => {
+  it('no commits: next deadline comes from what you could commit; Midterms is the next busy period', () => {
+    const s = setup(10, [])
+    const cards = buildCards(s.plan, s.assets, s.profile, s.commits, s.schedule, TODAY)
+    expect(buildPlanSummary(cards, s.profile.busyWeeks, TODAY)).toEqual({
+      committedCount: 0,
+      committableCount: 5,
+      committedHours: 0,
+      nextDeadline: { title: 'Congressional App Challenge', date: '2026-10-26', daysLeft: 23 },
+      nextBusy: { label: 'Midterms', start: '2026-10-20', end: '2026-10-27', daysUntil: 17 },
+    })
+  })
+  it('with commits: counts, summed effort hours, earliest committed deadline', () => {
+    const s = setup(10, ['opp-imlc', 'opp-nasa-space-apps', 'opp-opencv-ai'])
+    const cards = buildCards(s.plan, s.assets, s.profile, s.commits, s.schedule, TODAY)
+    const sum = buildPlanSummary(cards, s.profile.busyWeeks, TODAY)
+    expect(sum.committedCount).toBe(2)
+    expect(sum.committedHours).toBe(18)
+    expect(sum.nextDeadline).toEqual({ title: 'NASA Space Apps Challenge 2026', date: '2026-11-14', daysLeft: 42 })
+  })
+  it('busy period under way -> daysUntil 0; ended or incomplete periods are ignored', () => {
+    const cards: never[] = []
+    expect(buildPlanSummary(cards, [{ start: '2026-10-01', end: '2026-10-05', label: 'Trip' }], TODAY).nextBusy?.daysUntil).toBe(0)
+    expect(buildPlanSummary(cards, [{ start: '2026-09-01', end: '2026-09-05' }, { start: '', end: '2026-12-01' }], TODAY).nextBusy).toBeNull()
+    expect(buildPlanSummary(cards, [], TODAY).nextDeadline).toBeNull()
   })
 })

@@ -1,5 +1,6 @@
 import { humanTag } from '@/lib/exit-reason'
 import type { ReuseWebModel } from '@/lib/reuse-web'
+import { SectionHeader } from './SectionHeader'
 
 export interface ReuseWebProps {
   model: ReuseWebModel
@@ -15,8 +16,13 @@ const NODE_H = 36
 export function ReuseWeb({ model, reducedMotion }: ReuseWebProps) {
   if (model.threads.length === 0) {
     return (
-      <section aria-labelledby="reuse" className="space-y-4">
-        <h2 id="reuse" className="text-[28px] font-semibold leading-[1.2] tracking-[-0.01em]">One project, several doors</h2>
+      <section id="reuse-section" aria-labelledby="reuse" className="scroll-mt-20 space-y-6">
+        <SectionHeader
+          id="reuse"
+          eyebrow="Reuse"
+          title="One project, several doors"
+          description="Each thread is a tag your project shows that the opportunity asks for. Bright threads lead to what you've committed; dashed ones are locked."
+        />
         <p className="rounded-xl border border-dashed border-border p-6 text-muted-foreground">Add a project in your profile to see which opportunities it opens.</p>
       </section>
     )
@@ -34,11 +40,13 @@ export function ReuseWeb({ model, reducedMotion }: ReuseWebProps) {
   const missing = new Set(model.projects.filter((p) => p.missing).map((p) => p.id))
 
   return (
-    <section aria-labelledby="reuse" className="space-y-4">
-      <div>
-        <h2 id="reuse" className="text-[28px] font-semibold leading-[1.2] tracking-[-0.01em]">One project, several doors</h2>
-        <p className="mt-1 max-w-[68ch] text-muted-foreground">Each thread is a tag your project shows that the opportunity asks for. Solid threads lead to what you've committed.</p>
-      </div>
+    <section id="reuse-section" aria-labelledby="reuse" className="scroll-mt-20 space-y-6">
+      <SectionHeader
+        id="reuse"
+        eyebrow="Reuse"
+        title="One project, several doors"
+        description="Each thread is a tag your project shows that the opportunity asks for. Bright threads lead to what you've committed; dashed ones are locked."
+      />
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-hidden="true" focusable="false">
         {model.threads.map((t) => {
           const pi = pIndex.get(t.projectId)
