@@ -137,6 +137,22 @@ export type WeekBucket = {
   capacity_hours: number;
 };
 
+// --- Schedule (AGENTS.md Scheduler) ---
+
+export type Placement = { bucket: number; hours: number };
+
+export type ScheduledItem = {
+  opportunity_id: string;
+  placements: Placement[];
+  overflow_hours: number;
+  start_by_bucket: number | null;
+};
+
+export type Schedule = {
+  buckets: (WeekBucket & { load_hours: number; overloaded: boolean })[];
+  items: ScheduledItem[];
+};
+
 // ─── Plan ────────────────────────────────────────────────────────────────────
 
 export type OpportunityTier = 'SKIP' | 'FOCUS' | 'CONSIDER';
