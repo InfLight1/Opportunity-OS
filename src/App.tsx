@@ -158,7 +158,7 @@ export function App() {
       grade: formData.grade, region: formData.region, weeklyCapacityHours: formData.weekly_capacity_hours,
       busyWeeks: formData.busy_weeks, assets, tiered,
     }, today)
-    const facts = buildAskWhyFacts(t, profile, assets, today)
+    const facts = buildAskWhyFacts(t, profile, assets, today, tiered)
     // The chain never rejects; catch/finally make sure the status still leaves 'loading'.
     let settled = false
     void explainWithChain({ facts, templateText, datasetTitles: allOpps.map((o) => o.title), fetchFn: LIVE_FETCH, cache: LLM_CACHE })

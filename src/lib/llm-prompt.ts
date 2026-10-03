@@ -1,5 +1,6 @@
 import type { Asset, TieredOpportunity } from '../engine/types'
-import { humanTag, shortDate } from './exit-reason'
+import { availableHours } from '../engine/buckets'
+import { heldTagsOf, humanTag, shortDate } from './exit-reason'
 import { TIER_WORD, cardLockReason, cardReasons, type ToolProfile } from './tool-view'
 
 // --- Ask why prompt (AGENTS.md LLM role 1) ---
@@ -14,14 +15,30 @@ export type AskWhyFacts = {
   deadline: string
   deadline_short: string
   effort_hours: number
+  available_hours: number | null     // runway: hours from today through the deadline week
+  weekly_hours: number
   matched_tags: string[]
+  missing_tags: string[]             // required tags no project shows yet
+  busy_collision: string | null      // busy-period label the deadline falls in
   projects: string[]
+  also_counts_for: string[]          // other Focus/Consider entries the same project supports
   lock_reason: string | null
 }
 
-export function buildAskWhyFacts(t: TieredOpportunity, profile: ToolProfile, assets: Asset[], today: string): AskWhyFacts {
+export function buildAskWhyFacts(
+  t: TieredOpportunity,
+  profile: ToolProfile,
+  assets: Asset[],
+  today: string,
+  tiered: TieredOpportunity[],
+): AskWhyFacts {
   const o = t.opportunity
   const tags = [...t.match.matched_required, ...t.match.matched_helpful].filter((x, i, all) => all.indexOf(x) === i)
+  const held = heldTagsOf(assets)
+  const supporting = assets.filter(a => a.supports.includes(o.id))
+  const bw = t.has_busy_week_collision
+    ? profile.busyWeeks.find(b => b.start && b.end && o.deadline >= b.start && o.deadline <= b.end)
+    : undefined
   return {
     opportunity_id: o.id,
     title: o.title,
@@ -30,8 +47,15 @@ export function buildAskWhyFacts(t: TieredOpportunity, profile: ToolProfile, ass
     deadline: o.deadline,
     deadline_short: o.deadline ? shortDate(o.deadline) : '',
     effort_hours: o.effort_hours,
+    available_hours: o.deadline && o.deadline >= today ? availableHours(o.deadline, today, profile.weeklyCapacityHours, profile.busyWeeks) : null,
+    weekly_hours: profile.weeklyCapacityHours,
     matched_tags: tags.map(humanTag),
-    projects: assets.filter(a => a.supports.includes(o.id)).map(a => a.title),
+    missing_tags: o.required_tags.filter(tag => !held.has(tag)).map(humanTag),
+    busy_collision: t.has_busy_week_collision ? bw?.label || 'a busy period' : null,
+    projects: supporting.map(a => a.title),
+    also_counts_for: tiered
+      .filter(x => x.opportunity.id !== o.id && x.tier !== 'SKIP' && supporting.some(a => a.supports.includes(x.opportunity.id)))
+      .map(x => x.opportunity.title),
     lock_reason: cardLockReason(t, profile, assets, today),
   }
 }
@@ -41,11 +65,17 @@ export const ASK_WHY_SYSTEM = [
   'Explain ONLY the facts in the JSON you are given. Do not add facts, dates, numbers, titles or advice that are not in it.',
   'Never mention scores, percentages, ratings or match meters.',
   'Do not change or question the tier; it was decided by fixed rules.',
-  'Write plain sentences, second person, under 60 words, no lists, no markdown.',
+  'Cover three points in this order: (1) why it has this tier: the reasons, the tags your projects show, any tags still missing, any busy period it is due in, and the lock reason if there is one;',
+  '(2) whether the hours fit: the hours it needs against the hours available before the deadline at your weekly hours;',
+  '(3) if the JSON lists other opportunities the same work counts for, name them.',
+  'Skip a point only when its facts are empty or null.',
+  'Write numbers as digits exactly as they appear in the JSON, with "h" for hours (12 h, not twelve hours).',
+  'Never write JSON field names or words joined by underscores.',
+  'Write plain sentences, second person, under 70 words, no lists, no markdown.',
 ].join(' ')
 
 export function askWhyUserPrompt(facts: AskWhyFacts): string {
-  return `Facts (JSON):\n${JSON.stringify(facts, null, 2)}\n\nIn under 60 words, explain why "${facts.title}" is "${facts.tier}" using only these facts.`
+  return `Facts (JSON):\n${JSON.stringify(facts, null, 2)}\n\nIn under 70 words, explain why "${facts.title}" is "${facts.tier}", covering the three points, using only these facts.`
 }
 
 /**
