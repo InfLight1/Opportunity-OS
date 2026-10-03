@@ -13,6 +13,7 @@ import { useReducedMotion } from '@/hooks/use-reduced-motion'
 import { buildStoryData } from '@/lib/story-data'
 import { Story } from '@/components/story/Story'
 import { buildDraft } from '@/lib/draft-card'
+import { loadUserOpps, removeUserOpp, saveUserOpps, upsertUserOpp } from '@/lib/user-opps'
 import { askWhyTemplate } from '@/lib/ask-why-template'
 import { AddYourOwn } from '@/components/tool/AddYourOwn'
 import { AskWhy } from '@/components/tool/AskWhy'
@@ -46,14 +47,13 @@ export function App() {
   const [today] = useState(localToday)
   const [mode, setMode] = useState<Mode>(readMode)
   const [formData, setFormData] = useState<ProfileFormData>(() => loadFormData() ?? DEMO_FORM)
-  const [commits, setCommits] = useState<CommitState>(() => loadCommitState(localStorage, KNOWN_IDS))
+  const [userOpps, setUserOpps] = useState<Opportunity[]>(() => loadUserOpps(localStorage, KNOWN_IDS))
+  const [commits, setCommits] = useState<CommitState>(() => loadCommitState(localStorage, [...KNOWN_IDS, ...loadUserOpps(localStorage, KNOWN_IDS).map((o) => o.id)]))
   const [notice, setNotice] = useState<Omit<NoticeProps, 'onDismiss'> | null>(null)
   const [profileOpen, setProfileOpen] = useState(false)
   const [profileKey, setProfileKey] = useState(0)
   const [previewHours, setPreviewHours] = useState<number | null>(null)
   const reducedMotion = useReducedMotion()
-  // Added opportunities live for this session only (no new storage key).
-  const [userOpps, setUserOpps] = useState<Opportunity[]>([])
   const [draftFields, setDraftFields] = useState<Partial<Opportunity> | null>(null)
   const [askWhyId, setAskWhyId] = useState<string | null>(null)
   const allOpps = useMemo(() => [...OPPORTUNITIES, ...userOpps], [userOpps])
@@ -62,6 +62,7 @@ export function App() {
 
   useEffect(() => { saveFormData(formData) }, [formData])
   useEffect(() => { saveCommitState(localStorage, commits) }, [commits])
+  useEffect(() => { saveUserOpps(localStorage, userOpps) }, [userOpps])
 
   const { plan, assets } = useMemo(() => planForForm(formData, allOpps, today), [formData, allOpps, today])
   const tiered = plan.tiered_opportunities
@@ -117,8 +118,13 @@ export function App() {
   function handleAddDraft() {
     if (!draft || !draft.complete) return
     const o = draft.opportunity
-    setUserOpps((list) => [...list.filter((x) => x.id !== o.id), o])
+    setUserOpps((list) => upsertUserOpp(list, o))
     setDraftFields(null)
+  }
+
+  function handleRemoveUserOpp(id: string) {
+    setUserOpps((list) => removeUserOpp(list, id))
+    setCommits((c) => ({ committed_ids: c.committed_ids.filter((x) => x !== id) }))
   }
 
   const askWhy = useMemo(() => {
@@ -157,7 +163,7 @@ export function App() {
       setCommits(state)
       setNotice({
         kind: 'uncommitted',
-        message: 'These no longer fit your saved profile, so they were uncommitted:',
+        message: "These can't be done in time with your saved profile, so they were uncommitted:",
         items: uncommitted.map((d) => d.title),
       })
     }
@@ -180,20 +186,20 @@ export function App() {
         </div>
         <section aria-labelledby="opps" className="space-y-4">
           <h2 id="opps" className="text-[28px] font-semibold leading-[1.2] tracking-[-0.01em]">Opportunities</h2>
-          <OpportunityList cards={cards} onToggleCommit={handleToggleCommit} onAskWhy={setAskWhyId} />
+          <OpportunityList cards={cards} onToggleCommit={handleToggleCommit} onAskWhy={setAskWhyId} onRemove={handleRemoveUserOpp} />
         </section>
         <WhatIfPreview
           savedHours={profile.weeklyCapacityHours}
           previewHours={previewHours ?? profile.weeklyCapacityHours}
           dropped={preview?.dropped ?? []}
-          overloadedWeeks={shownSchedule.buckets.filter((b) => b.overloaded).length}
+          overloadedWeeks={columns.filter((c) => c.bucket.overloaded).map((c) => c.label)}
           savedNeverOverloads={savedNeverOverloads}
           onPreviewChange={setPreviewHours}
           onSave={handleSaveHours}
         />
         <WeeksTimeline columns={columns} hasCommits={shownSchedule.items.length > 0} titles={TITLES} previewHours={preview ? previewHours : null} />
         <ReuseWeb model={reuseWeb} reducedMotion={reducedMotion} />
-        <AddYourOwn draft={draft} onSubmitManual={setDraftFields} onAdd={handleAddDraft} onDiscard={() => setDraftFields(null)} />
+        <AddYourOwn draft={draft} onSubmitManual={setDraftFields} onAdd={handleAddDraft} onDiscard={() => setDraftFields(null)} profileRegion={formData.region} />
       </main>
       <footer className="mx-auto max-w-[1120px] border-t border-border px-8 py-8 text-[13px] text-muted-foreground">
         Rule-based. Every reason shown. AI only explains and extracts.

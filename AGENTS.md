@@ -67,6 +67,10 @@ CONSIDER: everything else that passed eligibility+matching
 - Lowering the saved capacity auto-uncommits items that become locked, with a notice naming them.
 - What-if capacity is a non-destructive preview ("dropped at this capacity"); stored commits change only when saved capacity changes (PROPOSED).
 
+## Added opportunities (pure; `src/lib/user-opps.ts`)
+- "Add your own" entries persist under localStorage key `opportunity-os:user-opps` as `Opportunity[]` (ids prefixed `user-`), normalized on load: drop malformed or incomplete entries, unknown tags, duplicate ids and ids that clash with the dataset; never blank-screen on a bad save. Never written to `src/data/`.
+- They run through the same engine as the dataset. Their ids count as known ids for commit state. Removing one also uncommits it.
+
 ## Acceptance (DONE WHEN)
 Every milestone is finished only when all items below pass. Write them into `.task/CC-HANDOFF.md` before coding, run each command, quote the output. After the milestone, rewrite `.task/CC-HANDOFF.md`: status, commit hash, raw check output, open questions.
 
