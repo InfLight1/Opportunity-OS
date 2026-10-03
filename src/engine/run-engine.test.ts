@@ -260,8 +260,9 @@ describe('M1: reason strings', () => {
     expect(tiered.match.reason).toContain('ai-ml')
   })
 
-  it('SKIP reason states effort and capacity when effort over weekly capacity', () => {
-    const opp = makeOpp({ id: 'opp-effort-skip', deadline: '2027-06-01', required_tags: ['web-dev'], effort_hours: 15 })
+  it('SKIP reason states effort and available hours when effort exceeds the runway', () => {
+    // today 2026-09-29, deadline 2026-10-05 -> bucket 0 only -> 8h available
+    const opp = makeOpp({ id: 'opp-effort-skip', deadline: '2026-10-05', required_tags: ['web-dev'], effort_hours: 15 })
     const input = makeInput({ assets: [makeAsset('a1', ['web-dev'])], weekly_capacity_hours: 8 })
     const { plan } = runEngine(input, [opp], today)
     const tiered = plan.tiered_opportunities[0]
@@ -269,6 +270,13 @@ describe('M1: reason strings', () => {
     expect(tiered.tier).toBe('SKIP')
     expect(tiered.match.reason).toContain('15')
     expect(tiered.match.reason).toContain('8')
+  })
+
+  it('effort above one week but within the runway is not SKIP', () => {
+    const opp = makeOpp({ id: 'opp-long-runway', deadline: '2027-06-01', required_tags: ['web-dev'], effort_hours: 15 })
+    const input = makeInput({ assets: [makeAsset('a1', ['web-dev'])], weekly_capacity_hours: 8 })
+    const { plan } = runEngine(input, [opp], today)
+    expect(plan.tiered_opportunities[0].tier).not.toBe('SKIP')
   })
 
   it('CONSIDER reason mentions a gap tag when there is an open gap', () => {

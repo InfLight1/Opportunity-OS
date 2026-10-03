@@ -1,12 +1,13 @@
-import type { TieredOpportunity } from './types';
+import type { BusyPeriod, TieredOpportunity } from './types';
+import { availableHours } from './buckets';
 
 // ─── Tiering (FOCUS / CONSIDER / SKIP) ──────────────────────────────────────
-// Decision tree per AGENTS.md Section 2a — no new conditions.
-// remainingCapacityHours = weekly_capacity_hours (per-op single-week hard cap).
+// Decision tree per AGENTS.md Tiering - no new conditions.
+// availableHoursForOpp = runway: capacity from today through the deadline bucket.
 
 export function computeTier(
   tiered: TieredOpportunity,
-  weeklyCapacityHours: number,
+  availableHoursForOpp: number,
 ): void {
   // Order matters per spec — check SKIP first.
 
@@ -20,8 +21,8 @@ export function computeTier(
     return;
   }
 
-  // effort_hours > weekly capacity → SKIP (single-op can't fit in one week).
-  if (tiered.opportunity.effort_hours > weeklyCapacityHours) {
+  // Runway rule: infeasible even as the only commitment -> SKIP.
+  if (tiered.opportunity.effort_hours > availableHoursForOpp) {
     tiered.tier = 'SKIP';
     return;
   }
@@ -44,9 +45,11 @@ export function computeTier(
 export function tierAll(
   opportunities: TieredOpportunity[],
   weeklyCapacityHours: number,
+  today: string,
+  busyPeriods: BusyPeriod[],
 ): TieredOpportunity[] {
   for (const opp of opportunities) {
-    computeTier(opp, weeklyCapacityHours);
+    computeTier(opp, availableHours(opp.opportunity.deadline, today, weeklyCapacityHours, busyPeriods));
   }
   return opportunities;
 }

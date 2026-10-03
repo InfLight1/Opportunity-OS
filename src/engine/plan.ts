@@ -4,89 +4,6 @@ import { selectNextAction } from './next-action';
 
 const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
 
-/** Compute runway hours: weekly_capacity_hours * weeks_until_latest_deadline among focus opps. */
-export function computeRunwayHours(
-  focusOpps: TieredOpportunity[],
-  weeklyCapacityHours: number,
-  today: string,
-): number {
-  if (focusOpps.length === 0) return 0;
-
-  const latestDeadline = getLatestDeadline(focusOpps);
-  if (latestDeadline === null) return 0;
-
-  const diffMs = new Date(latestDeadline).getTime() - new Date(today).getTime();
-  const weeks = Math.max(1, Math.ceil(diffMs / MS_PER_WEEK));
-  return weeklyCapacityHours * weeks;
-}
-
-/** Find the latest deadline among non-collided focus opps. */
-function getLatestDeadline(opps: TieredOpportunity[]): string | null {
-  let latest: string | null = null;
-  for (const o of opps) {
-    if (!o.has_busy_week_collision && (latest === null || o.opportunity.deadline > latest)) {
-      latest = o.opportunity.deadline;
-    }
-  }
-  return latest;
-}
-
-/** Check runway: sum(effort_hours of FOCUS, non-collided) vs weekly_capacity * weeks_until_latest_deadline. */
-export function checkRunway(
-  focusOpps: TieredOpportunity[],
-  weeklyCapacityHours: number,
-  today: string,
-): boolean {
-  const runwayHours = computeRunwayHours(focusOpps, weeklyCapacityHours, today);
-  if (runwayHours === 0) return true;
-
-  let sumEffort = 0;
-  for (const opp of focusOpps) {
-    if (!opp.has_busy_week_collision) {
-      sumEffort += opp.opportunity.effort_hours;
-    }
-  }
-
-  return sumEffort <= runwayHours;
-}
-
-/** Return opps that cannot fit within the runway. */
-export function deprioritizeOpps(
-  focusOpps: TieredOpportunity[],
-  weeklyCapacityHours: number,
-  today: string,
-): { deprioritized: TieredOpportunity[]; remainingFocus: TieredOpportunity[] } {
-  // Use full runway hours (not raw weeklyCapacityHours) as previously flagged.
-  const runwayHours = computeRunwayHours(focusOpps, weeklyCapacityHours, today);
-
-  const remaining: TieredOpportunity[] = [];
-  const deprioritized: TieredOpportunity[] = [];
-
-  // Sort by effort_hours ascending (greedy: fill smallest first).
-  const sorted = [...focusOpps].sort(
-    (a, b) => a.opportunity.effort_hours - b.opportunity.effort_hours,
-  );
-
-  let currentSum = 0;
-  for (const opp of sorted) {
-    if (!opp.has_busy_week_collision) {
-      const potentialSum = currentSum + opp.opportunity.effort_hours;
-      // Check runway with this opp added.
-      if (potentialSum > runwayHours) {
-        deprioritized.push(opp);
-      } else {
-        remaining.push(opp);
-        currentSum += opp.opportunity.effort_hours;
-      }
-    } else {
-      // Collided opps from focus set don't add to effort but get marked DEPRIORITIZED.
-      deprioritized.push(opp);
-    }
-  }
-
-  return { deprioritized, remainingFocus: remaining };
-}
-
 /** Detect weeks where FOCUS effort exceeds weekly capacity -- surface as warnings. */
 export function detectWeeklyLoadWarnings(
   focusOpps: TieredOpportunity[],
@@ -160,26 +77,12 @@ export function buildPlan(
   allAssets: Asset[],
   weeklyCapacityHours: number,
   busyPeriods: Plan['busy_weeks'],
-  today: string,
 ): Plan {
-  // Gather focus opps.
-  const focusOpps = tieredOpps.filter(
+  // Gather focus opps. Tiers are final here: buildPlan never demotes
+  // (runway is a per-item SKIP rule in tier.ts; overload is the scheduler's job).
+  const finalFocus = tieredOpps.filter(
     o => o.tier === 'FOCUS' && !o.has_busy_week_collision,
   );
-
-  // Runway check -- if over-capacity, deprioritize.
-  let finalFocus = [...focusOpps];
-  if (!checkRunway(focusOpps, weeklyCapacityHours, today)) {
-    const result = deprioritizeOpps(focusOpps, weeklyCapacityHours, today);
-    // Remove deprioritized from tiered list too.
-    const deprioritizedIds = new Set(result.deprioritized.map(o => o.opportunity.id));
-    for (const opp of tieredOpps) {
-      if (opp.tier === 'FOCUS' && deprioritizedIds.has(opp.opportunity.id)) {
-        opp.tier = 'CONSIDER';
-      }
-    }
-    finalFocus = result.remainingFocus;
-  }
 
   // Build all-asset tag set for gap analysis.
   const allAssetTagSet = new Set<string>();

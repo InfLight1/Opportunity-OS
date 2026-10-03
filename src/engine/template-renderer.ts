@@ -34,9 +34,9 @@ function formatGaps(opp: TieredOpportunity): string {
 
 export function renderTierReason(opp: TieredOpportunity): string {
   const tier = opp.tier;
-  if (tier === 'FOCUS') return 'Focused: fits capacity, no collision, high reuse or zero gaps';
+  if (tier === 'FOCUS') return 'Focused: fits before the deadline, no collision, high reuse or zero gaps';
   if (tier === 'CONSIDER') return 'Consider: eligible and matched but needs more evidence or has conflicts';
-  return 'Skipped: failed eligibility matching or effort check';
+  return 'Skipped: not eligible, no required-tag match, or not enough hours before the deadline';
 }
 
 export function renderSharedGaps(sharedGaps: Array<{ tag: string; affects: string[] }>): string {
