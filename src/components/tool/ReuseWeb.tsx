@@ -16,7 +16,7 @@ const NODE_H = 36
 export function ReuseWeb({ model, reducedMotion }: ReuseWebProps) {
   if (model.threads.length === 0) {
     return (
-      <section id="reuse-section" aria-labelledby="reuse" className="scroll-mt-20 space-y-6">
+      <section id="reuse-section" aria-labelledby="reuse" className="space-y-6">
         <SectionHeader
           id="reuse"
           eyebrow="Reuse"
@@ -40,7 +40,7 @@ export function ReuseWeb({ model, reducedMotion }: ReuseWebProps) {
   const missing = new Set(model.projects.filter((p) => p.missing).map((p) => p.id))
 
   return (
-    <section id="reuse-section" aria-labelledby="reuse" className="scroll-mt-20 space-y-6">
+    <section id="reuse-section" aria-labelledby="reuse" className="space-y-6">
       <SectionHeader
         id="reuse"
         eyebrow="Reuse"

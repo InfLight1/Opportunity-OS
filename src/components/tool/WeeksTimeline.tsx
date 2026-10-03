@@ -33,7 +33,7 @@ export function WeeksTimeline({ columns, hasCommits, titles, previewHours, contr
   }, [columns.length, hasCommits])
 
   return (
-    <section id="weeks-section" aria-labelledby="weeks" className="scroll-mt-20 space-y-6">
+    <section id="weeks-section" aria-labelledby="weeks" className="space-y-6">
       <SectionHeader
         id="weeks"
         eyebrow="Backward from each deadline"
