@@ -128,7 +128,7 @@ function ReuseBeat({ fan }: { fan: StoryReuseFan }) {
                   fill="none" stroke="var(--fog-2)" strokeWidth={1.5}
                   className="thread-draw" style={{ transitionDelay: `${i * 120}ms` }}
                 />
-                <text x={ox - 12} y={y2 - 8} textAnchor="end" fontSize="12" fill="var(--muted-text)">{t.matchedTags.map(humanTag).join(' · ')}</text>
+                <text x={ox - 12} y={y2 - 8} textAnchor="end" fontSize="12" fill="var(--muted-text)" stroke="var(--ink)" strokeWidth={4} paintOrder="stroke">{t.matchedTags.map(humanTag).join(' · ')}</text>
                 <rect x={ox} y={y2 - 20} width={W - ox} height={40} rx={10} fill="var(--surface)" stroke="var(--hairline)" />
                 <text x={ox + 16} y={y2 + 5} fontSize="15" fill="var(--text)">{t.title}</text>
               </g>

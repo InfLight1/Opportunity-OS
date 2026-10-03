@@ -61,7 +61,7 @@ export function ReuseWeb({ model, reducedMotion }: ReuseWebProps) {
                 strokeDasharray={dashed ? '4 4' : undefined}
                 className={reducedMotion ? '' : 'transition-[stroke] duration-200'}
               />
-              <text x={x2 - 10} y={y2 - 6} textAnchor="end" fontSize="11" fill="var(--muted-text)">
+              <text x={x2 - 10} y={y2 - 6} textAnchor="end" fontSize="11" fill="var(--muted-text)" stroke="var(--ink)" strokeWidth={4} paintOrder="stroke">
                 {t.matchedTags.map(humanTag).join(' · ')}
               </text>
             </g>
@@ -81,7 +81,7 @@ export function ReuseWeb({ model, reducedMotion }: ReuseWebProps) {
           </g>
         ))}
         {model.opportunities.map((o, i) => (
-          <g key={o.id} opacity={o.state === 'skipped' ? 0.6 : 1}>
+          <g key={o.id}>
             <rect
               x={OPP_X + 0.5} y={oppY(i) + 0.5} width={W - OPP_X - 1} height={NODE_H} rx={8}
               fill="var(--surface)"
