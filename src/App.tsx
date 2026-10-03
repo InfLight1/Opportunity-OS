@@ -10,6 +10,8 @@ import { buildCards, buildThisWeek, buildTimeline, cardLockReason, nextActionTex
 import { buildReuseWeb } from '@/lib/reuse-web'
 import { anyCombinationOverloads } from '@/lib/what-if'
 import { useReducedMotion } from '@/hooks/use-reduced-motion'
+import { buildStoryData } from '@/lib/story-data'
+import { Story } from '@/components/story/Story'
 import { Header } from '@/components/tool/Header'
 import { ThisWeekStrip } from '@/components/tool/ThisWeekStrip'
 import { OpportunityList } from '@/components/tool/OpportunityList'
@@ -92,6 +94,15 @@ export function App() {
   const shownSchedule = preview?.schedule ?? schedule
   const columns = useMemo(() => buildTimeline(shownSchedule, TITLES, DEADLINES, profile.busyWeeks), [shownSchedule, profile])
 
+  const storyData = useMemo(() => buildStoryData(tiered, assets, {
+    grade: formData.grade, region: formData.region, weekly_capacity_hours: formData.weekly_capacity_hours, busy_weeks: formData.busy_weeks, assets,
+  }, today), [tiered, assets, formData, today])
+
+  function openPlanner() {
+    document.getElementById('tool')?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' })
+    document.getElementById('tool-heading')?.focus({ preventScroll: true })
+  }
+
   function handleSaveHours(hours: number) {
     handleSaveProfile({ ...formData, weekly_capacity_hours: hours })
     setPreviewHours(null)
@@ -132,7 +143,8 @@ export function App() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header mode={mode} onToggleMode={switchMode} onOpenProfile={openProfile} />
-      <main id="tool" className="mx-auto max-w-[1120px] space-y-12 px-8 py-12">
+      {mode === 'story' && <Story data={storyData} onOpenPlanner={openPlanner} reducedMotion={reducedMotion} />}
+      <main id="tool" className="mx-auto max-w-[1120px] scroll-mt-14 space-y-12 px-8 py-12">
         <div className="space-y-4">
           <h1 tabIndex={-1} id="tool-heading" className="text-[28px] font-semibold leading-[1.2] tracking-[-0.01em] outline-none">Your plan</h1>
           {notice && <Notice {...notice} onDismiss={() => setNotice(null)} />}
@@ -154,6 +166,9 @@ export function App() {
         <WeeksTimeline columns={columns} hasCommits={shownSchedule.items.length > 0} titles={TITLES} previewHours={preview ? previewHours : null} />
         <ReuseWeb model={reuseWeb} reducedMotion={reducedMotion} />
       </main>
+      <footer className="mx-auto max-w-[1120px] border-t border-border px-8 py-8 text-[13px] text-muted-foreground">
+        Rule-based. Every reason shown. AI only explains and extracts.
+      </footer>
       <ProfileDrawer
         key={profileKey}
         open={profileOpen}
