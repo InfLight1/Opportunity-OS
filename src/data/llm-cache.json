@@ -1,4 +1,10 @@
 {
   "_doc": "Cached Ask why answers (tier 2 of the chain: live -> cache -> template). Key = '<opportunity_id>:<8-hex FNV-1a hash of the AskWhyFacts JSON>' (see src/lib/llm-prompt.ts cacheKey). Value = the answer text. Every entry is re-checked by src/lib/ask-why-check.ts before display; an entry that fails the check is skipped. In dev, a live answer that passes the check is logged to the console as [llm-cache] with its key, ready to paste here.",
-  "answers": {}
+  "answers": {
+    "opp-imlc:eca4e53f": "This project is Focus because your projects show data analysis and python. You have 99 h available before the deadline to complete the 6 h needed. This work also counts for the Congressional App Challenge, NASA Space Apps Challenge 2026, Cosmo Hacks 2026, and Global Appathon.",
+    "opp-cac:0ee9416d": "You are in the Consider tier because your projects show technical project, python, computer vision, and portfolio github, but you have a busy period due to Midterms. Your 6 h of effort fits within the 29 h available before the deadline at 10 h per week. This work also counts for International Machine Learning Competition, NASA Space Apps Challenge 2026, Cosmo Hacks 2026, and Global Appathon.",
+    "opp-global-appathon:8b8c596c": "You have this Focus tier because your projects show technical project. You have no missing tags or busy periods. The 10 h you need fits within your 249 available hours before the deadline. This work also counts for International Machine Learning Competition, Congressional App Challenge, NASA Space Apps Challenge 2026, and Cosmo Hacks 2026.",
+    "opp-nasa-space-apps:75154fd6": "This project is in the Focus tier because your projects show data analysis and python. You have 59 h available before the deadline to complete the 12 h needed. This work also counts for the International Machine Learning Competition, Congressional App Challenge, Cosmo Hacks 2026, and Global Appathon.",
+    "opp-cosmo-hacks:d03e5bf6": "You have this Focus tier because your projects show technical project and python. You have 109 h available before the deadline, which fits the 24 h needed. This work also counts for International Machine Learning Competition, Congressional App Challenge, NASA Space Apps Challenge 2026, and Global Appathon."
+  }
 }
