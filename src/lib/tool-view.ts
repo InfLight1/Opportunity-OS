@@ -24,6 +24,7 @@ export interface OpportunityCardModel {
   lockReason: string | null
   committed: boolean
   startByBucketStart: string | null
+  userAdded: boolean
 }
 
 export type ToolProfile = { grade: number; region: string; weeklyCapacityHours: number; busyWeeks: BusyPeriod[] }
@@ -123,6 +124,7 @@ export function buildCards(
       lockReason: lock,
       committed,
       startByBucketStart: committed ? startBy.get(o.id) ?? null : null,
+      userAdded: o.type === 'user',
     }
   })
   return cards.sort((a, b) => TIER_ORDER[a.tier] - TIER_ORDER[b.tier] || (a.deadline < b.deadline ? -1 : a.deadline > b.deadline ? 1 : 0))

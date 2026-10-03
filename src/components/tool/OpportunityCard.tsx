@@ -17,12 +17,13 @@ export interface OpportunityCardProps {
   card: OpportunityCardModel
   onToggleCommit: (id: string) => void
   onAskWhy?: (id: string) => void
+  onRemove?: (id: string) => void
   /** Replaces the footer (used by the add-your-own draft card). */
   footer?: ReactNode
   badge?: ReactNode
 }
 
-export function OpportunityCard({ card, onToggleCommit, onAskWhy, footer, badge }: OpportunityCardProps) {
+export function OpportunityCard({ card, onToggleCommit, onAskWhy, onRemove, footer, badge }: OpportunityCardProps) {
   const locked = !card.committable
   const lockId = `lock-${card.id}`
   return (
@@ -66,6 +67,7 @@ export function OpportunityCard({ card, onToggleCommit, onAskWhy, footer, badge 
             </Button>
             <span id={lockId} className="text-[13px] text-muted-foreground">{card.lockReason}</span>
             {onAskWhy && <Button size="sm" variant="ghost" onClick={() => onAskWhy(card.id)}>Ask why</Button>}
+            {card.userAdded && onRemove && <Button size="sm" variant="ghost" onClick={() => onRemove(card.id)}>Remove</Button>}
           </>
         ) : (
           <>
@@ -83,6 +85,7 @@ export function OpportunityCard({ card, onToggleCommit, onAskWhy, footer, badge 
             {card.committed && card.startByBucketStart && (
               <span className="text-[13px] text-muted-foreground tabular-nums">Start by week of {shortDate(card.startByBucketStart)}</span>
             )}
+            {card.userAdded && onRemove && <Button size="sm" variant="ghost" onClick={() => onRemove(card.id)}>Remove</Button>}
           </>
         ))}
       </div>

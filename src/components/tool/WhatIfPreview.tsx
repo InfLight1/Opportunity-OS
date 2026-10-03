@@ -5,7 +5,7 @@ export interface WhatIfPreviewProps {
   savedHours: number
   previewHours: number
   dropped: { id: string; title: string; reason: string }[]
-  overloadedWeeks: number
+  overloadedWeeks: string[]
   savedNeverOverloads: boolean | null
   onPreviewChange: (hours: number) => void
   onSave: (hours: number) => void
@@ -44,17 +44,21 @@ export function WhatIfPreview({ savedHours, previewHours, dropped, overloadedWee
       </div>
       {changed && (
         <div className="space-y-1 text-[15px]" role="status" aria-live="polite">
-          <p>
-            Preview only. {overloadedWeeks === 0 ? 'No week is over capacity.' : `${overloadedWeeks === 1 ? 'One week is' : `${overloadedWeeks} weeks are`} over capacity (see Your weeks).`}
-          </p>
+          <p className="text-[13px] text-muted-foreground">Preview only. Nothing changes until you save.</p>
           {dropped.length > 0 ? (
             <p>
-              <span className="text-muted-foreground">At {formatHours(previewHours)} h a week, dropped: </span>
+              <span className="font-medium">Can't be done in time at {formatHours(previewHours)} h a week</span>
+              <span className="text-muted-foreground"> (would be uncommitted if you save): </span>
               {dropped.map((d) => `${d.title} (${d.reason})`).join('; ')}
             </p>
           ) : (
-            <p className="text-muted-foreground">Nothing you committed is dropped at {formatHours(previewHours)} h a week.</p>
+            <p>Everything you committed can still be done in time at {formatHours(previewHours)} h a week.</p>
           )}
+          <p>
+            {overloadedWeeks.length === 0
+              ? 'No week has more planned than it can hold.'
+              : <><span className="font-medium">More planned than the week can hold:</span> {overloadedWeeks.join(', ')}. You would have to work ahead or drop something; {overloadedWeeks.length === 1 ? 'the red week below says' : 'the red weeks below say'} what lands there.</>}
+          </p>
         </div>
       )}
     </section>

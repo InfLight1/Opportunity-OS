@@ -19,6 +19,8 @@ export interface AddYourOwnProps {
   onSubmitManual: (fields: Partial<Opportunity>) => void
   onAdd: () => void
   onDiscard: () => void
+  /** Shown next to the location field: regions must match exactly. */
+  profileRegion?: string
 }
 
 const ASKS_FOR: Tag[] = [
@@ -29,7 +31,7 @@ const ASKS_FOR: Tag[] = [
 const ICON = { ok: Check, fail: X, missing: Minus }
 const WORD = { ok: 'OK', fail: 'No', missing: 'Missing' }
 
-export function AddYourOwn({ draft, intakeMode = 'manual', llmAvailable = false, onSubmitText, onSubmitManual, onAdd, onDiscard }: AddYourOwnProps) {
+export function AddYourOwn({ draft, intakeMode = 'manual', llmAvailable = false, onSubmitText, onSubmitManual, onAdd, onDiscard, profileRegion }: AddYourOwnProps) {
   const [text, setText] = useState('')
   const [f, setF] = useState({ title: '', organization: '', url: '', deadline: '', effort: '', gmin: '', gmax: '', online: true, region: '' })
   const [tags, setTags] = useState<Tag[]>([])
@@ -95,7 +97,13 @@ export function AddYourOwn({ draft, intakeMode = 'manual', llmAvailable = false,
                 Online, open from anywhere
               </label>
               {!f.online && (
-                <div className="col-span-2 space-y-1.5"><Label htmlFor="ao-region">Where it is held</Label><Input id="ao-region" placeholder="e.g. Dublin, CA, US" value={f.region} onChange={(e) => setF({ ...f, region: e.target.value })} /></div>
+                <div className="col-span-2 space-y-1.5">
+                  <Label htmlFor="ao-region">Where it is held</Label>
+                  <Input id="ao-region" placeholder="City, State, Country" aria-describedby="ao-region-note" value={f.region} onChange={(e) => setF({ ...f, region: e.target.value })} />
+                  <p id="ao-region-note" className="text-[13px] text-muted-foreground">
+                    Checked as an exact match against your profile region{profileRegion ? ` (${profileRegion})` : ''}. Anything else counts as somewhere you can't attend. If people can join from anywhere, tick Online instead.
+                  </p>
+                </div>
               )}
             </div>
             <fieldset className="space-y-2">
