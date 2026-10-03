@@ -4,15 +4,20 @@ import { buildSchedule } from '@/engine/schedule'
 import { loadFormData, saveFormData, type ProfileFormData } from '@/form-data'
 import { fixtureProfile } from '@/engine/fixtures'
 import opportunitiesData from '@/data/opportunities.json'
-import { autoUncommit, committedOpportunities, loadCommitState, saveCommitState, toggleCommit } from '@/lib/commit-state'
+import { autoUncommit, committedOpportunities, droppedCommits, loadCommitState, saveCommitState, toggleCommit } from '@/lib/commit-state'
 import { planForForm, profileToFormData } from '@/lib/profile-model'
-import { buildCards, buildThisWeek, buildTimeline, nextActionText, type ToolProfile } from '@/lib/tool-view'
+import { buildCards, buildThisWeek, buildTimeline, cardLockReason, nextActionText, type ToolProfile } from '@/lib/tool-view'
+import { buildReuseWeb } from '@/lib/reuse-web'
+import { anyCombinationOverloads } from '@/lib/what-if'
+import { useReducedMotion } from '@/hooks/use-reduced-motion'
 import { Header } from '@/components/tool/Header'
 import { ThisWeekStrip } from '@/components/tool/ThisWeekStrip'
 import { OpportunityList } from '@/components/tool/OpportunityList'
 import { WeeksTimeline } from '@/components/tool/WeeksTimeline'
 import { ProfileDrawer } from '@/components/tool/ProfileDrawer'
 import { Notice, type NoticeProps } from '@/components/tool/Notice'
+import { ReuseWeb } from '@/components/tool/ReuseWeb'
+import { WhatIfPreview } from '@/components/tool/WhatIfPreview'
 
 const OPPORTUNITIES = opportunitiesData as unknown as Opportunity[]
 const KNOWN_IDS = OPPORTUNITIES.map((o) => o.id)
@@ -41,6 +46,8 @@ export function App() {
   const [notice, setNotice] = useState<Omit<NoticeProps, 'onDismiss'> | null>(null)
   const [profileOpen, setProfileOpen] = useState(false)
   const [profileKey, setProfileKey] = useState(0)
+  const [previewHours, setPreviewHours] = useState<number | null>(null)
+  const reducedMotion = useReducedMotion()
 
   useEffect(() => { saveFormData(formData) }, [formData])
   useEffect(() => { saveCommitState(localStorage, commits) }, [commits])
@@ -56,9 +63,39 @@ export function App() {
     [commits, tiered, today, profile],
   )
   const cards = useMemo(() => buildCards(plan, assets, profile, commits, schedule, today), [plan, assets, profile, commits, schedule, today])
-  const columns = useMemo(() => buildTimeline(schedule, TITLES, DEADLINES, profile.busyWeeks), [schedule, profile])
   const thisWeek = buildThisWeek(schedule)
   const nextAction = nextActionText(plan, assets, schedule)
+
+  const skipReasons = useMemo(
+    () => Object.fromEntries(tiered.map((t) => [t.opportunity.id, cardLockReason(t, profile, assets, today)])),
+    [tiered, profile, assets, today],
+  )
+  const reuseWeb = useMemo(() => buildReuseWeb(plan, assets, commits, skipReasons), [plan, assets, commits, skipReasons])
+  const savedNeverOverloads = useMemo(
+    () => (anyCombinationOverloads(tiered, today, profile.weeklyCapacityHours, profile.busyWeeks) === false),
+    [tiered, today, profile],
+  )
+
+  // What-if: a non-destructive preview at another capacity (stored commits unchanged).
+  const preview = useMemo(() => {
+    if (previewHours === null || previewHours === profile.weeklyCapacityHours) return null
+    const pPlan = planForForm(formData, OPPORTUNITIES, today, previewHours).plan
+    const pProfile = { ...profile, weeklyCapacityHours: previewHours }
+    const dropped = droppedCommits(commits, pPlan.tiered_opportunities, today).map((d) => {
+      const t = pPlan.tiered_opportunities.find((x) => x.opportunity.id === d.id)!
+      return { ...d, reason: cardLockReason(t, pProfile, assets, today) ?? d.reason }
+    })
+    const pSchedule = buildSchedule(committedOpportunities(commits, pPlan.tiered_opportunities, today), today, previewHours, profile.busyWeeks)
+    return { dropped, schedule: pSchedule }
+  }, [previewHours, profile, formData, today, commits, assets])
+
+  const shownSchedule = preview?.schedule ?? schedule
+  const columns = useMemo(() => buildTimeline(shownSchedule, TITLES, DEADLINES, profile.busyWeeks), [shownSchedule, profile])
+
+  function handleSaveHours(hours: number) {
+    handleSaveProfile({ ...formData, weekly_capacity_hours: hours })
+    setPreviewHours(null)
+  }
 
   function switchMode() {
     const next: Mode = mode === 'story' ? 'tool' : 'story'
@@ -76,6 +113,7 @@ export function App() {
     const nextPlan = planForForm(next, OPPORTUNITIES, today).plan
     const { state, uncommitted } = autoUncommit(commits, nextPlan.tiered_opportunities, today)
     setFormData(next)
+    setPreviewHours(null)
     if (uncommitted.length > 0) {
       setCommits(state)
       setNotice({
@@ -104,7 +142,17 @@ export function App() {
           <h2 id="opps" className="text-[28px] font-semibold leading-[1.2] tracking-[-0.01em]">Opportunities</h2>
           <OpportunityList cards={cards} onToggleCommit={handleToggleCommit} onAskWhy={() => {}} />
         </section>
-        <WeeksTimeline columns={columns} hasCommits={schedule.items.length > 0} titles={TITLES} previewHours={null} />
+        <WhatIfPreview
+          savedHours={profile.weeklyCapacityHours}
+          previewHours={previewHours ?? profile.weeklyCapacityHours}
+          dropped={preview?.dropped ?? []}
+          overloadedWeeks={shownSchedule.buckets.filter((b) => b.overloaded).length}
+          savedNeverOverloads={savedNeverOverloads}
+          onPreviewChange={setPreviewHours}
+          onSave={handleSaveHours}
+        />
+        <WeeksTimeline columns={columns} hasCommits={shownSchedule.items.length > 0} titles={TITLES} previewHours={preview ? previewHours : null} />
+        <ReuseWeb model={reuseWeb} reducedMotion={reducedMotion} />
       </main>
       <ProfileDrawer
         key={profileKey}
