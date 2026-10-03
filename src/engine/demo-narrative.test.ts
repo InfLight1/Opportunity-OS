@@ -57,7 +57,7 @@ describe('demo-narrative: full funnel with finalized demo profile', () => {
   if (cacTiered) {
     const requiredMatchCount = cacTiered.match.matched_required ? cacTiered.match.matched_required.length : 0;
     console.log(`[demo-narrative] opp-cac tier breakdown:`);
-    console.log(`  required_tag_matches: ${requiredMatchCount} (${cacTiered.match.matched_required?.join(', ' || '')})`);
+    console.log(`  required_tag_matches: ${requiredMatchCount} (${cacTiered.match.matched_required?.join(', ')})`);
     console.log(`  busy_collision: ${cacTiered.has_busy_week_collision}`);
     console.log(`  reuse_count: ${cacTiered.reuse_count}`);
     console.log(`  gap_count: ${cacTiered.gap_count}`);

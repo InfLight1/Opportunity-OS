@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Asset, TieredOpportunity, Plan, Tag, TagName } from './types';
+import type { Asset, TieredOpportunity, Plan, Tag } from './types';
 import { checkRunway, deprioritizeOpps, buildPlan, detectWeeklyLoadWarnings } from '../engine/plan';
 
 const makeFocus = (id: string, deadline: string, effort: number): TieredOpportunity => ({
@@ -7,7 +7,7 @@ const makeFocus = (id: string, deadline: string, effort: number): TieredOpportun
   tier: 'FOCUS' as const, match: { matched_required: ['python'] as Tag[], helpful_match_count: 0, matched_helpful: [] as Tag[], gap_count: 0, reason: ''}, reuse_count: 2, gap_count: 0, has_busy_week_collision: false, eligible: true,
 });
 
-const makeFocusTag = (id: string, deadline: string, effort: number, tag: TagName): TieredOpportunity => ({
+const makeFocusTag = (id: string, deadline: string, effort: number, tag: Tag): TieredOpportunity => ({
   opportunity: { id, title: 'Test', organization: 'Org', type: 'competition', description: '', grade_range: { min: 9, max: 12 }, location: { remote_ok: true, region: null }, prerequisites: [], required_tags: [tag] as Tag[], helpful_tags: [] as Tag[], deadline, effort_hours: effort, participation: 'individual', submission_format: 'submission-format:demo', requirements: [], source_url: '' },
   tier: 'FOCUS' as const, match: { matched_required: [tag] as Tag[], helpful_match_count: 0, matched_helpful: [] as Tag[], gap_count: 0, reason: ''}, reuse_count: 2, gap_count: 0, has_busy_week_collision: false, eligible: true,
 });

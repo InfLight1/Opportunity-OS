@@ -71,7 +71,7 @@ CONSIDER: everything else that passed eligibility+matching
 Every milestone is finished only when all items below pass. Write them into `.task/CC-HANDOFF.md` before coding, run each command, quote the output. After the milestone, rewrite `.task/CC-HANDOFF.md`: status, commit hash, raw check output, open questions.
 
 **Standing checks (every milestone):**
-1. `npx tsc --noEmit` → exit 0.
+1. `npx tsc -b` → exit 0 (plain `npx tsc --noEmit` checks nothing: root tsconfig has `"files": []`).
 2. `npx vitest run` → exit 0, no skipped or `.only` tests.
 3. Every exported type in `types.ts` is used somewhere else in `src/` (no speculative types like an unused `Evidence` mapped type), or is named in the Types list above.
 

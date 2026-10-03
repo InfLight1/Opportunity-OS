@@ -10,9 +10,9 @@ const makeTieredOpp = (id: string, tier: string, requiredTags: Tag[]): TieredOpp
 describe('findSharedGaps — normal cases', () => {
   it('identifies a shared gap when missing tag appears on >=2 CONSIDER/FOCUS opps', () => {
     const o1 = makeTieredOpp('o1', 'FOCUS', ['python', 'web-dev']);
-    const o2 = makeTieredOpp('o2', 'CONSIDER', ['java', 'web-dev']);
+    const o2 = makeTieredOpp('o2', 'CONSIDER', ['leadership', 'web-dev']);
     // web-dev missing from assets → shared gap on both opps
-    const allAssetTags = new Set(['python', 'java']);
+    const allAssetTags = new Set(['python', 'leadership']);
     const result = findSharedGaps([o1, o2], allAssetTags);
     expect(result.length).toBe(1);
     expect(result[0].tag).toBe('web-dev');
