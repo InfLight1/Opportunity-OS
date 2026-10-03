@@ -1,0 +1,4 @@
+{
+  "_doc": "Cached Ask why answers (tier 2 of the chain: live -> cache -> template). Key = '<opportunity_id>:<8-hex FNV-1a hash of the AskWhyFacts JSON>' (see src/lib/llm-prompt.ts cacheKey). Value = the answer text. Every entry is re-checked by src/lib/ask-why-check.ts before display; an entry that fails the check is skipped. In dev, a live answer that passes the check is logged to the console as [llm-cache] with its key, ready to paste here.",
+  "answers": {}
+}

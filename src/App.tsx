@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CommitState, Opportunity } from '@/engine/types'
 import { buildSchedule } from '@/engine/schedule'
 import { loadFormData, saveFormData, type ProfileFormData } from '@/form-data'
@@ -15,6 +15,9 @@ import { Story } from '@/components/story/Story'
 import { buildDraft } from '@/lib/draft-card'
 import { loadUserOpps, removeUserOpp, saveUserOpps, upsertUserOpp } from '@/lib/user-opps'
 import { askWhyTemplate } from '@/lib/ask-why-template'
+import { buildAskWhyFacts } from '@/lib/llm-prompt'
+import { explainWithChain, type LlmCache } from '@/lib/llm-provider'
+import llmCacheData from '@/data/llm-cache.json'
 import { AddYourOwn } from '@/components/tool/AddYourOwn'
 import { AskWhy } from '@/components/tool/AskWhy'
 import { Header } from '@/components/tool/Header'
@@ -29,6 +32,11 @@ import { WhatIfPreview } from '@/components/tool/WhatIfPreview'
 const OPPORTUNITIES = opportunitiesData as unknown as Opportunity[]
 const KNOWN_IDS = OPPORTUNITIES.map((o) => o.id)
 const DEMO_FORM = profileToFormData(fixtureProfile)
+const LLM_CACHE = llmCacheData as LlmCache
+// Live tier only with the dev proxy (vite.config.ts); the built app uses cache -> template.
+const LIVE_FETCH = import.meta.env.DEV ? (url: string, init?: RequestInit) => fetch(url, init) : null
+
+type AskWhyLlm = { status: 'idle' | 'loading' | 'ready' | 'fallback'; text: string | null }
 
 type Mode = 'story' | 'tool'
 
@@ -56,6 +64,8 @@ export function App() {
   const reducedMotion = useReducedMotion()
   const [draftFields, setDraftFields] = useState<Partial<Opportunity> | null>(null)
   const [askWhyId, setAskWhyId] = useState<string | null>(null)
+  const [askWhyLlm, setAskWhyLlm] = useState<AskWhyLlm>({ status: 'idle', text: null })
+  const askWhyRequest = useRef(0)
   const allOpps = useMemo(() => [...OPPORTUNITIES, ...userOpps], [userOpps])
   const TITLES: Record<string, string> = useMemo(() => Object.fromEntries(allOpps.map((o) => [o.id, o.title])), [allOpps])
   const DEADLINES: Record<string, string> = useMemo(() => Object.fromEntries(allOpps.map((o) => [o.id, o.deadline])), [allOpps])
@@ -137,6 +147,34 @@ export function App() {
     return { id: t.opportunity.id, title: t.opportunity.title, text }
   }, [askWhyId, tiered, formData, assets, today])
 
+  // Ask why: the template shows at once; a guarded LLM answer (live, else cached) swaps in.
+  function handleAskWhy(id: string) {
+    const t = tiered.find((x) => x.opportunity.id === id)
+    if (!t) return
+    const request = ++askWhyRequest.current
+    setAskWhyId(id)
+    setAskWhyLlm({ status: 'loading', text: null })
+    const templateText = askWhyTemplate(t, {
+      grade: formData.grade, region: formData.region, weeklyCapacityHours: formData.weekly_capacity_hours,
+      busyWeeks: formData.busy_weeks, assets, tiered,
+    }, today)
+    const facts = buildAskWhyFacts(t, profile, assets, today)
+    void explainWithChain({ facts, templateText, datasetTitles: allOpps.map((o) => o.title), fetchFn: LIVE_FETCH, cache: LLM_CACHE }).then((r) => {
+      if (askWhyRequest.current !== request) return
+      if (import.meta.env.DEV) {
+        if (r.source === 'live') console.info('[llm-cache] paste into src/data/llm-cache.json answers:', JSON.stringify({ [r.key]: r.text }))
+        if (r.violations.length > 0) console.info('[llm] fell through:', r.violations)
+      }
+      setAskWhyLlm(r.source === 'template' ? { status: 'fallback', text: null } : { status: 'ready', text: r.text })
+    })
+  }
+
+  function closeAskWhy() {
+    askWhyRequest.current++
+    setAskWhyId(null)
+    setAskWhyLlm({ status: 'idle', text: null })
+  }
+
   function handleSaveHours(hours: number) {
     handleSaveProfile({ ...formData, weekly_capacity_hours: hours })
     setPreviewHours(null)
@@ -186,7 +224,7 @@ export function App() {
         </div>
         <section aria-labelledby="opps" className="space-y-4">
           <h2 id="opps" className="text-[28px] font-semibold leading-[1.2] tracking-[-0.01em]">Opportunities</h2>
-          <OpportunityList cards={cards} onToggleCommit={handleToggleCommit} onAskWhy={setAskWhyId} onRemove={handleRemoveUserOpp} />
+          <OpportunityList cards={cards} onToggleCommit={handleToggleCommit} onAskWhy={handleAskWhy} onRemove={handleRemoveUserOpp} />
         </section>
         <WhatIfPreview
           savedHours={profile.weeklyCapacityHours}
@@ -205,7 +243,7 @@ export function App() {
         Rule-based. Every reason shown. AI only explains and extracts.
       </footer>
       {askWhy && (
-        <AskWhy key={askWhy.id} opportunityId={askWhy.id} title={askWhy.title} templateText={askWhy.text} onClose={() => setAskWhyId(null)} />
+        <AskWhy key={askWhy.id} opportunityId={askWhy.id} title={askWhy.title} templateText={askWhy.text} llmText={askWhyLlm.text} status={askWhyLlm.status} onClose={closeAskWhy} />
       )}
       <ProfileDrawer
         key={profileKey}
