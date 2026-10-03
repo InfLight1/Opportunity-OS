@@ -153,6 +153,10 @@ export type Schedule = {
   items: ScheduledItem[];
 };
 
+// --- CommitState (AGENTS.md Commit state; persisted) ---
+
+export type CommitState = { committed_ids: string[] };
+
 // ─── Plan ────────────────────────────────────────────────────────────────────
 
 export type OpportunityTier = 'SKIP' | 'FOCUS' | 'CONSIDER';
