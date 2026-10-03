@@ -58,7 +58,7 @@ describe('buildStoryData on the demo profile (capacity 10, 2026-10-03)', () => {
     expect(reason('opp-regeneron-sts')).toBe('Grade 12 only')
     expect(reason('opp-3m-ysc')).toBe('Grades 5-8 only')
     expect(reason('opp-au-stem-vgc')).toBe('Closed Sep 9')
-    expect(reason('opp-ksu-hspc')).toBe('US only')
+    expect(reason('opp-ksu-hspc')).toBe('Manhattan, KS, US only')
     expect(reason('opp-opencv-ai')).toBe('Needs 30 h, 29 h left')
   })
 

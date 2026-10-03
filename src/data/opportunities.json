@@ -96,7 +96,7 @@
     "type": "competition",
     "description": "",
     "grade_range": { "min": 9, "max": 12 },
-    "location": { "remote_ok": false, "region": "US" },
+    "location": { "remote_ok": false, "region": "Manhattan, KS, US" },
     "prerequisites": [],
     "required_tags": ["technical-project"],
     "helpful_tags": ["python", "competition-experience", "stem-general"],
