@@ -25,3 +25,10 @@ dist-ssr
 
 # Task tracking
 .task/
+
+.env
+.env.*
+!.env.example
+.playwright-mcp/
+.claude/settings.local.json
+Dublin HacX Judging Rubric.md
