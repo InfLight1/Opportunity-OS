@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import opps from '../data/opportunities.json';
 import { fixtureProfile } from './fixtures';
 import { runEngine } from './run-engine';
+import { availableHours } from './buckets';
 
 const TEST_TODAY = '2026-10-03';
 
@@ -74,23 +75,28 @@ describe('demo-narrative: full funnel with finalized demo profile', () => {
   const considerCount = allOpps.filter(t => t.tier === 'CONSIDER').length;
   const skipCount = allOpps.filter(t => t.tier === 'SKIP').length;
   console.log(`[demo-narrative] Funnel: total=${total}, eligible=${eligible}, matched=${matched}, FOCUS=${focusCount}, CONSIDER=${considerCount}, SKIP=${skipCount}`);
+  for (const tier of ['FOCUS', 'CONSIDER', 'SKIP'] as const) {
+    const ids = allOpps.filter(t => t.tier === tier).map(t => t.opportunity.id);
+    console.log(`[demo-narrative] ${tier}: ${JSON.stringify(ids)}`);
+  }
 
   // ── Assertion 1: tennis asset supports >= 3 ──
   it('tennis asset supports >= 3 opportunities', () => {
     expect(tennisAsset.supports.length).toBeGreaterThanOrEqual(3);
   });
 
-  // ── Assertion 2 (modified): count of supported opps with effort <= capacity >= 3 ──
-  // EXPECTED to fail: current qualifying count is 2 (opp-imlc, opp-cac). Failure message lists them.
-  it('tennis-supported opps within weekly capacity >= 3', () => {
+  // -- Assertion 2: tennis-supported opps that fit the runway (effort <= available hours) >= 3 --
+  it('tennis-supported opps within runway >= 3', () => {
     const qualifyingIds: string[] = [];
     for (const oid of tennisAsset.supports) {
       const tiered = allOpps.find(t => t.opportunity.id === oid);
-      if (tiered && tiered.opportunity.effort_hours <= profile.weekly_capacity_hours) {
+      if (!tiered) continue;
+      const available = availableHours(tiered.opportunity.deadline, TEST_TODAY, profile.weekly_capacity_hours, profile.busy_weeks);
+      if (tiered.opportunity.effort_hours <= available) {
         qualifyingIds.push(oid);
       }
     }
-    console.log('[demo-narrative] Qualifying tennis-supported opps (effort <= capacity):', JSON.stringify(qualifyingIds), 'count:', qualifyingIds.length);
+    console.log('[demo-narrative] Qualifying tennis-supported opps (effort <= runway):', JSON.stringify(qualifyingIds), 'count:', qualifyingIds.length);
     expect(qualifyingIds.length).toBeGreaterThanOrEqual(3);
   });
 

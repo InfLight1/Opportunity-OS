@@ -126,6 +126,17 @@ export type BusyPeriod = {
   label?: string;
 };
 
+// --- WeekBucket ---
+// Rolling 7-day bucket from today (not a calendar week). ISO dates, end inclusive.
+
+export type WeekBucket = {
+  index: number;
+  start: string;
+  end: string;
+  busy_days: number;
+  capacity_hours: number;
+};
+
 // ─── Plan ────────────────────────────────────────────────────────────────────
 
 export type OpportunityTier = 'SKIP' | 'FOCUS' | 'CONSIDER';

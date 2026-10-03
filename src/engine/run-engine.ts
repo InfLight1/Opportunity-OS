@@ -3,6 +3,7 @@ import { isEligible, filterEligibility, matchTags } from './eligibility'
 import { buildAssetsWithSupports } from './reuse'
 import { detectCollisions } from './collision'
 import { tierAll } from './tier'
+import { availableHours, completeBusyPeriods } from './buckets'
 import { buildPlan as runBuildPlan } from './plan'
 
 export interface ProfileInput {
@@ -21,7 +22,7 @@ export interface RunEngineResult {
   assets: Asset[]
 }
 
-function buildReasonForTiered(tiered: TieredOpportunity, eligReasonMap: Map<string, string>, busyWeeksArg: BusyPeriod[], capacity: number): string {
+function buildReasonForTiered(tiered: TieredOpportunity, eligReasonMap: Map<string, string>, busyWeeksArg: BusyPeriod[], capacity: number, today: string): string {
   const opp = tiered.opportunity
 
   if (!tiered.eligible) {
@@ -30,9 +31,14 @@ function buildReasonForTiered(tiered: TieredOpportunity, eligReasonMap: Map<stri
 
   const addElig = (core: string): string => `${core} | Eligibility: ${eligReasonMap.get(opp.id) || ''}`
 
-  // effort-hours skip check regardless of tier state
-  if (tiered.opportunity.effort_hours > capacity) {
-    return addElig(`Effort ${opp.effort_hours}h exceeds weekly capacity ${capacity}h`)
+  // Same order as computeTier: zero required match, then runway.
+  if (tiered.match.matched_required.length === 0) {
+    return addElig(`No required-tag match (${opp.required_tags.join(', ')})`)
+  }
+
+  const available = availableHours(opp.deadline, today, capacity, busyWeeksArg)
+  if (opp.effort_hours > available) {
+    return addElig(`Needs ${opp.effort_hours}h; only ${available}h available before ${opp.deadline} at ${capacity}h/week`)
   }
 
   // Check busy-week collision: deadline within any busy period bounds
@@ -44,25 +50,14 @@ function buildReasonForTiered(tiered: TieredOpportunity, eligReasonMap: Map<stri
     }
   }
 
-  if (tiered.tier === 'SKIP') {
-    if (tiered.match.matched_required.length === 0) {
-      return addElig(`No required-tag match (${opp.required_tags.join(', ')})`)
-    }
-  }
-
   // FOCUS reason with matched tags and reuse count
   if (tiered.tier === 'FOCUS') {
     const tags = tiered.match.matched_required.join(', ')
     return addElig(`Matched: ${tags}, reuse count: ${tiered.reuse_count}`)
   }
 
-  // CONSIDER or fallback with matched info
-  if (tiered.match.matched_required.length > 0) {
-    const tags = tiered.match.matched_required.join(', ')
-    return addElig(`Matched: ${tags}`)
-  }
-
-  return addElig('No sufficient tag match')
+  // CONSIDER with matched info
+  return addElig(`Matched: ${tiered.match.matched_required.join(', ')}`)
 }
 
 export function runEngine(
@@ -70,7 +65,7 @@ export function runEngine(
   opportunities: Opportunity[],
   today: string,
 ): RunEngineResult {
-  const busyWeeks = input.busy_weeks.filter(bw => bw.start.trim() !== '' && bw.end.trim() !== '')
+  const busyWeeks = completeBusyPeriods(input.busy_weeks)
 
   // Build real Profile object for isEligible / matchTags
   const profile: Profile = {
@@ -173,15 +168,15 @@ export function runEngine(
 
   // Step 6 detect collisions, tier
   detectCollisions(tieredOpps, busyWeeks)
-  tierAll(tieredOpps, input.weekly_capacity_hours)
+  tierAll(tieredOpps, input.weekly_capacity_hours, today, busyWeeks)
 
   // Build reason strings AFTER tiering so they reflect final tier state
   const capacity = input.weekly_capacity_hours
   for (const t of tieredOpps) {
-    t.match.reason = buildReasonForTiered(t, eligibilityReason, busyWeeks, capacity)
+    t.match.reason = buildReasonForTiered(t, eligibilityReason, busyWeeks, capacity, today)
   }
 
-  const plan = runBuildPlan(tieredOpps, supportingAssets, input.weekly_capacity_hours, busyWeeks, today)
+  const plan = runBuildPlan(tieredOpps, supportingAssets, input.weekly_capacity_hours, busyWeeks)
 
   return { plan, assets: supportingAssets }
 }
