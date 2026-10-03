@@ -12,6 +12,10 @@ import { anyCombinationOverloads } from '@/lib/what-if'
 import { useReducedMotion } from '@/hooks/use-reduced-motion'
 import { buildStoryData } from '@/lib/story-data'
 import { Story } from '@/components/story/Story'
+import { buildDraft } from '@/lib/draft-card'
+import { askWhyTemplate } from '@/lib/ask-why-template'
+import { AddYourOwn } from '@/components/tool/AddYourOwn'
+import { AskWhy } from '@/components/tool/AskWhy'
 import { Header } from '@/components/tool/Header'
 import { ThisWeekStrip } from '@/components/tool/ThisWeekStrip'
 import { OpportunityList } from '@/components/tool/OpportunityList'
@@ -23,8 +27,6 @@ import { WhatIfPreview } from '@/components/tool/WhatIfPreview'
 
 const OPPORTUNITIES = opportunitiesData as unknown as Opportunity[]
 const KNOWN_IDS = OPPORTUNITIES.map((o) => o.id)
-const TITLES: Record<string, string> = Object.fromEntries(OPPORTUNITIES.map((o) => [o.id, o.title]))
-const DEADLINES: Record<string, string> = Object.fromEntries(OPPORTUNITIES.map((o) => [o.id, o.deadline]))
 const DEMO_FORM = profileToFormData(fixtureProfile)
 
 type Mode = 'story' | 'tool'
@@ -50,11 +52,18 @@ export function App() {
   const [profileKey, setProfileKey] = useState(0)
   const [previewHours, setPreviewHours] = useState<number | null>(null)
   const reducedMotion = useReducedMotion()
+  // Added opportunities live for this session only (no new storage key).
+  const [userOpps, setUserOpps] = useState<Opportunity[]>([])
+  const [draftFields, setDraftFields] = useState<Partial<Opportunity> | null>(null)
+  const [askWhyId, setAskWhyId] = useState<string | null>(null)
+  const allOpps = useMemo(() => [...OPPORTUNITIES, ...userOpps], [userOpps])
+  const TITLES: Record<string, string> = useMemo(() => Object.fromEntries(allOpps.map((o) => [o.id, o.title])), [allOpps])
+  const DEADLINES: Record<string, string> = useMemo(() => Object.fromEntries(allOpps.map((o) => [o.id, o.deadline])), [allOpps])
 
   useEffect(() => { saveFormData(formData) }, [formData])
   useEffect(() => { saveCommitState(localStorage, commits) }, [commits])
 
-  const { plan, assets } = useMemo(() => planForForm(formData, OPPORTUNITIES, today), [formData, today])
+  const { plan, assets } = useMemo(() => planForForm(formData, allOpps, today), [formData, allOpps, today])
   const tiered = plan.tiered_opportunities
   const profile: ToolProfile = useMemo(() => ({
     grade: formData.grade, region: formData.region, weeklyCapacityHours: formData.weekly_capacity_hours, busyWeeks: formData.busy_weeks,
@@ -81,7 +90,7 @@ export function App() {
   // What-if: a non-destructive preview at another capacity (stored commits unchanged).
   const preview = useMemo(() => {
     if (previewHours === null || previewHours === profile.weeklyCapacityHours) return null
-    const pPlan = planForForm(formData, OPPORTUNITIES, today, previewHours).plan
+    const pPlan = planForForm(formData, allOpps, today, previewHours).plan
     const pProfile = { ...profile, weeklyCapacityHours: previewHours }
     const dropped = droppedCommits(commits, pPlan.tiered_opportunities, today).map((d) => {
       const t = pPlan.tiered_opportunities.find((x) => x.opportunity.id === d.id)!
@@ -89,10 +98,10 @@ export function App() {
     })
     const pSchedule = buildSchedule(committedOpportunities(commits, pPlan.tiered_opportunities, today), today, previewHours, profile.busyWeeks)
     return { dropped, schedule: pSchedule }
-  }, [previewHours, profile, formData, today, commits, assets])
+  }, [previewHours, profile, formData, today, commits, assets, allOpps])
 
   const shownSchedule = preview?.schedule ?? schedule
-  const columns = useMemo(() => buildTimeline(shownSchedule, TITLES, DEADLINES, profile.busyWeeks), [shownSchedule, profile])
+  const columns = useMemo(() => buildTimeline(shownSchedule, TITLES, DEADLINES, profile.busyWeeks), [shownSchedule, profile, TITLES, DEADLINES])
 
   const storyData = useMemo(() => buildStoryData(tiered, assets, {
     grade: formData.grade, region: formData.region, weekly_capacity_hours: formData.weekly_capacity_hours, busy_weeks: formData.busy_weeks, assets,
@@ -102,6 +111,25 @@ export function App() {
     document.getElementById('tool')?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' })
     document.getElementById('tool-heading')?.focus({ preventScroll: true })
   }
+
+  const draft = useMemo(() => (draftFields ? buildDraft(draftFields, formData, allOpps, today) : null), [draftFields, formData, allOpps, today])
+
+  function handleAddDraft() {
+    if (!draft || !draft.complete) return
+    const o = draft.opportunity
+    setUserOpps((list) => [...list.filter((x) => x.id !== o.id), o])
+    setDraftFields(null)
+  }
+
+  const askWhy = useMemo(() => {
+    const t = askWhyId ? tiered.find((x) => x.opportunity.id === askWhyId) : undefined
+    if (!t) return null
+    const text = askWhyTemplate(t, {
+      grade: formData.grade, region: formData.region, weeklyCapacityHours: formData.weekly_capacity_hours,
+      busyWeeks: formData.busy_weeks, assets, tiered,
+    }, today)
+    return { id: t.opportunity.id, title: t.opportunity.title, text }
+  }, [askWhyId, tiered, formData, assets, today])
 
   function handleSaveHours(hours: number) {
     handleSaveProfile({ ...formData, weekly_capacity_hours: hours })
@@ -121,7 +149,7 @@ export function App() {
   }
 
   function handleSaveProfile(next: ProfileFormData) {
-    const nextPlan = planForForm(next, OPPORTUNITIES, today).plan
+    const nextPlan = planForForm(next, allOpps, today).plan
     const { state, uncommitted } = autoUncommit(commits, nextPlan.tiered_opportunities, today)
     setFormData(next)
     setPreviewHours(null)
@@ -152,7 +180,7 @@ export function App() {
         </div>
         <section aria-labelledby="opps" className="space-y-4">
           <h2 id="opps" className="text-[28px] font-semibold leading-[1.2] tracking-[-0.01em]">Opportunities</h2>
-          <OpportunityList cards={cards} onToggleCommit={handleToggleCommit} onAskWhy={() => {}} />
+          <OpportunityList cards={cards} onToggleCommit={handleToggleCommit} onAskWhy={setAskWhyId} />
         </section>
         <WhatIfPreview
           savedHours={profile.weeklyCapacityHours}
@@ -165,10 +193,14 @@ export function App() {
         />
         <WeeksTimeline columns={columns} hasCommits={shownSchedule.items.length > 0} titles={TITLES} previewHours={preview ? previewHours : null} />
         <ReuseWeb model={reuseWeb} reducedMotion={reducedMotion} />
+        <AddYourOwn draft={draft} onSubmitManual={setDraftFields} onAdd={handleAddDraft} onDiscard={() => setDraftFields(null)} />
       </main>
       <footer className="mx-auto max-w-[1120px] border-t border-border px-8 py-8 text-[13px] text-muted-foreground">
         Rule-based. Every reason shown. AI only explains and extracts.
       </footer>
+      {askWhy && (
+        <AskWhy key={askWhy.id} opportunityId={askWhy.id} title={askWhy.title} templateText={askWhy.text} onClose={() => setAskWhyId(null)} />
+      )}
       <ProfileDrawer
         key={profileKey}
         open={profileOpen}
