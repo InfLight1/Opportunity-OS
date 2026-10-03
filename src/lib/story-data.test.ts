@@ -45,6 +45,13 @@ describe('buildStoryData on the demo profile (capacity 10, 2026-10-03)', () => {
     expect(story.titles).toHaveLength(OPPS.length)
   })
 
+  it('hero numbers: total effort = sum of every estimate; pile has every entry', () => {
+    expect(story.totalEffortHours).toBe(OPPS.reduce((n, o) => n + o.effort_hours, 0))
+    expect(story.totalEffortHours).toBe(160)
+    expect(story.pile).toHaveLength(OPPS.length)
+    expect(story.pile[0]).toEqual({ id: OPPS[0].id, title: OPPS[0].title, deadline: OPPS[0].deadline, effortHours: OPPS[0].effort_hours })
+  })
+
   it('every SKIP entry exits, each with a short reason (no engine prefixes)', () => {
     const skipIds = tiered.filter(t => t.tier === 'SKIP').map(t => t.opportunity.id)
     expect(story.exits.map(e => e.id)).toEqual(skipIds)

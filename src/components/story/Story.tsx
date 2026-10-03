@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { ArrowDown } from 'lucide-react'
+import { ArrowDown, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useRevealOnEnter } from '@/hooks/use-reveal-on-enter'
-import { humanTag } from '@/lib/exit-reason'
-import type { StoryData, StoryExit, StoryReuseFan } from '@/lib/story-data'
+import { useCountUp } from '@/hooks/use-count-up'
+import { humanTag, shortDate } from '@/lib/exit-reason'
+import type { StoryData, StoryExit, StoryPileCard, StoryReuseFan } from '@/lib/story-data'
 
 export interface StoryProps {
   data: StoryData
@@ -20,13 +21,56 @@ function Reveal({ children, className = '' }: { children: React.ReactNode; class
   return <div ref={ref} data-revealed={revealed} className={`reveal ${className}`}>{children}</div>
 }
 
-// Fixed pseudo-random drift per chip (deterministic, no Math.random in render).
-const CHIP_POS = [
-  [8, 14], [62, 10], [80, 30], [18, 70], [70, 78], [40, 20], [6, 44], [86, 58], [30, 86], [55, 62],
+// Card pile around the headline: [left %, top %, rotate deg, scale, opacity].
+// Fixed values (deterministic); the centre column stays clear for the text.
+const PILE_POS: [number, number, number, number, number][] = [
+  [2, 7, -7, 0.92, 0.7], [22, 2, 4, 0.82, 0.5], [68, 3, -4, 0.86, 0.55], [84, 10, 6, 0.96, 0.75],
+  [0, 40, 5, 0.86, 0.55], [85, 42, -6, 0.9, 0.65],
+  [3, 73, -4, 0.96, 0.75], [20, 86, 6, 0.8, 0.45], [67, 85, -5, 0.84, 0.5], [83, 74, 4, 0.92, 0.7],
 ]
 
-function HeroBeat({ total, weeklyCapacityHours, titles, onSkip, reducedMotion }: {
-  total: number; weeklyCapacityHours: number; titles: string[]; onSkip: () => void; reducedMotion: boolean
+function HeroCard({ card, i, reducedMotion }: { card: StoryPileCard; i: number; reducedMotion: boolean }) {
+  const [left, top, r, sc, o] = PILE_POS[i % PILE_POS.length]
+  const style = {
+    left: `${left}%`, top: `${top}%`,
+    ['--r' as string]: `${r}deg`, ['--s' as string]: sc, ['--o' as string]: o,
+    ['--d' as string]: `${200 + i * 90}ms`,
+  } as React.CSSProperties
+  const floatStyle = {
+    ['--fx' as string]: `${i % 2 ? -10 : 12}px`, ['--fy' as string]: `${i % 3 ? 14 : -12}px`,
+    ['--fd' as string]: `${7 + (i * 3) % 6}s`, ['--fdelay' as string]: `${1.2 + i * 0.09}s`,
+  } as React.CSSProperties
+  return (
+    <div className={`hero-card absolute w-[210px] ${reducedMotion ? '' : 'hero-card-anim'}`} style={style}>
+      <div className={reducedMotion ? '' : 'hero-float'} style={floatStyle}>
+        <div className="rounded-xl border border-border bg-card/90 p-3.5">
+          <p className="truncate text-[13px] font-semibold text-foreground">{card.title}</p>
+          <p className="mt-1.5 flex items-center justify-between text-[12px] text-muted-foreground tabular-nums">
+            <span>{card.deadline ? `due ${shortDate(card.deadline)}` : 'no deadline'}</span>
+            <span>~{card.effortHours} h</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Stat({ value, unit, label }: { value: number; unit?: string; label: string }) {
+  return (
+    <div className="flex flex-col items-center px-8">
+      <p className="text-[56px] font-semibold leading-none tracking-[-0.03em] tabular-nums">
+        {value}{unit && <span className="ml-1 text-[28px] font-medium text-muted-foreground">{unit}</span>}
+      </p>
+      <p className="mt-2 text-[13px] font-medium uppercase tracking-[0.06em] text-muted-foreground">{label}</p>
+    </div>
+  )
+}
+
+const LINE_1 = ['Too', 'many', 'opportunities.']
+const LINE_2 = ['Too', 'little', 'time.']
+
+function HeroBeat({ data, onOpenPlanner, onSeeHow, reducedMotion }: {
+  data: StoryData; onOpenPlanner: () => void; onSeeHow: () => void; reducedMotion: boolean
 }) {
   const [scrolled, setScrolled] = useState(false)
   useEffect(() => {
@@ -34,34 +78,47 @@ function HeroBeat({ total, weeklyCapacityHours, titles, onSkip, reducedMotion }:
     window.addEventListener('scroll', on, { passive: true })
     return () => window.removeEventListener('scroll', on)
   }, [])
+  const total = useCountUp(data.total, 900, 900, reducedMotion)
+  const work = useCountUp(data.totalEffortHours, 1300, 1000, reducedMotion)
+  const weekly = useCountUp(data.weeklyCapacityHours, 900, 1100, reducedMotion)
+  // The gradient sits on each word: background-clip text does not reach transformed children.
+  const word = (w: string, i: number, gradient = false) => (
+    <span key={`${w}-${i}`} className={`inline-block ${gradient ? 'hero-gradient' : ''} ${reducedMotion ? '' : 'hero-word'}`} style={{ ['--d' as string]: `${i * 80}ms` } as React.CSSProperties}>
+      {w}&nbsp;
+    </span>
+  )
   return (
     <section className={`story-hero ${BEAT} text-center`} aria-labelledby="beat-0">
       <div className="fog-layer fog-a" aria-hidden="true" />
       <div className="fog-layer fog-b" aria-hidden="true" />
       <div className="fog-layer fog-c" aria-hidden="true" />
-      <div className="pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(70%_70%_at_50%_50%,transparent_35%,black_80%)]" aria-hidden="true">
-        {titles.slice(0, 10).map((t, i) => (
-          <span
-            key={t}
-            className={`absolute whitespace-nowrap rounded-full border border-border bg-card px-3 py-1 text-[13px] opacity-25 ${reducedMotion ? '' : 'drift-chip'}`}
-            style={{
-              left: `${CHIP_POS[i % CHIP_POS.length][0]}%`, top: `${CHIP_POS[i % CHIP_POS.length][1]}%`,
-              ['--drift-dur' as string]: `${30 + (i * 7) % 16}s`,
-              ['--drift-x' as string]: `${i % 2 ? -36 : 44}px`,
-              ['--drift-y' as string]: `${i % 3 ? 20 : -28}px`,
-            }}
-          >{t}</span>
-        ))}
+      <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+        {data.pile.slice(0, PILE_POS.length).map((c, i) => <HeroCard key={c.id} card={c} i={i} reducedMotion={reducedMotion} />)}
       </div>
-      <h1 id="beat-0" className={`${DISPLAY} max-w-[720px]`}>Too many opportunities. Too little time.</h1>
-      <p className={`${COUNTER} mt-12`}>{total}</p>
-      <p className="mt-3 text-[15px] text-muted-foreground tabular-nums">opportunities on your list · {weeklyCapacityHours} h a week to spend</p>
-      <p className="mt-6 text-[18px]">For students juggling more opportunities than hours.</p>
-      <div className="mt-10 flex items-center gap-3">
-        <Button variant="outline" onClick={onSkip}>Skip to planner</Button>
+
+      <h1 id="beat-0" className="max-w-[880px]">
+        <span className="block text-[60px] font-semibold leading-[1.02] tracking-[-0.03em]">{LINE_1.map((w, i) => word(w, i))}</span>
+        <span className="block pb-2 text-[84px] font-semibold leading-[1.02] tracking-[-0.035em]">{LINE_2.map((w, i) => word(w, i + 3, true))}</span>
+      </h1>
+
+      <div className={`mt-12 flex items-stretch divide-x divide-border ${reducedMotion ? '' : 'hero-rise'}`} style={{ ['--d' as string]: '700ms' } as React.CSSProperties}>
+        <Stat value={total} label="opportunities" />
+        <Stat value={work} unit="h" label="of work, estimated" />
+        <Stat value={weekly} unit="h" label="a week to spend" />
       </div>
+      <p className={`mt-8 text-[18px] ${reducedMotion ? '' : 'hero-rise'}`} style={{ ['--d' as string]: '900ms' } as React.CSSProperties}>
+        For students juggling more opportunities than hours.
+      </p>
+
+      <div className={`mt-10 flex items-center gap-3 ${reducedMotion ? '' : 'hero-rise'}`} style={{ ['--d' as string]: '1100ms' } as React.CSSProperties}>
+        <Button size="lg" className="h-10 px-5 text-[15px]" onClick={onOpenPlanner}>
+          Open the planner <ArrowRight aria-hidden="true" />
+        </Button>
+        <Button size="lg" variant="outline" className="h-10 px-5 text-[15px]" onClick={onSeeHow}>See how it narrows</Button>
+      </div>
+
       <ArrowDown
-        className={`absolute bottom-10 size-5 text-muted-foreground transition-opacity duration-500 ${scrolled ? 'opacity-0' : 'opacity-100'}`}
+        className={`absolute bottom-8 size-5 text-muted-foreground transition-opacity duration-500 ${scrolled ? 'opacity-0' : 'opacity-100'} ${reducedMotion ? '' : 'hero-cue'}`}
         aria-hidden="true"
       />
     </section>
@@ -169,7 +226,12 @@ function HandoffBeat({ onOpenPlanner }: { onOpenPlanner: () => void }) {
 export function Story({ data, onOpenPlanner, reducedMotion }: StoryProps) {
   return (
     <div>
-      <HeroBeat total={data.total} weeklyCapacityHours={data.weeklyCapacityHours} titles={data.titles} onSkip={onOpenPlanner} reducedMotion={reducedMotion} />
+      <HeroBeat
+        data={data}
+        onOpenPlanner={onOpenPlanner}
+        onSeeHow={() => document.getElementById('beat-1')?.closest('section')?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' })}
+        reducedMotion={reducedMotion}
+      />
       <FunnelBeat total={data.total} remaining={data.remaining} exits={data.exits} titles={data.titles} reducedMotion={reducedMotion} />
       {data.reuseFan && <ReuseBeat fan={data.reuseFan} />}
       <HandoffBeat onOpenPlanner={onOpenPlanner} />

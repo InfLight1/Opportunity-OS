@@ -19,11 +19,15 @@ export type StoryReuseFan = {
   targets: { id: string; title: string; matchedTags: Tag[] }[]
 }
 
+export type StoryPileCard = { id: string; title: string; deadline: string; effortHours: number }
+
 export type StoryData = {
   total: number
   remaining: number
   weeklyCapacityHours: number
+  totalEffortHours: number   // sum of every entry's effort estimate (hero hook)
   titles: string[]
+  pile: StoryPileCard[]      // every entry, dataset order (hero card pile)
   exits: StoryExit[]
   reuseFan: StoryReuseFan | null
 }
@@ -77,7 +81,9 @@ export function buildStoryData(
     total: tiered.length,
     remaining: tiered.length - exits.length,
     weeklyCapacityHours: profile.weekly_capacity_hours,
+    totalEffortHours: tiered.reduce((n, t) => n + (t.opportunity.effort_hours > 0 ? t.opportunity.effort_hours : 0), 0),
     titles: tiered.map(t => t.opportunity.title),
+    pile: tiered.map(t => ({ id: t.opportunity.id, title: t.opportunity.title, deadline: t.opportunity.deadline, effortHours: t.opportunity.effort_hours })),
     exits,
     reuseFan: buildReuseFan(tiered, assets),
   }
