@@ -3,7 +3,7 @@ import opps from '../data/opportunities.json'
 import cacheFile from '../data/llm-cache.json'
 import { fixtureProfile } from '../engine/fixtures'
 import type { Opportunity } from '../engine/types'
-import { candidateTitles, checkAskWhy, numbersIn } from './ask-why-check'
+import { candidateTitles, checkAskWhy, numbersIn, wordNumbersIn } from './ask-why-check'
 import { askWhyRequestBody, askWhyUserPrompt, ASK_WHY_SYSTEM, buildAskWhyFacts, cacheKey, hashFacts } from './llm-prompt'
 import { explainWithChain, extractText, type FetchLike } from './llm-provider'
 import { planForForm, profileToFormData } from './profile-model'
@@ -15,8 +15,9 @@ const FORM = profileToFormData(fixtureProfile)
 const { plan, assets } = planForForm(FORM, OPPS, TODAY)
 const PROFILE = { grade: FORM.grade, region: FORM.region, weeklyCapacityHours: 10, busyWeeks: FORM.busy_weeks }
 const tieredOf = (id: string) => plan.tiered_opportunities.find(t => t.opportunity.id === id)!
-const NASA = buildAskWhyFacts(tieredOf('opp-nasa-space-apps'), PROFILE, assets, TODAY)
-const OPENCV = buildAskWhyFacts(tieredOf('opp-opencv-ai'), PROFILE, assets, TODAY)
+const NASA = buildAskWhyFacts(tieredOf('opp-nasa-space-apps'), PROFILE, assets, TODAY, plan.tiered_opportunities)
+const OPENCV = buildAskWhyFacts(tieredOf('opp-opencv-ai'), PROFILE, assets, TODAY, plan.tiered_opportunities)
+const CAC = buildAskWhyFacts(tieredOf('opp-cac'), PROFILE, assets, TODAY, plan.tiered_opportunities)
 
 const GOOD = 'NASA Space Apps Challenge 2026 is Focus because your Tennis Analytics App shows data analysis and python. It takes about 12 h and is due Nov 14.'
 
@@ -30,20 +31,41 @@ describe('buildAskWhyFacts', () => {
       deadline: '2026-11-14',
       deadline_short: 'Nov 14',
       effort_hours: 12,
+      available_hours: 59,
+      weekly_hours: 10,
       matched_tags: ['data analysis', 'python'],
+      missing_tags: [],
+      busy_collision: null,
       projects: ['Tennis Analytics App'],
+      also_counts_for: ['International Machine Learning Competition', 'Congressional App Challenge', 'Cosmo Hacks 2026', 'Global Appathon'],
       lock_reason: null,
     })
     expect(OPENCV.tier).toBe('Not now')
     expect(OPENCV.lock_reason).toBe('Needs 30 h, 29 h available by Oct 26')
+    expect(OPENCV.available_hours).toBe(29)
+  })
+  it('the same facts the rule text uses: collision label, reuse targets (never SKIP ones)', () => {
+    expect(CAC.busy_collision).toBe('Midterms')
+    expect(CAC.also_counts_for).not.toContain('OpenCV AI Competition')
+    expect(CAC.also_counts_for).not.toContain('Congressional App Challenge')
+  })
+  it('closed deadline -> available_hours null', () => {
+    expect(buildAskWhyFacts(tieredOf('opp-au-stem-vgc'), PROFILE, assets, TODAY, plan.tiered_opportunities).available_hours).toBeNull()
+  })
+  it('a faithful three-point answer passes the guard', () => {
+    const answer = 'NASA Space Apps Challenge 2026 is Focus: your Tennis Analytics App shows data analysis and python, nothing is missing, and it is not due in a busy period. It needs about 12 h and you have 59 h before Nov 14 at 10 h a week. The same work also counts for the International Machine Learning Competition, Congressional App Challenge, Cosmo Hacks 2026 and Global Appathon.'
+    expect(checkAskWhy(answer, NASA, TITLES)).toEqual({ ok: true, violations: [] })
   })
 })
 
 describe('prompt', () => {
-  it('system prompt: only these facts, no scores or percentages, under 60 words', () => {
+  it('system prompt: only these facts, no scores or percentages, three points, under 70 words', () => {
     expect(ASK_WHY_SYSTEM).toMatch(/ONLY the facts/)
     expect(ASK_WHY_SYSTEM).toMatch(/Never mention scores, percentages/)
-    expect(ASK_WHY_SYSTEM).toMatch(/under 60 words/)
+    expect(ASK_WHY_SYSTEM).toMatch(/\(1\) why it has this tier.*\(2\) whether the hours fit.*\(3\) if the JSON lists other opportunities/)
+    expect(ASK_WHY_SYSTEM).toMatch(/Never write JSON field names/)
+    expect(ASK_WHY_SYSTEM).toMatch(/under 70 words/)
+    expect(ASK_WHY_SYSTEM).toMatch(/numbers as digits/)
   })
   it('user prompt carries the facts JSON and nothing from the profile beyond it', () => {
     const p = askWhyUserPrompt(NASA)
@@ -82,6 +104,15 @@ describe('checkAskWhy', () => {
     const r = checkAskWhy('It takes about 15 h and is due Nov 14.', NASA, TITLES)
     expect(r.violations).toEqual(['number not in facts: 15'])
   })
+  it('(b) spelled-out numbers are checked too', () => {
+    expect(checkAskWhy('It takes about fifteen hours.', NASA, TITLES).violations).toEqual(['number not in facts: 15'])
+    expect(checkAskWhy('You have fifty-nine hours, about twelve of them needed.', NASA, TITLES).ok).toBe(true)
+    expect(checkAskWhy('One project opens several doors.', NASA, TITLES).ok).toBe(true)
+  })
+  it('wordNumbersIn', () => {
+    expect(wordNumbersIn('six, twenty-nine, Forty five, ten')).toEqual(['6', '29', '45', '10'])
+    expect(wordNumbersIn('someone tends to listen')).toEqual([])
+  })
   it('(b) numbers from the facts and from titles are fine', () => {
     expect(checkAskWhy('Due 2026-11-14, about 12 h.', NASA, TITLES).ok).toBe(true)
   })
@@ -89,6 +120,10 @@ describe('checkAskWhy', () => {
     for (const bad of ['Your score is high.', 'A 90 percent fit.', 'A strong 9% fit.', 'The match meter is full.', 'It scored well.']) {
       expect(checkAskWhy(bad, NASA, TITLES).ok).toBe(false)
     }
+  })
+  it('(d) rejects echoed JSON field names', () => {
+    expect(checkAskWhy('Your 12 effort_hours fit within 59 available_hours.', NASA, TITLES).violations).toEqual(['field name: effort_hours'])
+    expect(checkAskWhy('It is well-known and up-to-date.', NASA, TITLES).ok).toBe(true)
   })
   it('empty text is rejected', () => {
     expect(checkAskWhy('  ', NASA, TITLES).ok).toBe(false)

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { X } from 'lucide-react'
+import { ChevronRight, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 // Seam (DESIGN-BRIEF s6): template text renders first; an LLM rewrite that
@@ -35,8 +35,17 @@ export function AskWhy({ opportunityId, title, templateText, llmText = null, sta
         </div>
         <p className="max-w-[68ch] text-[15px] leading-[1.55]" aria-live="polite">{useLlm ? llmText : templateText}</p>
         <p className="text-[12px] text-muted-foreground">
-          {useLlm ? 'Plain-language version, checked against the rules above.' : status === 'loading' ? 'From the rules. A plain-language version is loading.' : 'From the rules. Every fact here comes from the engine.'}
+          {useLlm ? 'Plain-language version, checked against the rules.' : status === 'loading' ? 'From the rules. A plain-language version is loading.' : 'From the rules. Every fact here comes from the engine.'}
         </p>
+        {useLlm && (
+          <details className="group rounded-lg border border-border">
+            <summary className="flex cursor-pointer list-none items-center gap-1.5 px-3 py-2 text-[13px] text-muted-foreground hover:text-foreground">
+              <ChevronRight className="size-4 transition-transform group-open:rotate-90" aria-hidden="true" />
+              Exact rule details
+            </summary>
+            <p className="max-w-[68ch] px-3 pb-3 text-[15px] leading-[1.55] text-muted-foreground">{templateText}</p>
+          </details>
+        )}
       </div>
     </dialog>
   )
