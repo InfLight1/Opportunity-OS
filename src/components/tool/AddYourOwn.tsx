@@ -57,7 +57,7 @@ export function AddYourOwn({ draft, intakeMode = 'manual', llmAvailable = false,
   }
 
   return (
-    <section id="add-section" aria-labelledby="add-own" className="scroll-mt-20 space-y-6">
+    <section id="add-section" aria-labelledby="add-own" className="space-y-6">
       <SectionHeader id="add-own" eyebrow="Your list" title="Add your own" description="Found something not on the list? The same rules check it before it joins your plan." />
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-4 rounded-xl border border-border bg-card p-5">

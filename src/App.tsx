@@ -230,7 +230,7 @@ export function App() {
     <div className="min-h-screen bg-background text-foreground">
       <Header mode={mode} onToggleMode={switchMode} onOpenProfile={openProfile} />
       {mode === 'story' && <Story data={storyData} onOpenPlanner={openPlanner} reducedMotion={reducedMotion} />}
-      <main id="tool" className="mx-auto max-w-[1120px] scroll-mt-14 space-y-16 px-8 py-12">
+      <main id="tool" className="mx-auto max-w-[1120px] space-y-16 px-8 py-12">
         <section aria-labelledby="tool-heading" className="space-y-4">
           <div>
             <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground tabular-nums">Today · {shortDate(today)}</p>
@@ -240,7 +240,7 @@ export function App() {
           <PlanSummary summary={summary} />
           <ThisWeekStrip week={thisWeek} nextAction={nextAction} />
         </section>
-        <section id="opportunities" aria-labelledby="opps" className="scroll-mt-20 space-y-6">
+        <section id="opportunities" aria-labelledby="opps" className="space-y-6">
           <SectionHeader
             id="opps"
             eyebrow="Sorted by fixed rules"
