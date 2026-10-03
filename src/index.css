@@ -176,3 +176,46 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* --- Story hero fog (DESIGN-BRIEF s1): CSS layers only, no blur, no canvas --- */
+.story-hero { position: relative; isolation: isolate; overflow: hidden; }
+.fog-layer {
+  position: absolute; inset: -20%; z-index: -1; pointer-events: none;
+  will-change: transform;
+}
+.fog-a {
+  background:
+    radial-gradient(40% 35% at 30% 40%, color-mix(in srgb, var(--fog-1) 10%, transparent), transparent 70%),
+    radial-gradient(30% 30% at 70% 60%, color-mix(in srgb, var(--fog-2) 8%, transparent), transparent 70%);
+  animation: fog-drift-a 64s ease-in-out infinite alternate;
+}
+.fog-b {
+  background:
+    radial-gradient(35% 40% at 65% 30%, color-mix(in srgb, var(--fog-2) 9%, transparent), transparent 70%),
+    radial-gradient(45% 30% at 25% 75%, color-mix(in srgb, var(--fog-3) 14%, transparent), transparent 70%);
+  animation: fog-drift-b 83s ease-in-out infinite alternate;
+}
+.fog-c {
+  background: radial-gradient(50% 45% at 50% 50%, color-mix(in srgb, var(--fog-3) 10%, transparent), transparent 75%);
+  animation: fog-drift-c 47s ease-in-out infinite alternate;
+}
+@keyframes fog-drift-a { from { transform: translate3d(-4%, -2%, 0) scale(1); } to { transform: translate3d(5%, 3%, 0) scale(1.08); } }
+@keyframes fog-drift-b { from { transform: translate3d(4%, 2%, 0) scale(1.05); } to { transform: translate3d(-5%, -3%, 0) scale(1); } }
+@keyframes fog-drift-c { from { transform: translate3d(0, 4%, 0); } to { transform: translate3d(0, -4%, 0) scale(1.1); } }
+
+.drift-chip { animation: chip-drift var(--drift-dur, 36s) linear infinite alternate; }
+@keyframes chip-drift { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(var(--drift-x, 40px), var(--drift-y, -24px), 0); } }
+
+.funnel-card { transition: opacity 360ms ease, transform 360ms ease; }
+.funnel-card[data-out="true"] { transform: translateY(16px); }
+.funnel-card[data-out="true"] .funnel-title { opacity: 0.35; }
+.funnel-chip { opacity: 0; transition: opacity 360ms ease; }
+.funnel-card[data-out="true"] .funnel-chip { opacity: 1; }
+
+.thread-draw { stroke-dasharray: 1000; stroke-dashoffset: 1000; transition: stroke-dashoffset 700ms ease-out; }
+[data-revealed="true"] .thread-draw { stroke-dashoffset: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fog-layer, .drift-chip { animation: none !important; }
+  .thread-draw { stroke-dashoffset: 0; transition: none; }
+}
