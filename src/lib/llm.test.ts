@@ -55,6 +55,8 @@ describe('prompt', () => {
     const b = askWhyRequestBody(NASA) as { contents: { parts: { text: string }[] }[]; systemInstruction: unknown }
     expect(b.contents[0].parts[0].text).toContain('NASA Space Apps Challenge 2026')
     expect(b.systemInstruction).toBeDefined()
+    expect((askWhyRequestBody(NASA) as { generationConfig: Record<string, unknown> }).generationConfig.thinkingConfig).toEqual({ thinkingLevel: 'minimal' })
+    expect((askWhyRequestBody(NASA, false) as { generationConfig: Record<string, unknown> }).generationConfig.thinkingConfig).toBeUndefined()
   })
   it('hash is stable, 8 hex chars, and changes with the facts', () => {
     expect(hashFacts(NASA)).toMatch(/^[0-9a-f]{8}$/)
@@ -124,23 +126,96 @@ describe('explainWithChain', () => {
     expect(r.violations.some(v => v.startsWith('live: banned word'))).toBe(true)
   })
 
-  it('HTTP error, thrown fetch and empty body fall through', async () => {
-    const http500: FetchLike = async () => ({ ok: false, status: 500, json: async () => ({}) })
-    const thrown: FetchLike = async () => { throw new Error('network') }
-    const empty: FetchLike = async () => ({ ok: true, status: 200, json: async () => ({ candidates: [] }) })
-    for (const f of [http500, thrown, empty]) {
-      expect((await explainWithChain({ ...base, fetchFn: f })).source).toBe('template')
+  // --- failure paths: each must end in the template with a stated reason ---
+  const run = (fetchFn: FetchLike, timeoutMs?: number) => explainWithChain({ ...base, fetchFn, timeoutMs })
+
+  it('fetch rejects -> template', async () => {
+    const r = await run(async () => { throw new Error('network down') })
+    expect(r.source).toBe('template')
+    expect(r.violations).toEqual(['live: fetch failed: network down'])
+  })
+
+  it('non-2xx from the proxy -> template', async () => {
+    const r = await run(async () => ({ ok: false, status: 500, json: async () => ({ error: { message: 'boom' } }) }))
+    expect(r.source).toBe('template')
+    expect(r.violations).toEqual(['live: HTTP 500'])
+  })
+
+  it('JSON with no text (no candidates, empty parts, body not JSON) -> template', async () => {
+    const bodies: FetchLike[] = [
+      async () => ({ ok: true, status: 200, json: async () => ({ candidates: [] }) }),
+      async () => ({ ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [] } }] }) }),
+      async () => ({ ok: true, status: 200, json: async () => { throw new SyntaxError('bad json') } }),
+    ]
+    for (const f of bodies) {
+      const r = await run(f)
+      expect(r.source).toBe('template')
+      expect(r.violations).toEqual(['live: no answer text'])
     }
   })
 
-  it('timeout falls through (and aborts the request)', async () => {
+  it('only thought parts (budget spent thinking, MAX_TOKENS) -> template', async () => {
+    const r = await run(async () => ({ ok: true, status: 200, json: async () => ({
+      candidates: [{ finishReason: 'MAX_TOKENS', content: { parts: [{ text: 'Thinking about 99 scores...', thought: true }] } }],
+    }) }))
+    expect(r.source).toBe('template')
+    expect(r.violations).toEqual(['live: no answer text'])
+  })
+
+  it('thought parts are dropped; the answer part alone is checked and shown', async () => {
+    const r = await run(async () => ({ ok: true, status: 200, json: async () => ({
+      candidates: [{ content: { parts: [{ text: 'Plan: mention 99 percent.', thought: true }, { text: GOOD }] } }],
+    }) }))
+    expect(r).toEqual({ text: GOOD, source: 'live', key: cacheKey(NASA), violations: [] })
+  })
+
+  it('timeout fires (and aborts) -> template', async () => {
     let aborted = false
     const hang: FetchLike = (_url, init) => new Promise((_res, rej) => {
       init?.signal?.addEventListener('abort', () => { aborted = true; rej(new Error('aborted')) })
     })
-    const r = await explainWithChain({ ...base, fetchFn: hang, timeoutMs: 20 })
+    const r = await run(hang, 20)
     expect(r.source).toBe('template')
+    expect(r.violations).toEqual(['live: timeout after 20 ms'])
     expect(aborted).toBe(true)
+  })
+
+  it('timeout still ends the chain when fetch ignores the abort signal', async () => {
+    const r = await run(() => new Promise(() => {}), 20)
+    expect(r.source).toBe('template')
+    expect(r.violations).toEqual(['live: timeout after 20 ms'])
+  })
+
+  it('first request asks for minimal thinking; HTTP 400 retries once without thinkingConfig', async () => {
+    const bodies: { generationConfig: Record<string, unknown> }[] = []
+    let calls = 0
+    const f: FetchLike = async (url, init) => {
+      bodies.push(JSON.parse(String(init?.body)))
+      calls++
+      return calls === 1
+        ? { ok: false, status: 400, json: async () => ({ error: { message: 'Thinking level is not supported for this model.' } }) }
+        : okFetch(GOOD)(url, init)
+    }
+    const r = await run(f)
+    expect(r.source).toBe('live')
+    expect(bodies[0].generationConfig.thinkingConfig).toEqual({ thinkingLevel: 'minimal' })
+    expect(bodies[1].generationConfig.thinkingConfig).toBeUndefined()
+  })
+
+  it('HTTP 400 twice -> template, no third request', async () => {
+    let calls = 0
+    const r = await run(async () => { calls++; return { ok: false, status: 400, json: async () => ({}) } })
+    expect(r.violations).toEqual(['live: HTTP 400'])
+    expect(calls).toBe(2)
+  })
+
+  it('never rejects, even on an unexpected error inside the chain', async () => {
+    const circular = { ...NASA } as Record<string, unknown>
+    circular.self = circular
+    const r = await explainWithChain({ ...base, facts: circular as unknown as typeof NASA, fetchFn: okFetch(GOOD) })
+    expect(r.source).toBe('template')
+    expect(r.text).toBe('TEMPLATE')
+    expect(r.violations[0]).toMatch(/^chain error:/)
   })
 
   it('cached answer used when live fails; cached answers are guarded too', async () => {
@@ -159,6 +234,7 @@ describe('explainWithChain', () => {
     expect(extractText({ candidates: [{ content: { parts: [{ text: 'a ' }, { text: 'b' }] } }] })).toBe('a b')
     expect(extractText(null)).toBeNull()
     expect(extractText({ candidates: [{ content: { parts: [{ text: '  ' }] } }] })).toBeNull()
+    expect(extractText({ candidates: [{ content: { parts: [{ text: 'hidden', thought: true }, { text: 'shown' }] } }] })).toBe('shown')
   })
 
   it('shipped cache file has the documented shape', () => {

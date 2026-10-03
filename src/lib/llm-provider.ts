@@ -3,8 +3,9 @@ import { askWhyRequestBody, cacheKey, type AskWhyFacts } from './llm-prompt'
 
 // --- Ask why provider chain (AGENTS.md: live -> cached answers -> templates) ---
 // fetch is injected so tests can mock it. Any failure, timeout or guard
-// violation falls through to the next tier. Never touches tier, schedule,
-// reuse, gaps or next action: it only returns text for one card.
+// violation falls through to the next tier, and explainWithChain never
+// rejects, so the UI status always ends in ready or fallback. It never
+// touches tier, schedule, reuse, gaps or next action: it only returns text.
 
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Pick<Response, 'ok' | 'status' | 'json'>>
 
@@ -27,32 +28,50 @@ export type ChainOptions = {
 export const LLM_ENDPOINT = '/api/llm/generate'
 export const LLM_TIMEOUT_MS = 8000
 
-/** Text from a Gemini generateContent response, or null. */
+type Part = { text?: unknown; thought?: unknown }
+
+/** Answer text from a Gemini generateContent response (thought parts dropped), or null. */
 export function extractText(body: unknown): string | null {
-  const parts = (body as { candidates?: { content?: { parts?: { text?: unknown }[] } }[] } | null)?.candidates?.[0]?.content?.parts
+  const parts = (body as { candidates?: { content?: { parts?: Part[] } }[] } | null)?.candidates?.[0]?.content?.parts
   if (!Array.isArray(parts)) return null
-  const text = parts.map(p => (typeof p.text === 'string' ? p.text : '')).join('').trim()
+  const text = parts
+    .filter(p => p && p.thought !== true)
+    .map(p => (typeof p.text === 'string' ? p.text : ''))
+    .join('')
+    .trim()
   return text || null
 }
 
-async function liveCall(fetchFn: FetchLike, endpoint: string, facts: AskWhyFacts, timeoutMs: number): Promise<string | null> {
+type LiveOutcome = { text: string } | { error: string }
+
+async function postOnce(fetchFn: FetchLike, endpoint: string, body: unknown, signal: AbortSignal): Promise<{ status: number; ok: boolean; json: unknown }> {
+  const res = await fetchFn(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal,
+  })
+  let json: unknown
+  try { json = await res.json() } catch { json = null }
+  return { status: res.status, ok: res.ok, json }
+}
+
+/** One live attempt (plus one retry without thinkingConfig on HTTP 400), bounded by timeoutMs overall. */
+async function liveCall(fetchFn: FetchLike, endpoint: string, facts: AskWhyFacts, timeoutMs: number): Promise<LiveOutcome> {
   const ctrl = new AbortController()
   let timer: ReturnType<typeof setTimeout> | undefined
-  const timeout = new Promise<null>(resolve => {
-    timer = setTimeout(() => { ctrl.abort(); resolve(null) }, timeoutMs)
+  const timeout = new Promise<LiveOutcome>(resolve => {
+    timer = setTimeout(() => { ctrl.abort(); resolve({ error: `timeout after ${timeoutMs} ms` }) }, timeoutMs)
   })
-  const call = (async () => {
+  const call = (async (): Promise<LiveOutcome> => {
     try {
-      const res = await fetchFn(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(askWhyRequestBody(facts)),
-        signal: ctrl.signal,
-      })
-      if (!res.ok) return null
-      return extractText(await res.json())
-    } catch {
-      return null
+      let r = await postOnce(fetchFn, endpoint, askWhyRequestBody(facts, true), ctrl.signal)
+      if (r.status === 400) r = await postOnce(fetchFn, endpoint, askWhyRequestBody(facts, false), ctrl.signal)
+      if (!r.ok) return { error: `HTTP ${r.status}` }
+      const text = extractText(r.json)
+      return text === null ? { error: 'no answer text' } : { text }
+    } catch (e) {
+      return { error: `fetch failed: ${e instanceof Error ? e.message : String(e)}` }
     }
   })()
   try {
@@ -62,18 +81,18 @@ async function liveCall(fetchFn: FetchLike, endpoint: string, facts: AskWhyFacts
   }
 }
 
-export async function explainWithChain(opts: ChainOptions): Promise<ChainResult> {
+async function chain(opts: ChainOptions): Promise<ChainResult> {
   const key = cacheKey(opts.facts)
   const violations: string[] = []
 
   if (opts.fetchFn) {
-    const text = await liveCall(opts.fetchFn, opts.endpoint ?? LLM_ENDPOINT, opts.facts, opts.timeoutMs ?? LLM_TIMEOUT_MS)
-    if (text !== null) {
-      const check = checkAskWhy(text, opts.facts, opts.datasetTitles)
-      if (check.ok) return { text, source: 'live', key, violations: [] }
+    const live = await liveCall(opts.fetchFn, opts.endpoint ?? LLM_ENDPOINT, opts.facts, opts.timeoutMs ?? LLM_TIMEOUT_MS)
+    if ('text' in live) {
+      const check = checkAskWhy(live.text, opts.facts, opts.datasetTitles)
+      if (check.ok) return { text: live.text, source: 'live', key, violations: [] }
       violations.push(...check.violations.map(v => `live: ${v}`))
     } else {
-      violations.push('live: no answer')
+      violations.push(`live: ${live.error}`)
     }
   }
 
@@ -85,4 +104,13 @@ export async function explainWithChain(opts: ChainOptions): Promise<ChainResult>
   }
 
   return { text: opts.templateText, source: 'template', key, violations }
+}
+
+/** Never rejects: any unexpected error yields the template. */
+export async function explainWithChain(opts: ChainOptions): Promise<ChainResult> {
+  try {
+    return await chain(opts)
+  } catch (e) {
+    return { text: opts.templateText, source: 'template', key: '', violations: [`chain error: ${e instanceof Error ? e.message : String(e)}`] }
+  }
 }
