@@ -11,7 +11,7 @@ Too many opportunities, too little time. App narrows a curated list into a focus
 - Tags = only matching mechanism. No semantic/NL matching.
 
 ## Types (src/engine/types.ts)
-Profile, Opportunity, Asset, Evidence, MatchResult, Plan, BusyPeriod. Tags typed from taxonomy below, never free `string`. Shapes locked in the file itself — update this doc before redesigning them.
+Profile, Opportunity, Asset, MatchResult, Plan, BusyPeriod. Tags typed from taxonomy below, never free `string`. Shapes locked in the file itself — update this doc before redesigning them.
 
 New types (scheduler and commits; the milestone that adds each one puts it in `types.ts` with these fields, and updates this list first if a field changes):
 - `WeekBucket` — `{ index: number; start: string; end: string; busy_days: number; capacity_hours: number }` (rolling 7-day bucket, ISO dates, `end` inclusive).

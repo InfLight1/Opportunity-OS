@@ -97,13 +97,6 @@ export interface MatchResult {
   reason: string;
 }
 
-// ─── ReuseLink ───────────────────────────────────────────────────────────────
-
-export type ReuseLink = {
-  opportunity_id: string;
-  asset_ids: string[];
-};
-
 // ─── SharedGap ───────────────────────────────────────────────────────────────
 
 export type SharedGap = {
@@ -169,11 +162,6 @@ export type TieredOpportunity = {
   gap_count: number;
   has_busy_week_collision: boolean;
   eligible: boolean;
-};
-
-export type EligibilityResult = {
-  eligible: boolean;
-  reason: string;
 };
 
 export type Plan = {
