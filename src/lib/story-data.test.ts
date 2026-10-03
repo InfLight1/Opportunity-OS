@@ -56,10 +56,10 @@ describe('buildStoryData on the demo profile (capacity 10, 2026-10-03)', () => {
   it('exit reasons per check (grade, closed, region, runway)', () => {
     const reason = (id: string) => story.exits.find(e => e.id === id)?.reason
     expect(reason('opp-regeneron-sts')).toBe('Grade 12 only')
-    expect(reason('opp-3m-ysc')).toBe('Grades 5-8 only')
+    expect(reason('opp-3m-ysc')).toBe('Grade 5-8 only')
     expect(reason('opp-au-stem-vgc')).toBe('Closed Sep 9')
     expect(reason('opp-ksu-hspc')).toBe('Manhattan, KS, US only')
-    expect(reason('opp-opencv-ai')).toBe('Needs 30 h, 29 h left')
+    expect(reason('opp-opencv-ai')).toBe('Needs 30 h, 29 h available by Oct 26')
   })
 
   it('reuse fan: tennis project with pursuable targets only, labelled with matched tags', () => {
@@ -101,7 +101,7 @@ describe('shortExitReason edge cases', () => {
   })
 
   it('order: grade is reported before an expired deadline', () => {
-    expect(shortExitReason(skipWith({ grade_range: { min: 11, max: 12 }, deadline: '2026-09-01' }), profile, TODAY)).toBe('Grades 11-12 only')
+    expect(shortExitReason(skipWith({ grade_range: { min: 11, max: 12 }, deadline: '2026-09-01' }), profile, TODAY)).toBe('Grade 11-12 only')
   })
 })
 

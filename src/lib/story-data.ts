@@ -1,5 +1,5 @@
 import type { Asset, BusyPeriod, Tag, TieredOpportunity } from '../engine/types'
-import { availableHours } from '../engine/buckets'
+import { formatExitReason, heldTagsOf } from './exit-reason'
 
 // --- Story data (Plan s6 beats 0, 1, 3) ---
 // Live numbers for the Story; copy stays hand-written in the components.
@@ -28,49 +28,17 @@ export type StoryData = {
   reuseFan: StoryReuseFan | null
 }
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+export { shortDate, humanTag } from './exit-reason'
 
-/** '2026-09-09' -> 'Sep 9' (no Intl, deterministic). */
-export function shortDate(iso: string): string {
-  const [, m, d] = iso.split('-').map(Number)
-  return `${MONTHS[m - 1]} ${d}`
-}
-
-/** 'research-writing' -> 'research writing'. */
-export function humanTag(tag: Tag): string {
-  return tag.replace('submission-format:', '').replace(/-/g, ' ')
-}
-
-function heldTags(assets: Asset[]): Set<Tag> {
-  const held = new Set<Tag>()
-  for (const a of assets) for (const t of a.tags) held.add(t)
-  return held
-}
-
-/**
- * One short line for a SKIP card, checked in the engine's order: grade,
- * deadline, location, prerequisites, no required-tag match, runway.
- * Returns null for items that are not SKIP.
- */
+/** One short line for a SKIP card (see exit-reason.ts); null when not SKIP. */
 export function shortExitReason(t: TieredOpportunity, profile: StoryProfile, today: string): string | null {
-  if (t.tier !== 'SKIP') return null
-  const o = t.opportunity
-  const { min, max } = o.grade_range
-  if (profile.grade < min || profile.grade > max) {
-    return min === max ? `Grade ${min} only` : `Grades ${min}-${max} only`
-  }
-  if (o.deadline < today) return `Closed ${shortDate(o.deadline)}`
-  if (!o.location.remote_ok && o.location.region && o.location.region !== profile.region) {
-    return `${o.location.region} only`
-  }
-  const held = heldTags(profile.assets)
-  const missingPrereqs = o.prerequisites.filter(p => !held.has(p))
-  if (missingPrereqs.length > 0) return `Needs ${missingPrereqs.map(humanTag).join(', ')}`
-  if (t.match.matched_required.length === 0) {
-    return o.required_tags.length > 0 ? `Needs ${o.required_tags.map(humanTag).join(', ')}` : 'No matching project'
-  }
-  const available = availableHours(o.deadline, today, profile.weekly_capacity_hours, profile.busy_weeks)
-  return `Needs ${o.effort_hours} h, ${available} h left`
+  return formatExitReason(t, {
+    grade: profile.grade,
+    region: profile.region,
+    heldTags: heldTagsOf(profile.assets),
+    weeklyCapacityHours: profile.weekly_capacity_hours,
+    busyWeeks: profile.busy_weeks,
+  }, today)
 }
 
 /** The asset with the most pursuable (FOCUS/CONSIDER) supports; ties keep asset order. */
