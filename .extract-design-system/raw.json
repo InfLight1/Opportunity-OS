@@ -1,0 +1,1666 @@
+{
+  "url": "https://www.notion.com/",
+  "extractedAt": "2026-09-28T22:48:58.879Z",
+  "siteName": "Notion",
+  "logo": {
+    "source": "svg",
+    "url": "https://www.notion.com/product",
+    "width": 33,
+    "height": 34,
+    "safeZone": {
+      "top": 0,
+      "right": 0,
+      "bottom": 0,
+      "left": 0
+    },
+    "background": "rgb(255, 255, 255)"
+  },
+  "favicons": [
+    {
+      "type": "icon",
+      "url": "https://www.notion.com/front-static/favicon.ico",
+      "sizes": null
+    },
+    {
+      "type": "apple-touch-icon",
+      "url": "https://www.notion.com/front-static/logo-ios.png",
+      "sizes": null
+    },
+    {
+      "type": "apple-touch-icon",
+      "url": "https://www.notion.com/front-static/logo-ios.png",
+      "sizes": null
+    },
+    {
+      "type": "og:image",
+      "url": "https://www.notion.com/front-static/meta/teams-and-agents.jpg",
+      "sizes": null
+    },
+    {
+      "type": "twitter:image",
+      "url": "https://www.notion.com/front-static/meta/teams-and-agents.jpg",
+      "sizes": null
+    }
+  ],
+  "colors": {
+    "semantic": {
+      "secondary": "rgba(0, 0, 0, 0)",
+      "primary": "rgb(255, 255, 255)"
+    },
+    "palette": [
+      {
+        "color": "rgba(0, 0, 0, 0.95)",
+        "normalized": "#000000",
+        "count": 698,
+        "confidence": "high",
+        "sources": [
+          "globalnavigation-module-scss-m",
+          "homepageheroteamsandagents-mod",
+          "semantictypography-module-scss"
+        ],
+        "lch": "lch(0% 0 0)",
+        "oklch": "oklch(0% 0 0)"
+      },
+      {
+        "color": "rgb(255, 255, 255)",
+        "normalized": "#ffffff",
+        "count": 160,
+        "confidence": "high",
+        "sources": [
+          "semantictypography-module-scss",
+          "homepagelogowall-module-scss-m",
+          "socialproofv2-module-scss-modu"
+        ],
+        "lch": "lch(100% 0 158.2)",
+        "oklch": "oklch(100% 0 89.88)"
+      },
+      {
+        "color": "rgb(163, 158, 152)",
+        "normalized": "#a39e98",
+        "count": 90,
+        "confidence": "high",
+        "sources": [],
+        "lch": "lch(65.36% 3.84 79.35)",
+        "oklch": "oklch(70.17% 0.01 72.62)"
+      },
+      {
+        "color": "rgb(97, 93, 89)",
+        "normalized": "#615d59",
+        "count": 30,
+        "confidence": "high",
+        "sources": [],
+        "lch": "lch(39.73% 2.97 74.48)",
+        "oklch": "oklch(48.08% 0.008 67.63)"
+      },
+      {
+        "color": "rgb(9, 127, 232)",
+        "normalized": "#097fe8",
+        "count": 13,
+        "confidence": "medium",
+        "sources": [
+          "semantictypography-module-scss"
+        ],
+        "lch": "lch(53.02% 61.83 279.99)",
+        "oklch": "oklch(59.75% 0.183 253.3)"
+      },
+      {
+        "color": "rgba(0, 0, 0, 0.05)",
+        "normalized": "#000000",
+        "count": 1,
+        "confidence": "medium",
+        "sources": [
+          "hover/focus"
+        ]
+      },
+      {
+        "color": "rgba(0, 0, 0, 0.047)",
+        "normalized": "#000000",
+        "count": 1,
+        "confidence": "medium",
+        "sources": [
+          "hover/focus"
+        ]
+      },
+      {
+        "color": "rgba(0, 0, 0, 0.043)",
+        "normalized": "#000000",
+        "count": 1,
+        "confidence": "medium",
+        "sources": [
+          "hover/focus"
+        ]
+      },
+      {
+        "color": "rgba(0, 0, 0, 0.04)",
+        "normalized": "#000000",
+        "count": 1,
+        "confidence": "medium",
+        "sources": [
+          "hover/focus"
+        ]
+      }
+    ],
+    "cssVariables": {
+      "--tatami-color-orange-300": {
+        "value": "#ffad71",
+        "lch": "lch(77.49% 49.01 60.73)",
+        "oklch": "oklch(81.48% 0.123 56.21)"
+      },
+      "--tatami-color-alpha-black-500": {
+        "value": "#0000008a",
+        "lch": "lch(0% 0 0 / 0.5411764705882353)",
+        "oklch": "oklch(0% 0 0 / 0.5411764705882353)"
+      },
+      "--tatami-color-campaigns-agents-launch-blue-900": {
+        "value": "#02093a",
+        "lch": "lch(4.64% 35.19 297.54)",
+        "oklch": "oklch(18.02% 0.094 265.8)"
+      },
+      "--tatami-color-code-string": {
+        "value": "#14832b",
+        "lch": "lch(47.69% 61.3 141.54)",
+        "oklch": "oklch(53.33% 0.157 145.59)"
+      },
+      "--tatami-color-pink-300": {
+        "value": "#ffb5eb",
+        "lch": "lch(82.01% 38.51 335.16)",
+        "oklch": "oklch(85.86% 0.109 336.78)"
+      },
+      "--tatami-color-background-base-active": {
+        "value": "#0000001a",
+        "lch": "lch(0% 0 0 / 0.10196078431372549)",
+        "oklch": "oklch(0% 0 0 / 0.10196078431372549)"
+      },
+      "--tatami-color-interaction-indicator-selected": {
+        "value": "#0000004d",
+        "lch": "lch(0% 0 0 / 0.30196078431372547)",
+        "oklch": "oklch(0% 0 0 / 0.30196078431372547)"
+      },
+      "--tatami-color-teal-300": {
+        "value": "#83cbc9",
+        "lch": "lch(77.13% 23.67 195.03)",
+        "oklch": "oklch(79.43% 0.072 193.56)"
+      },
+      "--tatami-color-green-200": {
+        "value": "#d0f4d8",
+        "lch": "lch(93.04% 19.42 150.3)",
+        "oklch": "oklch(93.39% 0.053 151.88)"
+      },
+      "--tatami-color-campaigns-dev-platform-dos-white": {
+        "value": "#fff",
+        "lch": "lch(100% 0 158.2)",
+        "oklch": "oklch(100% 0 89.88)"
+      },
+      "--tatami-color-link-primary-text-active": {
+        "value": "#00396b",
+        "lch": "lch(23.63% 34.05 278.05)",
+        "oklch": "oklch(34.25% 0.102 251.82)"
+      },
+      "--text-color-extra-light": {
+        "value": "#0003"
+      },
+      "--tatami-color-green-400": {
+        "value": "#68ce7e",
+        "lch": "lch(75.2% 56.16 146.64)",
+        "oklch": "oklch(77% 0.149 148.92)"
+      },
+      "--tatami-color-brown-300": {
+        "value": "#d9b79f",
+        "lch": "lch(76.75% 18.85 62.75)",
+        "oklch": "oklch(80.29% 0.051 57.12)"
+      },
+      "--tatami-color-yellow-200": {
+        "value": "#ffe4af",
+        "lch": "lch(91.62% 29.34 86.7)",
+        "oklch": "oklch(92.84% 0.074 83.99)"
+      },
+      "--tatami-color-code-number": {
+        "value": "#f64932",
+        "lch": "lch(56.68% 82.11 38.31)",
+        "oklch": "oklch(65.12% 0.213 30.9)"
+      },
+      "--tatami-color-alpha-white-500": {
+        "value": "#ffffff80",
+        "lch": "lch(100% 0 158.2 / 0.5019607843137255)",
+        "oklch": "oklch(100% 0 89.88 / 0.5019607843137255)"
+      },
+      "--tatami-color-badge-mono-text": {
+        "value": "#000",
+        "lch": "lch(0% 0 0)",
+        "oklch": "oklch(0% 0 0)"
+      },
+      "--tatami-color-campaigns-agents-launch-yellow": {
+        "value": "#fefcd5",
+        "lch": "lch(98.23% 19.77 106.52)",
+        "oklch": "oklch(98.28% 0.05 104.87)"
+      },
+      "--tatami-color-gray-800": {
+        "value": "#31302e",
+        "lch": "lch(19.9% 1.44 90.5)",
+        "oklch": "oklch(30.95% 0.004 84.58)"
+      },
+      "--tatami-color-red-200": {
+        "value": "#fdd3cd",
+        "lch": "lch(87.91% 16.17 31.59)",
+        "oklch": "oklch(90.1% 0.048 27.59)"
+      },
+      "--tatami-color-link-secondary-text": {
+        "value": "#00000096",
+        "lch": "lch(0% 0 0 / 0.5882352941176471)",
+        "oklch": "oklch(0% 0 0 / 0.5882352941176471)"
+      },
+      "--tatami-color-pink-900": {
+        "value": "#481034",
+        "lch": "lch(15.47% 31.66 343.43)",
+        "oklch": "oklch(28.38% 0.095 345.35)"
+      },
+      "--tatami-color-campaigns-agents-launch-blue-600": {
+        "value": "#213183",
+        "lch": "lch(24.19% 53.61 296.43)",
+        "oklch": "oklch(35.57% 0.139 269.47)"
+      },
+      "--tatami-color-teal-700": {
+        "value": "#126764",
+        "lch": "lch(39.15% 24.79 192.16)",
+        "oklch": "oklch(46.65% 0.075 191.19)"
+      },
+      "--tatami-color-interaction-control-border-hover": {
+        "value": "#000000f2",
+        "lch": "lch(0% 0 0 / 0.9490196078431372)",
+        "oklch": "oklch(0% 0 0 / 0.9490196078431372)"
+      },
+      "--tatami-color-alpha-white-700": {
+        "value": "#ffffffbf",
+        "lch": "lch(100% 0 158.2 / 0.7490196078431373)",
+        "oklch": "oklch(100% 0 89.88 / 0.7490196078431373)"
+      },
+      "--tatami-color-campaigns-dev-platform-dos-alpha-gray": {
+        "value": "#f6f6fc70",
+        "lch": "lch(97.04% 3.06 290.41 / 0.4392156862745098)",
+        "oklch": "oklch(97.48% 0.008 286.25 / 0.4392156862745098)"
+      },
+      "--tatami-color-background-surface-accent": {
+        "value": "#62aef0",
+        "lch": "lch(68.86% 40.28 263.75)",
+        "oklch": "oklch(72.91% 0.123 246.66)"
+      },
+      "--tatami-color-yellow-500": {
+        "value": "#ffb110",
+        "lch": "lch(77.73% 80.99 77.3)",
+        "oklch": "oklch(81.45% 0.168 76.44)"
+      },
+      "--tatami-color-link-secondary-text-hover": {
+        "value": "#000000bf",
+        "lch": "lch(0% 0 0 / 0.7490196078431373)",
+        "oklch": "oklch(0% 0 0 / 0.7490196078431373)"
+      },
+      "--tatami-color-purple-600": {
+        "value": "#7237ae",
+        "lch": "lch(36.68% 72.41 312.25)",
+        "oklch": "oklch(47.55% 0.181 302.75)"
+      },
+      "--tatami-color-brown-800": {
+        "value": "#654124",
+        "lch": "lch(31.06% 26.86 62.62)",
+        "oklch": "oklch(41.02% 0.066 58.35)"
+      },
+      "--tatami-color-brown-200": {
+        "value": "#ebd5c5",
+        "lch": "lch(86.64% 11.81 64.67)",
+        "oklch": "oklch(88.68% 0.033 58.35)"
+      },
+      "--tatami-color-background-base-focus": {
+        "value": "#0000000d",
+        "lch": "lch(0% 0 0 / 0.050980392156862744)",
+        "oklch": "oklch(0% 0 0 / 0.050980392156862744)"
+      },
+      "--tatami-color-button-secondary-text": {
+        "value": "#005bab",
+        "lch": "lch(38.59% 49.88 280.42)",
+        "oklch": "oklch(47.27% 0.147 253.35)"
+      },
+      "--tatami-color-purple-200": {
+        "value": "#eadbfa",
+        "lch": "lch(89.42% 17.03 309.08)",
+        "oklch": "oklch(91.28% 0.045 307.24)"
+      },
+      "--tatami-color-red-700": {
+        "value": "#b01601",
+        "lch": "lch(37.5% 76.84 41.45)",
+        "oklch": "oklch(48.34% 0.188 30.98)"
+      },
+      "--tatami-color-purple-500": {
+        "value": "#9849e8",
+        "lch": "lch(48.59% 91.5 312.32)",
+        "oklch": "oklch(58.41% 0.228 302.56)"
+      },
+      "--tatami-color-banner": {
+        "value": "#ffffffd9",
+        "lch": "lch(100% 0 158.2 / 0.8509803921568627)",
+        "oklch": "oklch(100% 0 89.88 / 0.8509803921568627)"
+      },
+      "--tatami-color-yellow-400": {
+        "value": "#ffc95e",
+        "lch": "lch(83.89% 59.96 82.29)",
+        "oklch": "oklch(86.41% 0.138 82.16)"
+      },
+      "--tatami-color-alpha-white-200": {
+        "value": "#ffffff1a",
+        "lch": "lch(100% 0 158.2 / 0.10196078431372549)",
+        "oklch": "oklch(100% 0 89.88 / 0.10196078431372549)"
+      },
+      "--tatami-color-transparent": {
+        "value": "#fff0"
+      },
+      "--tatami-color-alpha-white-400": {
+        "value": "#ffffff4d",
+        "lch": "lch(100% 0 158.2 / 0.30196078431372547)",
+        "oklch": "oklch(100% 0 89.88 / 0.30196078431372547)"
+      },
+      "--tatami-color-brown-900": {
+        "value": "#523410",
+        "lch": "lch(24.6% 28.95 70.15)",
+        "oklch": "oklch(35.36% 0.066 67.28)"
+      },
+      "--text-color-dark": {
+        "value": "#111",
+        "lch": "lch(5.06% 0 158.2)",
+        "oklch": "oklch(17.76% 0 89.88)"
+      },
+      "--tatami-color-teal-200": {
+        "value": "#bde6e4",
+        "lch": "lch(88.45% 14.06 194.17)",
+        "oklch": "oklch(89.53% 0.043 192.76)"
+      },
+      "--tatami-color-yellow-800": {
+        "value": "#a16c00",
+        "lch": "lch(49.86% 58.54 76.35)",
+        "oklch": "oklch(57.28% 0.121 75.11)"
+      },
+      "--tatami-color-pink-400": {
+        "value": "#ff83dd",
+        "lch": "lch(71.36% 63.06 336.94)",
+        "oklch": "oklch(77.66% 0.182 338.69)"
+      },
+      "--tatami-color-campaigns-dev-platform-dos-blue": {
+        "value": "#1313ba",
+        "lch": "lch(24.16% 100.05 305.31)",
+        "oklch": "oklch(37.18% 0.237 266.8)"
+      },
+      "--tatami-color-purple-300": {
+        "value": "#d6b6f6",
+        "lch": "lch(78.7% 36.04 310.33)",
+        "oklch": "oklch(82.54% 0.094 307.19)"
+      },
+      "--tatami-color-campaigns-agents-launch-blue-500": {
+        "value": "#394ea3",
+        "lch": "lch(35.91% 52.51 292.46)",
+        "oklch": "oklch(45.5% 0.139 269.68)"
+      },
+      "--tatami-color-text-normal": {
+        "value": "#000000e5",
+        "lch": "lch(0% 0 0 / 0.8980392156862745)",
+        "oklch": "oklch(0% 0 0 / 0.8980392156862745)"
+      },
+      "--tatami-color-yellow-700": {
+        "value": "#c78600",
+        "lch": "lch(60.95% 68.5 76.12)",
+        "oklch": "oklch(66.94% 0.141 74.78)"
+      },
+      "--tatami-color-alpha-white-100": {
+        "value": "#ffffff0d",
+        "lch": "lch(100% 0 158.2 / 0.050980392156862744)",
+        "oklch": "oklch(100% 0 89.88 / 0.050980392156862744)"
+      },
+      "--tatami-color-campaigns-agents-launch-blue-400": {
+        "value": "#455dd3",
+        "lch": "lch(43.94% 70.08 294.83)",
+        "oklch": "oklch(52.8% 0.183 270.24)"
+      },
+      "--tatami-color-campaigns-dev-platform-dos-slate": {
+        "value": "#7171a8",
+        "lch": "lch(49.67% 32.24 294.22)",
+        "oklch": "oklch(57.12% 0.084 283.41)"
+      },
+      "--tatami-color-brown-500": {
+        "value": "#9c7054",
+        "lch": "lch(51.03% 26.36 58.33)",
+        "oklch": "oklch(58.3% 0.069 53.4)"
+      },
+      "--tatami-color-background-surface-accent-soft-hover": {
+        "value": "#93cdfe",
+        "lch": "lch(80.19% 30.53 258.02)",
+        "oklch": "oklch(82.64% 0.092 244.72)"
+      },
+      "--tatami-color-yellow-300": {
+        "value": "#ffd786",
+        "lch": "lch(87.77% 45.16 85.02)",
+        "oklch": "oklch(89.61% 0.109 84.03)"
+      },
+      "--tatami-color-blue-900": {
+        "value": "#002a4f",
+        "lch": "lch(16.6% 26.66 276.02)",
+        "oklch": "oklch(28.14% 0.081 250.51)"
+      },
+      "--tatami-color-brown-400": {
+        "value": "#b18164",
+        "lch": "lch(58.01% 27.35 57.22)",
+        "oklch": "oklch(64.35% 0.072 52.17)"
+      },
+      "--tatami-color-brown-600": {
+        "value": "#885d3d",
+        "lch": "lch(43.36% 28.85 61.43)",
+        "oklch": "oklch(51.69% 0.073 56.95)"
+      },
+      "--tatami-color-text-warning": {
+        "value": "#ff6d00",
+        "lch": "lch(63.51% 88.72 54.23)",
+        "oklch": "oklch(70.49% 0.199 45.77)"
+      },
+      "--tatami-color-campaigns-dev-platform-dos-alpha-lavender": {
+        "value": "#cbcbef70",
+        "lch": "lch(82.72% 19.06 291.81 / 0.4392156862745098)",
+        "oklch": "oklch(85.37% 0.05 285.3 / 0.4392156862745098)"
+      },
+      "--tatami-color-pink-500": {
+        "value": "#ff64c8",
+        "lch": "lch(65.4% 72.34 342.21)",
+        "oklch": "oklch(72.99% 0.215 344.12)"
+      },
+      "--tatami-color-red-800": {
+        "value": "#6f0d00",
+        "lch": "lch(22.54% 52.68 39.9)",
+        "oklch": "oklch(34.78% 0.133 31.81)"
+      },
+      "--tatami-color-alpha-white-300": {
+        "value": "#fff3"
+      },
+      "--tatami-color-teal-600": {
+        "value": "#0a7b77",
+        "lch": "lch(46.39% 29.35 191.64)",
+        "oklch": "oklch(52.72% 0.089 190.75)"
+      },
+      "--tatami-color-campaigns-dev-platform-dos-lavender": {
+        "value": "#cbcbef",
+        "lch": "lch(82.72% 19.06 291.81)",
+        "oklch": "oklch(85.37% 0.05 285.3)"
+      },
+      "--tatami-color-campaigns-dev-platform-dos-black": {
+        "value": "#0a0a5d",
+        "lch": "lch(9.57% 57.49 304.36)",
+        "oklch": "oklch(23.47% 0.137 269.12)"
+      },
+      "--tatami-color-green-700": {
+        "value": "#0f6220",
+        "lch": "lch(35.87% 48.84 141.91)",
+        "oklch": "oklch(43.45% 0.125 145.8)"
+      },
+      "--tatami-color-campaigns-dev-platform-dos-neon": {
+        "value": "#6666fd",
+        "lch": "lch(51.17% 86.81 299.68)",
+        "oklch": "oklch(59.65% 0.219 277.47)"
+      },
+      "--tatami-color-purple-700": {
+        "value": "#562983",
+        "lch": "lch(27.31% 57.78 312.32)",
+        "oklch": "oklch(39.03% 0.145 303.2)"
+      },
+      "--tatami-color-orange-400": {
+        "value": "#ff8a33",
+        "lch": "lch(69.24% 73.78 58.37)",
+        "oklch": "oklch(74.92% 0.17 52.53)"
+      },
+      "--tatami-color-red-300": {
+        "value": "#ff8b7c",
+        "lch": "lch(70.31% 50.65 33.17)",
+        "oklch": "oklch(76.01% 0.143 28.57)"
+      },
+      "--tatami-color-campaigns-dev-platform-dos-alpha-blue": {
+        "value": "#1313baa8",
+        "lch": "lch(24.16% 100.05 305.31 / 0.6588235294117647)",
+        "oklch": "oklch(37.18% 0.237 266.8 / 0.6588235294117647)"
+      },
+      "--tatami-color-pink-700": {
+        "value": "#9d2472",
+        "lch": "lch(37.2% 57.7 344.25)",
+        "oklch": "oklch(48.17% 0.174 346.18)"
+      },
+      "--tatami-color-green-300": {
+        "value": "#abe5b8",
+        "lch": "lch(86.08% 31.66 149.49)",
+        "oklch": "oklch(87.02% 0.086 151.19)"
+      },
+      "--tatami-color-purple-900": {
+        "value": "#1c0e2c",
+        "lch": "lch(6.71% 22.93 310.46)",
+        "oklch": "oklch(20.15% 0.059 303.01)"
+      },
+      "--tatami-color-red-400": {
+        "value": "#f77463",
+        "lch": "lch(64.3% 59.25 34.42)",
+        "oklch": "oklch(71.08% 0.164 29.3)"
+      },
+      "--text-color-light": {
+        "value": "#0006"
+      },
+      "--tatami-color-yellow-900": {
+        "value": "#704b00",
+        "lch": "lch(34.96% 45.06 77.29)",
+        "oklch": "oklch(44.29% 0.093 76.4)"
+      },
+      "--tatami-color-orange-800": {
+        "value": "#793400",
+        "lch": "lch(30.69% 50.07 56.56)",
+        "oklch": "oklch(41.28% 0.111 48.82)"
+      },
+      "--tatami-color-alpha-white-900": {
+        "value": "#fffffff2",
+        "lch": "lch(100% 0 158.2 / 0.9490196078431372)",
+        "oklch": "oklch(100% 0 89.88 / 0.9490196078431372)"
+      },
+      "--tatami-color-purple-800": {
+        "value": "#391c57",
+        "lch": "lch(17.41% 40.87 311.94)",
+        "oklch": "oklch(29.98% 0.103 303.34)"
+      },
+      "--text-color-medium": {
+        "value": "#0009"
+      },
+      "--tatami-color-orange-700": {
+        "value": "#ab4a00",
+        "lch": "lch(43.59% 65.09 55.63)",
+        "oklch": "oklch(52.75% 0.145 47.51)"
+      },
+      "--tatami-color-teal-900": {
+        "value": "#042b29",
+        "lch": "lch(15.03% 13.97 190.57)",
+        "oklch": "oklch(26.24% 0.042 189.82)"
+      },
+      "--tatami-color-orange-200": {
+        "value": "#ffdec4",
+        "lch": "lch(90.55% 18.55 66.11)",
+        "oklch": "oklch(92.14% 0.05 60.35)"
+      },
+      "--tatami-color-pink-600": {
+        "value": "#d13f9d",
+        "lch": "lch(51.32% 68.14 343.43)",
+        "oklch": "oklch(60.73% 0.204 345.36)"
+      },
+      "--tatami-color-teal-500": {
+        "value": "#27918d",
+        "lch": "lch(54.66% 30.53 192.18)",
+        "oklch": "oklch(59.81% 0.093 191.21)"
+      },
+      "--tatami-color-teal-800": {
+        "value": "#0a4d4b",
+        "lch": "lch(29.11% 20.31 192.78)",
+        "oklch": "oklch(38.15% 0.062 191.72)"
+      },
+      "--tatami-color-pink-200": {
+        "value": "#ffcdf1",
+        "lch": "lch(87.62% 25.82 334.85)",
+        "oklch": "oklch(90.23% 0.073 336.45)"
+      },
+      "--tatami-color-green-900": {
+        "value": "#05210b",
+        "lch": "lch(10.14% 19.35 147.85)",
+        "oklch": "oklch(21.96% 0.054 148.04)"
+      },
+      "--tatami-color-pink-800": {
+        "value": "#6c1b4f",
+        "lch": "lch(25.37% 42.38 343.68)",
+        "oklch": "oklch(37.35% 0.127 345.61)"
+      },
+      "--tatami-color-teal-400": {
+        "value": "#2a9d99",
+        "lch": "lch(58.89% 32.44 192.5)",
+        "oklch": "oklch(63.38% 0.098 191.47)"
+      },
+      "--tatami-color-campaigns-agents-launch-blue-200": {
+        "value": "#2537b1",
+        "lch": "lch(30.15% 76.24 299.54)",
+        "oklch": "oklch(41.31% 0.192 268.94)"
+      },
+      "--tatami-color-orange-600": {
+        "value": "#dd5b00",
+        "lch": "lch(54.93% 80.11 53.46)",
+        "oklch": "oklch(62.93% 0.18 44.83)"
+      },
+      "--border-color-regular": {
+        "value": "#00000014",
+        "lch": "lch(0% 0 0 / 0.0784313725490196)",
+        "oklch": "oklch(0% 0 0 / 0.0784313725490196)"
+      },
+      "--tatami-color-campaigns-agents-launch-blue-300": {
+        "value": "#607df6",
+        "lch": "lch(55.89% 68.96 292.06)",
+        "oklch": "oklch(62.94% 0.183 270.26)"
+      },
+      "--tatami-color-orange-900": {
+        "value": "#532200",
+        "lch": "lch(19.98% 35.98 54.6)",
+        "oklch": "oklch(31.79% 0.085 49.43)"
+      },
+      "--tatami-color-red-900": {
+        "value": "#4f0900",
+        "lch": "lch(14.72% 38.5 36.24)",
+        "oklch": "oklch(27.68% 0.103 32.81)"
+      },
+      "--tatami-color-red-600": {
+        "value": "#e32d14",
+        "lch": "lch(49.81% 87.79 40.41)",
+        "oklch": "oklch(59.31% 0.219 31.1)"
+      },
+      "--tatami-color-yellow-600": {
+        "value": "#e89d01",
+        "lch": "lch(70.37% 76.74 76.12)",
+        "oklch": "oklch(75.13% 0.158 74.79)"
+      },
+      "--tatami-color-green-800": {
+        "value": "#0a4216",
+        "lch": "lch(23.73% 35.58 142.91)",
+        "oklch": "oklch(33.31% 0.092 146.44)"
+      },
+      "--tatami-color-brown-700": {
+        "value": "#744d2d",
+        "lch": "lch(36.39% 28.49 63.29)",
+        "oklch": "oklch(45.64% 0.07 59.1)"
+      },
+      "--tatami-color-purple-400": {
+        "value": "#ad6ded",
+        "lch": "lch(57.98% 74.12 311.83)",
+        "oklch": "oklch(65.85% 0.19 304.83)"
+      },
+      "--tatami-color-green-500": {
+        "value": "#1aae39",
+        "lch": "lch(62.33% 76.75 141.21)",
+        "oklch": "oklch(65.56% 0.196 145.41)"
+      },
+      "--tatami-color-alpha-white-600": {
+        "value": "#ffffffa8",
+        "lch": "lch(100% 0 158.2 / 0.6588235294117647)",
+        "oklch": "oklch(100% 0 89.88 / 0.6588235294117647)"
+      }
+    },
+    "_raw": [
+      {
+        "color": "rgb(255, 255, 255)",
+        "normalized": "#ffffff",
+        "count": 160
+      },
+      {
+        "color": "rgba(0, 0, 0, 0.95)",
+        "normalized": "#000000",
+        "count": 698
+      },
+      {
+        "color": "rgb(9, 127, 232)",
+        "normalized": "#097fe8",
+        "count": 13
+      },
+      {
+        "color": "rgb(97, 93, 89)",
+        "normalized": "#615d59",
+        "count": 30
+      },
+      {
+        "color": "rgb(163, 158, 152)",
+        "normalized": "#a39e98",
+        "count": 90
+      }
+    ]
+  },
+  "typography": {
+    "styles": [
+      {
+        "context": "heading-1",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "96px (6.00rem)",
+        "weight": 600,
+        "lineHeight": "1.04",
+        "spacing": "-4.6px",
+        "transform": null
+      },
+      {
+        "context": "heading-1",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "72px (4.50rem)",
+        "weight": 500,
+        "lineHeight": "1.21",
+        "spacing": "-2px",
+        "transform": null
+      },
+      {
+        "context": "heading-1",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "54px (3.38rem)",
+        "weight": 700,
+        "lineHeight": "1.04",
+        "spacing": "-1.87501px",
+        "transform": null,
+        "fontFeatures": "\"lnum\", \"locl\" 0"
+      },
+      {
+        "context": "heading-1",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "42px (2.63rem)",
+        "weight": 700,
+        "lineHeight": "1.14",
+        "spacing": "-1.5px",
+        "transform": null,
+        "fontFeatures": "\"lnum\", \"locl\" 0"
+      },
+      {
+        "context": "heading-1",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "40px (2.50rem)",
+        "weight": 400,
+        "lineHeight": "1.50",
+        "spacing": null,
+        "transform": null,
+        "fontFeatures": "\"lnum\", \"locl\" 0"
+      },
+      {
+        "context": "heading-1",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "24px (1.50rem)",
+        "weight": 500,
+        "lineHeight": "0.83",
+        "spacing": null,
+        "transform": null
+      },
+      {
+        "context": "heading-1",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "22px (1.38rem)",
+        "weight": 700,
+        "lineHeight": "1.27",
+        "spacing": "-0.25px",
+        "transform": null,
+        "fontFeatures": "\"lnum\", \"locl\" 0"
+      },
+      {
+        "context": "heading-1",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "20px (1.25rem)",
+        "weight": 400,
+        "lineHeight": "1.40",
+        "spacing": "-0.125px",
+        "transform": null,
+        "fontFeatures": "\"lnum\", \"locl\" 0"
+      },
+      {
+        "context": "heading-1",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "20px (1.25rem)",
+        "weight": 600,
+        "lineHeight": "1.40",
+        "spacing": "-0.125px",
+        "transform": null,
+        "fontFeatures": "\"lnum\", \"locl\" 0"
+      },
+      {
+        "context": "link",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "16px (1.00rem)",
+        "weight": 400,
+        "lineHeight": "1.50",
+        "spacing": null,
+        "transform": null,
+        "fontFeatures": "\"lnum\", \"locl\" 0"
+      },
+      {
+        "context": "button",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "16px (1.00rem)",
+        "weight": 400,
+        "lineHeight": "1.50",
+        "spacing": null,
+        "transform": null,
+        "fontFeatures": "\"lnum\", \"locl\" 0"
+      },
+      {
+        "context": "heading-1",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "16px (1.00rem)",
+        "weight": 400,
+        "lineHeight": "1.50",
+        "spacing": null,
+        "transform": null,
+        "fontFeatures": "\"lnum\", \"locl\" 0"
+      },
+      {
+        "context": "link",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "16px (1.00rem)",
+        "weight": 500,
+        "lineHeight": "1.50",
+        "spacing": null,
+        "transform": null
+      },
+      {
+        "context": "heading-1",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "16px (1.00rem)",
+        "weight": 500,
+        "lineHeight": "0.00",
+        "spacing": null,
+        "transform": null,
+        "fontFeatures": "\"lnum\", \"locl\" 0"
+      },
+      {
+        "context": "heading-1",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "16px (1.00rem)",
+        "weight": 700,
+        "lineHeight": "1.50",
+        "spacing": null,
+        "transform": null,
+        "fontFeatures": "\"lnum\", \"locl\" 0"
+      },
+      {
+        "context": "caption",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "14px (0.88rem)",
+        "weight": 500,
+        "lineHeight": "1.43",
+        "spacing": null,
+        "transform": null
+      },
+      {
+        "context": "caption",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "14px (0.88rem)",
+        "weight": 400,
+        "lineHeight": "1.43",
+        "spacing": null,
+        "transform": null,
+        "fontFeatures": "\"lnum\", \"locl\" 0"
+      },
+      {
+        "context": "button",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "14px (0.88rem)",
+        "weight": 500,
+        "lineHeight": "1.43",
+        "spacing": null,
+        "transform": null,
+        "fontFeatures": "\"lnum\", \"locl\" 0"
+      },
+      {
+        "context": "button",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "14px (0.88rem)",
+        "weight": 400,
+        "lineHeight": "1.43",
+        "spacing": null,
+        "transform": null,
+        "fontFeatures": "\"lnum\", \"locl\" 0"
+      },
+      {
+        "context": "caption",
+        "family": "NotionInter",
+        "fallbacks": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Apple Color Emoji, Arial, Segoe UI Emoji, Segoe UI Symbol",
+        "size": "12px (0.75rem)",
+        "weight": 500,
+        "lineHeight": "1.33",
+        "spacing": "0.125px",
+        "transform": null,
+        "fontFeatures": "\"lnum\", \"locl\" 0"
+      }
+    ],
+    "sources": {
+      "googleFonts": [],
+      "adobeFonts": false,
+      "variableFonts": false
+    }
+  },
+  "spacing": {
+    "scaleType": "8px",
+    "commonValues": [
+      {
+        "px": "3px",
+        "rem": "0.19rem",
+        "count": 116,
+        "numericValue": 3
+      },
+      {
+        "px": "4px",
+        "rem": "0.25rem",
+        "count": 11,
+        "numericValue": 4
+      },
+      {
+        "px": "5px",
+        "rem": "0.31rem",
+        "count": 10,
+        "numericValue": 5
+      },
+      {
+        "px": "6px",
+        "rem": "0.38rem",
+        "count": 54,
+        "numericValue": 6
+      },
+      {
+        "px": "7px",
+        "rem": "0.44rem",
+        "count": 2,
+        "numericValue": 7
+      },
+      {
+        "px": "8px",
+        "rem": "0.50rem",
+        "count": 19,
+        "numericValue": 8
+      },
+      {
+        "px": "9px",
+        "rem": "0.56rem",
+        "count": 2,
+        "numericValue": 9
+      },
+      {
+        "px": "11px",
+        "rem": "0.69rem",
+        "count": 2,
+        "numericValue": 11
+      },
+      {
+        "px": "12px",
+        "rem": "0.75rem",
+        "count": 6,
+        "numericValue": 12
+      },
+      {
+        "px": "14px",
+        "rem": "0.88rem",
+        "count": 2,
+        "numericValue": 14
+      },
+      {
+        "px": "16px",
+        "rem": "1.00rem",
+        "count": 14,
+        "numericValue": 16
+      },
+      {
+        "px": "20px",
+        "rem": "1.25rem",
+        "count": 1,
+        "numericValue": 20
+      },
+      {
+        "px": "24px",
+        "rem": "1.50rem",
+        "count": 25,
+        "numericValue": 24
+      },
+      {
+        "px": "32px",
+        "rem": "2.00rem",
+        "count": 2,
+        "numericValue": 32
+      },
+      {
+        "px": "64px",
+        "rem": "4.00rem",
+        "count": 2,
+        "numericValue": 64
+      },
+      {
+        "px": "71px",
+        "rem": "4.44rem",
+        "count": 1,
+        "numericValue": 71
+      },
+      {
+        "px": "80px",
+        "rem": "5.00rem",
+        "count": 2,
+        "numericValue": 80
+      },
+      {
+        "px": "96px",
+        "rem": "6.00rem",
+        "count": 4,
+        "numericValue": 96
+      }
+    ]
+  },
+  "borderRadius": {
+    "values": [
+      {
+        "value": "4px",
+        "count": 22,
+        "elements": [
+          "button",
+          "span",
+          "a"
+        ],
+        "confidence": "high",
+        "numericValue": 4
+      },
+      {
+        "value": "5px",
+        "count": 1,
+        "elements": [
+          "combobox"
+        ],
+        "confidence": "low",
+        "numericValue": 5
+      },
+      {
+        "value": "8px",
+        "count": 90,
+        "elements": [
+          "card",
+          "a",
+          "button",
+          "div",
+          "OpenAI"
+        ],
+        "confidence": "high",
+        "numericValue": 8
+      },
+      {
+        "value": "8px 8px 0px 0px",
+        "count": 3,
+        "elements": [
+          "card"
+        ],
+        "confidence": "low",
+        "numericValue": 8
+      },
+      {
+        "value": "12px",
+        "count": 18,
+        "elements": [
+          "article",
+          "div",
+          "Try it",
+          "card",
+          "Read the Cursor customer story"
+        ],
+        "confidence": "high",
+        "numericValue": 12
+      },
+      {
+        "value": "12px 12px 0px 0px",
+        "count": 2,
+        "elements": [
+          "image"
+        ],
+        "confidence": "low",
+        "numericValue": 12
+      },
+      {
+        "value": "12px 0px 0px",
+        "count": 2,
+        "elements": [
+          "picture"
+        ],
+        "confidence": "low",
+        "numericValue": 12
+      },
+      {
+        "value": "16px",
+        "count": 2,
+        "elements": [
+          "div"
+        ],
+        "confidence": "low",
+        "numericValue": 16
+      },
+      {
+        "value": "9999.01px",
+        "count": 7,
+        "elements": [
+          "span",
+          "button"
+        ],
+        "confidence": "medium",
+        "numericValue": 9999.01
+      },
+      {
+        "value": "50%",
+        "count": 1,
+        "elements": [
+          "button"
+        ],
+        "confidence": "low",
+        "numericValue": 50
+      },
+      {
+        "value": "100%",
+        "count": 3,
+        "elements": [
+          "span"
+        ],
+        "confidence": "low",
+        "numericValue": 100
+      }
+    ]
+  },
+  "borders": {
+    "combinations": [
+      {
+        "width": "1px",
+        "style": "solid",
+        "color": "rgba(255, 255, 255, 0)",
+        "count": 28,
+        "elements": [
+          "button"
+        ],
+        "confidence": "high"
+      },
+      {
+        "width": "1px",
+        "style": "solid",
+        "color": "rgba(0, 0, 0, 0.1)",
+        "count": 8,
+        "elements": [
+          "div",
+          "card",
+          "button"
+        ],
+        "confidence": "medium"
+      },
+      {
+        "width": "1px",
+        "style": "solid",
+        "color": "rgba(0, 0, 0, 0.05)",
+        "count": 3,
+        "elements": [
+          "card"
+        ],
+        "confidence": "low"
+      },
+      {
+        "width": "1px",
+        "style": "solid",
+        "color": "rgba(0, 0, 0, 0.08)",
+        "count": 1,
+        "elements": [
+          "combobox"
+        ],
+        "confidence": "low"
+      },
+      {
+        "width": "2px",
+        "style": "inset",
+        "color": "rgba(0, 0, 0, 0.95)",
+        "count": 1,
+        "elements": [
+          "iframe"
+        ],
+        "confidence": "low"
+      }
+    ]
+  },
+  "shadows": [
+    {
+      "shadow": "rgba(0, 0, 0, 0.01) 0px 0.175px 1.041px 0px, rgba(0, 0, 0, 0.02) 0px 0.8px 2.925px 0px, rgba(0, 0, 0, 0.027) 0px 2.025px 7.847px 0px, rgba(0, 0, 0, 0.04) 0px 4px 18px 0px",
+      "count": 7,
+      "confidence": "high"
+    },
+    {
+      "shadow": "rgba(0, 0, 0, 0) 0px 1px 0px 0px",
+      "count": 1,
+      "confidence": "low"
+    },
+    {
+      "shadow": "rgba(0, 0, 0, 0.008) 0px 0.667px 3.502px 0px, rgba(0, 0, 0, 0.016) 0px 2.933px 7.252px 0px, rgba(0, 0, 0, 0.02) 0px 7.2px 14.462px 0px, rgba(0, 0, 0, 0.024) 0px 13.867px 28.348px 0px, rgba(0, 0, 0, 0.03) 0px 23.333px 52.123px 0px, rgba(0, 0, 0, 0.04) 0px 36px 89px 0px",
+      "count": 1,
+      "confidence": "low"
+    }
+  ],
+  "components": {
+    "buttons": [
+      {
+        "states": {
+          "default": {
+            "backgroundColor": "rgb(0, 117, 222)",
+            "color": "rgb(255, 255, 255)",
+            "padding": "4px 14px",
+            "borderRadius": "8px",
+            "border": "1px solid rgba(255, 255, 255, 0)",
+            "boxShadow": "none",
+            "outline": "rgba(255, 255, 255, 0) solid 2px",
+            "transform": "none",
+            "opacity": "1"
+          },
+          "hover": {
+            "opacity": "0.7",
+            "color": "var(--tatami-color-gray-700)",
+            "backgroundColor": "rgba(255, 255, 255, 0.55)",
+            "transform": "scale(1.03)",
+            "boxShadow": "var(--tatami-shadow-200)",
+            "outline": "none",
+            "border": "var(--os-handle-border-hover)"
+          },
+          "active": {
+            "color": "var(--color-nav-letter-hint)",
+            "boxShadow": "none",
+            "outline": "none",
+            "backgroundColor": "rgba(255, 255, 255, 0.66)",
+            "opacity": "1",
+            "border": "var(--os-handle-border-active)"
+          },
+          "focus": {
+            "outline": "0px",
+            "color": "var(--content-primary)",
+            "boxShadow": "none",
+            "opacity": "1",
+            "backgroundColor": "rgba(255, 255, 255, 0.32)",
+            "border": "1px solid var(--border-primary)",
+            "transform": "scale(1.03)"
+          }
+        },
+        "fontWeight": "500",
+        "fontSize": "16px",
+        "classes": "button-module-scss-module__pIQ4pG__button button-m",
+        "confidence": "medium"
+      },
+      {
+        "states": {
+          "default": {
+            "backgroundColor": "rgb(230, 243, 254)",
+            "color": "rgb(0, 91, 171)",
+            "padding": "6px 15px",
+            "borderRadius": "8px",
+            "border": "1px solid rgba(255, 255, 255, 0)",
+            "boxShadow": "none",
+            "outline": "rgba(255, 255, 255, 0) solid 2px",
+            "transform": "none",
+            "opacity": "1"
+          },
+          "hover": {
+            "opacity": "0.7",
+            "color": "var(--tatami-color-gray-700)",
+            "backgroundColor": "rgba(255, 255, 255, 0.55)",
+            "transform": "scale(1.03)",
+            "boxShadow": "var(--tatami-shadow-200)",
+            "outline": "none",
+            "border": "var(--os-handle-border-hover)"
+          },
+          "active": {
+            "color": "var(--color-nav-letter-hint)",
+            "boxShadow": "none",
+            "outline": "none",
+            "backgroundColor": "rgba(255, 255, 255, 0.66)",
+            "opacity": "1",
+            "border": "var(--os-handle-border-active)"
+          },
+          "focus": {
+            "outline": "0px",
+            "color": "var(--content-primary)",
+            "boxShadow": "none",
+            "opacity": "1",
+            "backgroundColor": "rgba(255, 255, 255, 0.32)",
+            "border": "1px solid var(--border-primary)",
+            "transform": "scale(1.03)"
+          }
+        },
+        "fontWeight": "500",
+        "fontSize": "16px",
+        "classes": "semanticTypography-module-scss-module__Db2fhq__sem",
+        "confidence": "medium"
+      },
+      {
+        "states": {
+          "default": {
+            "backgroundColor": "rgba(0, 0, 0, 0.05)",
+            "color": "rgb(255, 255, 255)",
+            "padding": "0px",
+            "borderRadius": "50%",
+            "border": "0px none rgb(255, 255, 255)",
+            "boxShadow": "none",
+            "outline": "rgba(255, 255, 255, 0) solid 2px",
+            "transform": "none",
+            "opacity": "1"
+          },
+          "hover": {
+            "color": "var(--tatami-color-text-normal)",
+            "transform": "scale(1.05)",
+            "opacity": "1"
+          },
+          "active": {
+            "color": "var(--tatami-color-button-ghost-text)"
+          },
+          "focus": {
+            "color": "var(--tatami-color-button-ghost-text)",
+            "opacity": "1",
+            "boxShadow": "0 0 0 2px var(--tatami-color-black),0 0 0 4px var(--tatami-color-white)",
+            "outline": "0px"
+          }
+        },
+        "fontWeight": "400",
+        "fontSize": "16px",
+        "classes": "HeroMedia-module-scss-module__t-AqdW__playPauseCon",
+        "confidence": "high"
+      },
+      {
+        "states": {
+          "default": {
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "color": "rgba(0, 0, 0, 0.898)",
+            "padding": "6px 8px",
+            "borderRadius": "8px",
+            "border": "1px solid rgba(255, 255, 255, 0)",
+            "boxShadow": "none",
+            "outline": "rgba(255, 255, 255, 0) solid 2px",
+            "transform": "none",
+            "opacity": "1"
+          },
+          "hover": {
+            "opacity": "0.7",
+            "color": "var(--tatami-color-gray-700)",
+            "backgroundColor": "rgba(255, 255, 255, 0.55)",
+            "transform": "scale(1.03)",
+            "boxShadow": "var(--tatami-shadow-200)",
+            "outline": "none",
+            "border": "var(--os-handle-border-hover)"
+          },
+          "active": {
+            "color": "var(--color-nav-letter-hint)",
+            "boxShadow": "none",
+            "outline": "none",
+            "backgroundColor": "rgba(255, 255, 255, 0.66)",
+            "opacity": "1",
+            "border": "var(--os-handle-border-active)"
+          },
+          "focus": {
+            "outline": "0px",
+            "color": "var(--content-primary)",
+            "boxShadow": "none",
+            "opacity": "1",
+            "backgroundColor": "rgba(255, 255, 255, 0.32)",
+            "border": "1px solid var(--border-primary)",
+            "transform": "scale(1.03)"
+          }
+        },
+        "fontWeight": "500",
+        "fontSize": "16px",
+        "classes": "semanticTypography-module-scss-module__Db2fhq__sem",
+        "confidence": "medium"
+      },
+      {
+        "states": {
+          "default": {
+            "backgroundColor": "rgb(255, 255, 255)",
+            "color": "rgb(9, 127, 232)",
+            "padding": "6px 15px",
+            "borderRadius": "8px",
+            "border": "1px solid rgba(255, 255, 255, 0)",
+            "boxShadow": "none",
+            "outline": "rgba(255, 255, 255, 0) solid 2px",
+            "transform": "none",
+            "opacity": "1"
+          },
+          "hover": {
+            "opacity": "0.7",
+            "color": "var(--tatami-color-gray-700)",
+            "backgroundColor": "rgba(255, 255, 255, 0.55)",
+            "transform": "scale(1.03)",
+            "boxShadow": "var(--tatami-shadow-200)",
+            "outline": "none",
+            "border": "var(--os-handle-border-hover)"
+          },
+          "active": {
+            "color": "var(--color-nav-letter-hint)",
+            "boxShadow": "none",
+            "outline": "none",
+            "backgroundColor": "rgba(255, 255, 255, 0.66)",
+            "opacity": "1",
+            "border": "var(--os-handle-border-active)"
+          },
+          "focus": {
+            "outline": "0px",
+            "color": "var(--content-primary)",
+            "boxShadow": "none",
+            "opacity": "1",
+            "backgroundColor": "rgba(255, 255, 255, 0.32)",
+            "border": "1px solid var(--border-primary)",
+            "transform": "scale(1.03)"
+          }
+        },
+        "fontWeight": "500",
+        "fontSize": "16px",
+        "classes": "semanticTypography-module-scss-module__Db2fhq__sem",
+        "confidence": "medium"
+      },
+      {
+        "states": {
+          "default": {
+            "backgroundColor": "rgb(255, 255, 255)",
+            "color": "rgba(0, 0, 0, 0.95)",
+            "padding": "8px 16px",
+            "borderRadius": "9999.01px",
+            "border": "1px solid rgba(0, 0, 0, 0.1)",
+            "boxShadow": "none",
+            "outline": "rgba(255, 255, 255, 0) solid 2px",
+            "transform": "none",
+            "opacity": "1"
+          },
+          "hover": {
+            "color": "var(--tatami-color-text-normal)",
+            "opacity": "1"
+          },
+          "active": {
+            "color": "var(--tatami-color-button-ghost-text)"
+          },
+          "focus": {
+            "color": "var(--tatami-color-button-primary-text)",
+            "opacity": "1",
+            "boxShadow": "0 0 0 2px var(--tatami-color-black),0 0 0 4px var(--tatami-color-white)",
+            "outline": "0px"
+          }
+        },
+        "fontWeight": "500",
+        "fontSize": "14px",
+        "classes": "semanticTypography-module-scss-module__Db2fhq__sem",
+        "confidence": "high"
+      }
+    ],
+    "inputs": {
+      "text": [],
+      "checkbox": [],
+      "radio": [],
+      "select": []
+    },
+    "links": [
+      {
+        "color": "rgba(0, 0, 0, 0.95)",
+        "textDecoration": "none",
+        "fontWeight": "400",
+        "states": {
+          "default": {
+            "color": "rgba(0, 0, 0, 0.95)",
+            "textDecoration": "underline"
+          },
+          "hover": {
+            "color": "var(--tatami-color-text-strong)"
+          }
+        }
+      },
+      {
+        "color": "rgb(255, 255, 255)",
+        "textDecoration": "none",
+        "fontWeight": "500",
+        "states": {
+          "default": {
+            "color": "rgb(255, 255, 255)",
+            "textDecoration": "none"
+          },
+          "hover": {
+            "color": "var(--tatami-color-text-strong)"
+          }
+        }
+      },
+      {
+        "color": "rgb(0, 91, 171)",
+        "textDecoration": "none",
+        "fontWeight": "500",
+        "states": {
+          "default": {
+            "color": "rgb(0, 91, 171)",
+            "textDecoration": "none"
+          },
+          "hover": {
+            "color": "var(--tatami-color-text-strong)",
+            "textDecoration": "none"
+          }
+        }
+      },
+      {
+        "color": "rgb(9, 127, 232)",
+        "textDecoration": "none",
+        "fontWeight": "500",
+        "states": {
+          "default": {
+            "color": "rgb(9, 127, 232)",
+            "textDecoration": "none"
+          },
+          "hover": {
+            "color": "var(--tatami-color-text-strong)",
+            "textDecoration": "none"
+          }
+        }
+      }
+    ],
+    "badges": {
+      "all": [],
+      "byVariant": {
+        "error": [],
+        "warning": [],
+        "success": [],
+        "info": [],
+        "neutral": []
+      }
+    }
+  },
+  "breakpoints": [
+    {
+      "px": "374px"
+    },
+    {
+      "px": "375px"
+    },
+    {
+      "px": "400px"
+    },
+    {
+      "px": "440px"
+    },
+    {
+      "px": "480px"
+    },
+    {
+      "px": "599px"
+    },
+    {
+      "px": "600px"
+    },
+    {
+      "px": "668px"
+    },
+    {
+      "px": "700px"
+    },
+    {
+      "px": "712px"
+    },
+    {
+      "px": "740px"
+    },
+    {
+      "px": "768px"
+    },
+    {
+      "px": "799px"
+    },
+    {
+      "px": "839px"
+    },
+    {
+      "px": "840px"
+    },
+    {
+      "px": "908px"
+    },
+    {
+      "px": "919px"
+    },
+    {
+      "px": "942px"
+    },
+    {
+      "px": "960px"
+    },
+    {
+      "px": "1032px"
+    },
+    {
+      "px": "1080px"
+    },
+    {
+      "px": "1120px"
+    },
+    {
+      "px": "1156px"
+    },
+    {
+      "px": "1200px"
+    },
+    {
+      "px": "1280px"
+    },
+    {
+      "px": "1300px"
+    },
+    {
+      "px": "1440px"
+    },
+    {
+      "px": "1600px"
+    }
+  ],
+  "iconSystem": [
+    {
+      "name": "SVG Icons",
+      "type": "svg"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "PrimeReact/Vue/NG",
+      "confidence": "high",
+      "evidence": "20 Prime components"
+    },
+    {
+      "name": "Fluent UI",
+      "confidence": "high",
+      "evidence": "19 Fluent components"
+    }
+  ]
+}

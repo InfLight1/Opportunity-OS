@@ -1,0 +1,56 @@
+[
+  {
+    "id": "parked-isef",
+    "title": "Regeneron ISEF",
+    "org_or_note": "",
+    "deadline_text": "April 12, 2027",
+    "deadline_quote": "April 12, 2027: The absolute deadline for local, regional, and state networks to conclude and hold their affiliated fairs.",
+    "eligibility_quote": "Grade Level: Students must be in grades 9 through 12 or equivalent.",
+    "reason_parked": "[no URL; date is the fair-network deadline, not an applicant deadline]"
+  },
+  {
+    "id": "parked-conrad",
+    "title": "Conrad Challenge",
+    "org_or_note": "",
+    "deadline_text": "",
+    "deadline_quote": "",
+    "eligibility_quote": "Student innovators ages 13 to 18 are eligible to compete in the Conrad Challenge",
+    "reason_parked": "[no deadline, no URL]"
+  },
+  {
+    "id": "parked-growthhub",
+    "title": "TU Dublin President's Sustainability Innovation Challenge (GROWTHhub)",
+    "org_or_note": "",
+    "deadline_text": "autumn reading week (traditionally early November)",
+    "deadline_quote": "",
+    "eligibility_quote": "Open to ALL TU Dublin students",
+    "reason_parked": "[no exact date, TU Dublin students only, no URL]"
+  },
+  {
+    "id": "parked-youth-policy",
+    "title": "TU Dublin Youth Policy Hackathon",
+    "org_or_note": "",
+    "deadline_text": "Thursday, October 29, 2026, from 10:00 to 16:30 GMT",
+    "deadline_quote": "",
+    "eligibility_quote": "Targeted specifically at marginalised youth stakeholders.",
+    "reason_parked": "[eligibility not grade-mappable, no URL]"
+  },
+  {
+    "id": "parked-lta",
+    "title": "TU Dublin LTA Learnathon",
+    "org_or_note": "",
+    "deadline_text": "Wednesday, May 6, 2026 ... entries running into September 2026",
+    "deadline_quote": "",
+    "eligibility_quote": "Exclusively for TU Dublin lecturing staff and faculty.",
+    "reason_parked": "[expired, staff only, no URL]"
+  },
+  {
+    "id": "parked-built-env",
+    "title": "TU Dublin Built Environment Sustainability Hackathon",
+    "org_or_note": "",
+    "deadline_text": "Tuesday, February 3, 2026",
+    "deadline_quote": "",
+    "eligibility_quote": "Students from across Built Environment and Property disciplines at TU Dublin.",
+    "reason_parked": "[expired, no URL]"
+  }
+]

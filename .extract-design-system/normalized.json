@@ -1,0 +1,48 @@
+{
+  "source": {
+    "url": "https://www.notion.com/",
+    "extractedAt": "2026-09-28T22:48:58.879Z",
+    "extractor": "dembrandt"
+  },
+  "colors": {
+    "primary": "rgb(255, 255, 255)",
+    "secondary": "rgba(0, 0, 0, 0)",
+    "palette": [
+      "rgba(0, 0, 0, 0)",
+      "rgb(255, 255, 255)"
+    ],
+    "cssVariables": {}
+  },
+  "typography": {
+    "headingFont": "NotionInter",
+    "bodyFont": "NotionInter"
+  },
+  "spacing": {
+    "scale": [
+      "3px",
+      "4px",
+      "5px",
+      "6px",
+      "7px",
+      "8px",
+      "9px",
+      "11px",
+      "12px",
+      "14px",
+      "16px",
+      "20px",
+      "24px",
+      "32px",
+      "64px",
+      "71px",
+      "80px",
+      "96px"
+    ]
+  },
+  "radius": {
+    "scale": []
+  },
+  "shadows": {
+    "scale": []
+  }
+}
