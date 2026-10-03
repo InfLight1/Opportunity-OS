@@ -159,14 +159,24 @@ export function App() {
       busyWeeks: formData.busy_weeks, assets, tiered,
     }, today)
     const facts = buildAskWhyFacts(t, profile, assets, today)
-    void explainWithChain({ facts, templateText, datasetTitles: allOpps.map((o) => o.title), fetchFn: LIVE_FETCH, cache: LLM_CACHE }).then((r) => {
-      if (askWhyRequest.current !== request) return
-      if (import.meta.env.DEV) {
-        if (r.source === 'live') console.info('[llm-cache] paste into src/data/llm-cache.json answers:', JSON.stringify({ [r.key]: r.text }))
-        if (r.violations.length > 0) console.info('[llm] fell through:', r.violations)
-      }
-      setAskWhyLlm(r.source === 'template' ? { status: 'fallback', text: null } : { status: 'ready', text: r.text })
-    })
+    // The chain never rejects; catch/finally make sure the status still leaves 'loading'.
+    let settled = false
+    void explainWithChain({ facts, templateText, datasetTitles: allOpps.map((o) => o.title), fetchFn: LIVE_FETCH, cache: LLM_CACHE })
+      .then((r) => {
+        if (askWhyRequest.current !== request) return
+        settled = true
+        if (import.meta.env.DEV) {
+          if (r.source === 'live') console.info('[llm-cache] paste into src/data/llm-cache.json answers:', JSON.stringify({ [r.key]: r.text }))
+          if (r.violations.length > 0) console.info('[llm] fell through:', r.violations)
+        }
+        setAskWhyLlm(r.source === 'template' ? { status: 'fallback', text: null } : { status: 'ready', text: r.text })
+      })
+      .catch((e: unknown) => {
+        if (import.meta.env.DEV) console.info('[llm] unexpected error:', e)
+      })
+      .finally(() => {
+        if (askWhyRequest.current === request && !settled) setAskWhyLlm({ status: 'fallback', text: null })
+      })
   }
 
   function closeAskWhy() {

@@ -48,12 +48,21 @@ export function askWhyUserPrompt(facts: AskWhyFacts): string {
   return `Facts (JSON):\n${JSON.stringify(facts, null, 2)}\n\nIn under 60 words, explain why "${facts.title}" is "${facts.tier}" using only these facts.`
 }
 
-/** Request body for the Gemini generateContent endpoint. */
-export function askWhyRequestBody(facts: AskWhyFacts): unknown {
+/**
+ * Request body for the Gemini generateContent endpoint. With `minimalThinking`
+ * the model is asked to skip thinking (Gemma 4 on the Gemini API otherwise
+ * spends the whole token budget on thought parts and returns no answer).
+ * Models that reject thinkingConfig get a retry without it (llm-provider).
+ */
+export function askWhyRequestBody(facts: AskWhyFacts, minimalThinking = true): unknown {
   return {
     systemInstruction: { parts: [{ text: ASK_WHY_SYSTEM }] },
     contents: [{ role: 'user', parts: [{ text: askWhyUserPrompt(facts) }] }],
-    generationConfig: { temperature: 0.2, maxOutputTokens: 1024 },
+    generationConfig: {
+      temperature: 0.2,
+      maxOutputTokens: 1024,
+      ...(minimalThinking ? { thinkingConfig: { thinkingLevel: 'minimal' } } : {}),
+    },
   }
 }
 
