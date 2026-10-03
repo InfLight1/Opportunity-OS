@@ -8,6 +8,7 @@ import type { ChecklistItem } from '@/lib/draft-card'
 import { humanTag } from '@/lib/exit-reason'
 import { TIER_WORD, type OpportunityCardModel } from '@/lib/tool-view'
 import { OpportunityCard } from './OpportunityCard'
+import { SectionHeader } from './SectionHeader'
 
 // Seam (DESIGN-BRIEF s6). Paste intake is wired later; while llmAvailable is
 // false the paste box is disabled and the manual form is the only path.
@@ -56,11 +57,8 @@ export function AddYourOwn({ draft, intakeMode = 'manual', llmAvailable = false,
   }
 
   return (
-    <section aria-labelledby="add-own" className="space-y-4">
-      <div>
-        <h2 id="add-own" className="text-[28px] font-semibold leading-[1.2] tracking-[-0.01em]">Add your own</h2>
-        <p className="mt-1 text-muted-foreground">Found something not on the list? The same rules check it.</p>
-      </div>
+    <section id="add-section" aria-labelledby="add-own" className="scroll-mt-20 space-y-6">
+      <SectionHeader id="add-own" eyebrow="Your list" title="Add your own" description="Found something not on the list? The same rules check it before it joins your plan." />
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-4 rounded-xl border border-border bg-card p-5">
           <div className="space-y-1.5">

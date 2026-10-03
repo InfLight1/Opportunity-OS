@@ -1,8 +1,10 @@
-import { Check, ExternalLink, Lock } from 'lucide-react'
+import { Check, Clock, ExternalLink, Lock } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { shortDate } from '@/lib/exit-reason'
 import { formatHours, relativeDays, TIER_WORD, type OpportunityCardModel } from '@/lib/tool-view'
+
+const SOON_DAYS = 30
 
 const BADGE = 'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-medium uppercase tracking-[0.06em]'
 
@@ -26,18 +28,21 @@ export interface OpportunityCardProps {
 export function OpportunityCard({ card, onToggleCommit, onAskWhy, onRemove, footer, badge }: OpportunityCardProps) {
   const locked = !card.committable
   const lockId = `lock-${card.id}`
+  // A near deadline stands out only on cards you can still act on.
+  const soon = !locked && !card.expired && card.deadline !== '' && card.daysLeft <= SOON_DAYS
   return (
     <article
       className={[
-        'flex flex-col gap-3 rounded-xl border bg-card p-5 transition-colors duration-200',
-        card.committed ? 'border-fog-2' : 'border-border',
+        'flex flex-col gap-3 rounded-xl border p-5 transition-colors duration-200',
+        card.committed ? 'border-fog-2 bg-secondary' : locked ? 'border-border bg-card' : 'border-border bg-card hover:border-fog-3',
         locked ? 'text-muted-foreground' : '',
       ].join(' ')}
       aria-label={card.title}
     >
       <div className="flex items-center justify-between gap-3 text-[13px] tabular-nums">
         {badge ?? <TierBadge card={card} />}
-        <span className="text-muted-foreground">
+        <span className={`inline-flex items-center gap-1.5 ${soon ? 'text-foreground' : 'text-muted-foreground'}`}>
+          {soon && <Clock className="size-3.5" aria-hidden="true" />}
           {card.deadline ? <>due {shortDate(card.deadline)} · {relativeDays(card.daysLeft)}</> : 'no deadline yet'}
         </span>
       </div>

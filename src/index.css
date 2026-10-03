@@ -152,7 +152,7 @@
 
 
 @layer base {
-  html { color-scheme: dark; }
+  html { color-scheme: dark; scroll-behavior: smooth; scroll-padding-top: 72px; }
   body { font-size: 15px; line-height: 1.55; }
   :focus-visible { outline: 2px solid var(--accent-blue); outline-offset: 2px; }
 }
@@ -163,9 +163,6 @@
 
 .overflow-hatch {
   background-image: repeating-linear-gradient(135deg, color-mix(in srgb, var(--overload) 35%, transparent) 0 6px, transparent 6px 12px);
-}
-.busy-stripes {
-  background-image: repeating-linear-gradient(45deg, var(--hairline) 0 4px, transparent 4px 10px);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -207,7 +204,7 @@
 @keyframes chip-drift { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(var(--drift-x, 40px), var(--drift-y, -24px), 0); } }
 
 .funnel-card { transition: opacity 360ms ease, transform 360ms ease; }
-.funnel-card[data-out="true"] { transform: translateY(16px); }
+.funnel-card[data-out="true"] { transform: translateY(4px); border-style: dashed; }
 .funnel-card[data-out="true"] .funnel-title { opacity: 0.35; }
 .funnel-chip { opacity: 0; transition: opacity 360ms ease; }
 .funnel-card[data-out="true"] .funnel-chip { opacity: 1; }
