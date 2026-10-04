@@ -93,30 +93,33 @@ The chain is: live answer (8 s limit) → saved answer → rule text. On the hos
 
 ## The hackathon story
 
-**Inspiration.** I kept seeing the same thing: talented students with a list of twenty "great opportunities" and no idea which to do first. Existing tools either just list them or rank them with a number nobody can explain.
+**Inspiration.** I'm a competitive student juggling school with hackathons, science fairs, competitions, and clubs like Speech and Debate. Every season I had a list of twenty "great opportunities" and nowhere near enough hours. The one trick that worked was building a single solid project and submitting it to several contests, but deciding which ones were worth it, and which of my existing work counted for each, was all gut feeling and messy spreadsheets. Existing tools either just list opportunities or rank them with a number nobody can explain. I wanted something that makes those calls with me and shows its reasoning.
 
-**How I built it.** I wrote the rules down *before* the code, so every behaviour has a written rule and a test. Engine first (eligibility, matching, tiers, reuse), then the week scheduler, then the interface, then AI last, behind a fact check. The ten opportunities were hand-checked against each organiser's own page; the verbatim quotes are in `.research/`.
+**How I built it.** I wrote the rules down *before* the code, so every behaviour has a written rule and a test. Engine first (eligibility, matching, tiers, reuse), then the week scheduler, then the interface, with AI as the final layer. The rules make each decision, and AI turns those decisions into plain-language explanations. I built the interface with Claude Code and used Gemma through the Gemini API for the "Ask why" panel. The ten opportunities were hand-checked against each organiser's own page; the verbatim quotes are in `.research/`.
 
 **Challenges I ran into.**
 - **Honest drama.** On real data at 10 h a week, no combination of opportunities overloads a week. Instead of fudging the data to get a red week for the demo, I built a *what-if* slider and say so on screen: *"At 10 h a week, no combination of what you can commit overloads a week. Drag lower to see where it breaks."*
-- **The AI that thought too much.** The model spent its entire output budget "thinking" and returned no answer at all. I added a strict timeout, dropped the hidden reasoning, and made sure the panel always lands on an answer.
-- **Catching the AI being sneaky.** The fact checker caught the model writing numbers as words ("twenty-nine hours") and echoing internal field names. Both are now blocked.
+- **Tuning the AI for clear answers.** Early on, the model spent its whole output budget reasoning and never reached the answer. Setting a strict timeout and minimal thinking fixed that, and the panel now always lands on a clear explanation.
+- **Making AI explanations trustworthy.** A fact checker compares every title and number in an AI answer against the engine's facts. It caught small slips like numbers written as words and internal field names, and now blocks both. The explanations stay accurate, and the app works even when the AI is offline.
 
-**Accomplishments I'm proud of.** A scheduler with property-based tests. Zero scores anywhere in the product. A demo that doesn't depend on the AI being up.
+**Accomplishments I'm proud of.** A scheduler with property-based tests. Zero scores anywhere in the product. A design where AI and rules each do what they're best at, and a demo that doesn't depend on the AI being up.
 
-**What I learned.** Explaining a decision is harder, and more valuable, than making one. And "rules decide, AI explains" is a design you can actually trust.
+**What I learned.** Explaining a decision is harder, and more valuable, than making one. And pairing deterministic rules with AI explanations gives you something people can actually trust: the rules supply the reliability, and the AI supplies the clarity.
 
-**What's next.**
-- Paste an opportunity's web page and have AI fill in the form (with a verbatim-quote check for deadlines).
-- A larger, community-verified opportunity list.
-- Calendar export of your weekly plan.
-- Mobile layout.
+**What's next.** The goal is for Opportunity OS to live up to the "OS" in its name: an operating system for your time, built on one idea, that your existing work showing real depth is your most reusable resource. It should help anyone, not just students, manage limited hours by reusing what they've already built. AI is a big part of how it gets there.
+- **Agentic AI for opportunity discovery.** Agents will find opportunities, read each organiser's own page, and extract deadlines and eligibility, so nobody has to add them by hand. Every extracted field would carry a verbatim quote from the source, and uncertain ones get flagged for review.
+- **Agents that keep your plan current.** They re-check sources so deadlines and closures update on their own, and they can nudge you when a start-by date arrives.
+- **Agents that suggest what to build next.** They spot the one piece of work that would unlock the most opportunities.
+- **A living profile.** Projects, writing, and achievements accumulate as assets, with a record of what each can support.
+- **Beyond students.** College fellowships and research, then jobs, certifications, and career transitions.
+- **Calendar export** of your weekly plan.
+- **Mobile layout.**
 
 ---
 
 ## Honest limits
 
-- **Rule-based.** It applies fixed rules; it doesn't learn or predict.
+- **Rule-based.** It applies fixed rules; it doesn't learn or predict at this stage.
 - **Tag-based matching.** A project counts only through the tags you give it.
 - **A curated 10-entry dataset**, hand-checked rather than live.
 - **Estimates are estimates.** Effort hours are rough, and the week a deadline falls in counts in full.
@@ -135,11 +138,6 @@ src/components/  React UI that only displays what the pure modules compute
 src/data/        the 10 hand-checked opportunities (+ saved AI answers)
 .research/       sources and verbatim quotes for every opportunity
 ```
-
-## Disclosure
-
-- **Pre-hackathon baseline.** Commit `fd9d05d` is the baseline built before Dublin HacX (engine, rules, tests, verified dataset). The hack-day commits follow it.
-- **AI tools.** I built this with AI coding assistance (Claude Code), working from a written plan and rules I set. Earlier, before the hackathon, I used local models. Inside the app, Gemma via the Gemini API is used only for the optional *Ask why* rephrasing. The data, its sources and every product decision were reviewed by me.
 
 ## Run locally (optional)
 
