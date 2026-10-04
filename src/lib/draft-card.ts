@@ -36,6 +36,12 @@ function slug(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'untitled'
 }
 
+/** Only http(s) links are kept; anything else (javascript:, data:, junk) becomes ''. */
+export function safeUrl(raw: string | undefined): string {
+  const url = raw?.trim() ?? ''
+  return /^https?:\/\//i.test(url) ? url : ''
+}
+
 export function toOpportunity(p: Partial<Opportunity>): Opportunity {
   const title = p.title?.trim() || 'Untitled opportunity'
   return {
@@ -54,7 +60,7 @@ export function toOpportunity(p: Partial<Opportunity>): Opportunity {
     participation: p.participation ?? 'individual',
     submission_format: p.submission_format ?? 'submission-format:demo',
     requirements: p.requirements ?? [],
-    source_url: p.source_url?.trim() ?? '',
+    source_url: safeUrl(p.source_url),
   }
 }
 

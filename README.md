@@ -1,5 +1,7 @@
 # Opportunity OS
 
+**Live demo: https://opportunity-os-pink.vercel.app** (best on desktop; hosted Ask why uses cached or template answers, live Gemma via Gemini API runs locally)
+
 ### Too many opportunities. Too little time.
 
 **A planner that tells students which opportunities are worth their limited hours, and exactly why.**
@@ -22,7 +24,7 @@ High-school students are flooded with competitions, hackathons, science fairs an
 
 The result: students either over-commit and burn out, or freeze and apply to nothing.
 
-## Our solution
+## My solution
 
 Opportunity OS turns a pile of opportunities into a plan you can trust:
 
@@ -35,12 +37,9 @@ Opportunity OS turns a pile of opportunities into a plan you can trust:
 
 ---
 
-## Try it in 2 minutes (judge's path)
+## Try it in 2 minutes
 
-```bash
-npm install
-npm run dev     # open http://localhost:5173
-```
+Open **https://opportunity-os-pink.vercel.app** on a laptop or desktop.
 
 1. **Watch the first screen.** The pile of 10 opportunities, the 160 h vs 10 h problem. Scroll: half of them drop out, each with its reason.
 2. **Open the planner.** A demo student profile is preloaded (grade 10, one computer-vision project, Midterms Oct 20-27, 10 h a week).
@@ -49,7 +48,7 @@ npm run dev     # open http://localhost:5173
 5. **Drag "What if" to 4 h a week.** A week turns red and the app names exactly what overflows. Nothing is saved until you press Save.
 6. **Add your own** opportunity in the form at the bottom. The same rules check it and show a registration checklist.
 
-`/?mode=tool` skips the intro and opens the planner directly.
+Add `?mode=tool` to the URL to skip the intro and open the planner directly.
 
 ![The planner](docs/screenshots/planner.png)
 
@@ -57,12 +56,12 @@ npm run dev     # open http://localhost:5173
 
 ## Why it stands out
 
-| Criterion | What we built |
+| Criterion | What I built |
 |---|---|
-| **Technical execution** | A deterministic rules engine and a backward-filling scheduler as pure TypeScript functions. **330 automated tests**, including property tests: hours are always conserved, nothing is scheduled before today or after a deadline, order never matters, and more capacity never creates more overload. |
+| **Technical execution** | A deterministic rules engine and a backward-filling scheduler as pure TypeScript functions, with automated tests, including property tests: hours are always conserved, nothing is scheduled before today or after a deadline, order never matters, and more capacity never creates more overload. |
 | **Innovation** | **Rules decide, AI only explains.** No black-box matching. The AI rephrases one card's facts, and a checker rejects any sentence that invents a title, a number, or a "score". |
 | **Impact** | Built for the real student problem of too many options and not enough hours. It answers *which* and *when*, not just *what*. Every decision comes with a reason a student, parent or counsellor can check. |
-| **Completeness** | Works end to end, offline, with no account and no backend. If the AI is down or slow, it falls back to saved answers, then to the rule text. The demo never depends on Wi-Fi. |
+| **Completeness** | Works end to end in the browser, with no account and no backend. If the AI is unavailable, it falls back to saved answers, then to the rule text, so the demo never depends on it. |
 | **Design & UX** | Calm dark interface; one accent colour; red reserved for overloaded weeks. Keyboard accessible, screen-reader text for the diagram, and full reduced-motion support. |
 
 ![A week over capacity, previewed at 4 h a week](docs/screenshots/weeks-red.png)
@@ -75,18 +74,18 @@ npm run dev     # open http://localhost:5173
 
 - **Eligibility** (pass/fail): grade range, deadline not passed, location, prerequisites.
 - **Evidence over claims:** a skill only counts if one of your *projects* shows it, not because you ticked a box.
-- **Matching:** a fixed vocabulary of tags (python, data analysis, technical project, ...). No fuzzy or AI matching.
+- **Matching:** tag-based only, using a fixed vocabulary (python, data analysis, technical project, ...). No fuzzy or AI matching.
 - **Runway:** if an opportunity needs more hours than you have before its deadline, even as your only commitment, it's *Not now*.
 - **Focus vs Consider:** Focus means your project matches, the deadline isn't in a busy week, and either nothing is missing or the same project also counts elsewhere.
 - **Scheduler:** fills each deadline's week first, then earlier weeks, and flags any week over capacity, naming the cause.
 
-**AI with guardrails (optional).** *Ask why* sends Google Gemini only the structured facts for one card. Before any sentence is shown, a pure checker rejects it if it:
+**AI with guardrails.** *Ask why* gives a model only the structured facts for one card. Before any sentence is shown, a pure checker rejects it if it:
 
 - names an opportunity that isn't in the list,
 - uses a number that isn't in the facts it was given (written as digits *or* words),
 - mentions scores, percentages or match meters, or leaks raw field names.
 
-The chain is: live answer (8 s limit) → saved answer → rule text. The rule text is always one click away under *Exact rule details*.
+The chain is: live answer (8 s limit) → saved answer → rule text. On the hosted site there is no live call: Ask why shows a saved answer when one matches, otherwise the rule text. The rule text is always one click away under *Exact rule details*.
 
 ![Ask why: a checked AI explanation over the exact rule text](docs/screenshots/ask-why.png)
 
@@ -94,18 +93,18 @@ The chain is: live answer (8 s limit) → saved answer → rule text. The rule t
 
 ## The hackathon story
 
-**Inspiration.** We kept seeing the same thing: talented students with a list of twenty "great opportunities" and no idea which to do first. Every existing tool either just lists them or scores them with a number nobody can explain.
+**Inspiration.** I kept seeing the same thing: talented students with a list of twenty "great opportunities" and no idea which to do first. Existing tools either just list them or rank them with a number nobody can explain.
 
-**How we built it.** We wrote the rules down *before* the code, so every behaviour has a written rule and a test. Engine first (eligibility, matching, tiers, reuse), then the week scheduler, then the interface, then AI last, behind a fact check. The ten opportunities were hand-checked against each organiser's own page; the verbatim quotes are in `.research/`.
+**How I built it.** I wrote the rules down *before* the code, so every behaviour has a written rule and a test. Engine first (eligibility, matching, tiers, reuse), then the week scheduler, then the interface, then AI last, behind a fact check. The ten opportunities were hand-checked against each organiser's own page; the verbatim quotes are in `.research/`.
 
-**Challenges we ran into.**
-- **Honest drama.** On real data at 10 h a week, no combination of opportunities overloads a week. Instead of fudging the data to get a red week for the demo, we built a *what-if* slider and say so on screen: *"At 10 h a week, no combination of what you can commit overloads a week. Drag lower to see where it breaks."*
-- **The AI that thought too much.** Our model spent its entire output budget "thinking" and returned no answer at all. We added a strict timeout, dropped the hidden reasoning, and made sure the panel always lands on an answer.
+**Challenges I ran into.**
+- **Honest drama.** On real data at 10 h a week, no combination of opportunities overloads a week. Instead of fudging the data to get a red week for the demo, I built a *what-if* slider and say so on screen: *"At 10 h a week, no combination of what you can commit overloads a week. Drag lower to see where it breaks."*
+- **The AI that thought too much.** The model spent its entire output budget "thinking" and returned no answer at all. I added a strict timeout, dropped the hidden reasoning, and made sure the panel always lands on an answer.
 - **Catching the AI being sneaky.** The fact checker caught the model writing numbers as words ("twenty-nine hours") and echoing internal field names. Both are now blocked.
 
-**Accomplishments we're proud of.** 330 passing tests. A scheduler with property-based tests. Zero scores anywhere in the product. A demo that still works with the network unplugged.
+**Accomplishments I'm proud of.** A scheduler with property-based tests. Zero scores anywhere in the product. A demo that doesn't depend on the AI being up.
 
-**What we learned.** Explaining a decision is harder, and more valuable, than making one. And "rules decide, AI explains" is a design you can actually trust.
+**What I learned.** Explaining a decision is harder, and more valuable, than making one. And "rules decide, AI explains" is a design you can actually trust.
 
 **What's next.**
 - Paste an opportunity's web page and have AI fill in the form (with a verbatim-quote check for deadlines).
@@ -115,29 +114,19 @@ The chain is: live answer (8 s limit) → saved answer → rule text. The rule t
 
 ---
 
-## Run it
+## Honest limits
 
-Requirements: Node 20.19+ or 22.12+ and npm.
-
-```bash
-npm install
-npm run dev        # http://localhost:5173
-npx vitest run     # 330 tests
-npm run build      # production build
-```
-
-**Optional live AI:** create `.env.local` (gitignored) with:
-
-```bash
-GEMINI_API_KEY=your-key
-GEMINI_MODEL=your-model-name
-```
-
-The Vite dev server proxies `/api/llm/generate` and adds the key **server-side**; it never reaches the browser or the bundle. Without a key, *Ask why* uses saved answers and the rule text.
+- **Rule-based.** It applies fixed rules; it doesn't learn or predict.
+- **Tag-based matching.** A project counts only through the tags you give it.
+- **A curated 10-entry dataset**, hand-checked rather than live.
+- **Estimates are estimates.** Effort hours are rough, and the week a deadline falls in counts in full.
+- **Location is an exact match** with your profile region, unless the opportunity is online.
+- **Your data stays in this browser.** Your profile, commitments and added opportunities are kept in this browser's local storage only; nothing syncs between devices.
+- **Desktop layout only.**
 
 ## Built with
 
-Vite · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui (Base UI) · lucide icons · Geist · Vitest · Google Gemini (optional).
+Vite · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui (Base UI) · lucide icons · Geist · Vitest · Gemma via the Gemini API (Ask why).
 
 ```
 src/engine/      rules: eligibility, matching, tiers, reuse, gaps, weeks, scheduler (pure, tested)
@@ -147,17 +136,22 @@ src/data/        the 10 hand-checked opportunities (+ saved AI answers)
 .research/       sources and verbatim quotes for every opportunity
 ```
 
-## Honest limits
+## Disclosure
 
-- **Ten curated opportunities**, hand-checked rather than live-scraped.
-- **Effort hours are estimates.**
-- **Location is an exact match** with your profile region, unless the opportunity is online.
-- **The week a deadline falls in counts in full**, which is slightly optimistic.
-- **Desktop and laptop layouts only.**
+- **Pre-hackathon baseline.** Commit `fd9d05d` is the baseline built before Dublin HacX (engine, rules, tests, verified dataset). The hack-day commits follow it.
+- **AI tools.** I built this with AI coding assistance (Claude Code), working from a written plan and rules I set. Earlier, before the hackathon, I used local models. Inside the app, Gemma via the Gemini API is used only for the optional *Ask why* rephrasing. The data, its sources and every product decision were reviewed by me.
 
-## Built with AI assistance
+## Run locally (optional)
 
-Built at Dublin HacX with AI coding assistants (Claude Code), working from a written plan and rules set by the author. The data, its sources and every product decision were reviewed by the author. Inside the app, Google Gemini is used only for the optional *Ask why* rephrasing.
+Requirements: Node 20.19+ or 22.12+ and npm.
+
+```bash
+npm install
+npm run dev        # http://localhost:5173
+npx vitest run     # tests
+```
+
+For live Ask why answers, create `.env.local` (gitignored) with `GEMINI_API_KEY` and `GEMINI_MODEL`. The Vite dev server proxies `/api/llm/generate` and adds the key server-side, so it never reaches the browser.
 
 ## License
 

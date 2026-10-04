@@ -79,6 +79,12 @@ describe('buildDraft', () => {
     expect(d.card.tier).toBe('SKIP')
     expect(d.card.lockReason).toBe('Grade 12 only')
   })
+  it('only http(s) links survive (user-entered source_url)', () => {
+    expect(toOpportunity({ ...FULL, source_url: ' https://example.org/a ' }).source_url).toBe('https://example.org/a')
+    expect(toOpportunity({ ...FULL, source_url: 'javascript:alert(1)' }).source_url).toBe('')
+    expect(toOpportunity({ ...FULL, source_url: 'data:text/html,x' }).source_url).toBe('')
+    expect(toOpportunity({ ...FULL, source_url: 'example.org' }).source_url).toBe('')
+  })
   it('toOpportunity fills safe defaults', () => {
     const o = toOpportunity({})
     expect(o.title).toBe('Untitled opportunity')
