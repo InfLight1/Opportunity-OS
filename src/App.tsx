@@ -227,27 +227,35 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="nr min-h-screen">
       <Header mode={mode} onToggleMode={switchMode} onOpenProfile={openProfile} />
       {mode === 'story' && <Story data={storyData} onOpenPlanner={openPlanner} reducedMotion={reducedMotion} />}
-      <main id="tool" className="mx-auto max-w-[1120px] space-y-16 px-8 py-12">
-        <section aria-labelledby="tool-heading" className="space-y-4">
-          <div>
-            <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground tabular-nums">Today · {shortDate(today)}</p>
-            <h1 tabIndex={-1} id="tool-heading" className="mt-1 text-[28px] font-semibold leading-[1.2] tracking-[-0.01em] outline-none">Your plan</h1>
+      <main id="tool" className="planner">
+        <section aria-labelledby="tool-heading" className="psec">
+          <div className="wrap">
+            <div className="sec-head">
+              <div>
+                <p className="eyebrow">Today · <span className="mono">{shortDate(today)}</span></p>
+                <h1 tabIndex={-1} id="tool-heading" className="outline-none">Your plan</h1>
+              </div>
+            </div>
+            {notice && <Notice {...notice} onDismiss={() => setNotice(null)} />}
+            <div className="summary" aria-label="Plan at a glance">
+              <PlanSummary summary={summary} />
+              <ThisWeekStrip week={thisWeek} nextAction={nextAction} />
+            </div>
           </div>
-          {notice && <Notice {...notice} onDismiss={() => setNotice(null)} />}
-          <PlanSummary summary={summary} />
-          <ThisWeekStrip week={thisWeek} nextAction={nextAction} />
         </section>
-        <section id="opportunities" aria-labelledby="opps" className="space-y-6">
-          <SectionHeader
-            id="opps"
-            eyebrow="Sorted by fixed rules"
-            title="Opportunities"
-            description="Focus: your projects already show what it asks for and the hours fit. Consider: possible, with a catch. Not now: locked, with the reason."
-          />
-          <OpportunityList cards={cards} onToggleCommit={handleToggleCommit} onAskWhy={handleAskWhy} onRemove={handleRemoveUserOpp} />
+        <section id="opportunities" aria-labelledby="opps" className="psec">
+          <div className="wrap">
+            <SectionHeader
+              id="opps"
+              eyebrow="Sorted by fixed rules"
+              title="Opportunities"
+              description="Focus: your projects already show what it asks for and the hours fit. Consider: possible, with a catch. Not now: locked, with the reason."
+            />
+            <OpportunityList cards={cards} onToggleCommit={handleToggleCommit} onAskWhy={handleAskWhy} onRemove={handleRemoveUserOpp} />
+          </div>
         </section>
         <WeeksTimeline
           columns={columns}
@@ -269,8 +277,11 @@ export function App() {
         <ReuseWeb model={reuseWeb} reducedMotion={reducedMotion} />
         <AddYourOwn draft={draft} onSubmitManual={setDraftFields} onAdd={handleAddDraft} onDiscard={() => setDraftFields(null)} profileRegion={formData.region} />
       </main>
-      <footer className="mx-auto max-w-[1120px] border-t border-border px-8 py-8 text-[13px] text-muted-foreground">
-        Rule-based. Every reason shown. AI only explains and extracts.
+      <footer className="footer">
+        <div className="wrap footer-in">
+          <span className="brand"><span className="brand-mark" aria-hidden="true" />Opportunity OS</span>
+          <p>Rule-based. Every reason shown. AI only explains and extracts.</p>
+        </div>
       </footer>
       {askWhy && (
         <AskWhy key={askWhy.id} opportunityId={askWhy.id} title={askWhy.title} templateText={askWhy.text} llmText={askWhyLlm.text} status={askWhyLlm.status} onClose={closeAskWhy} />

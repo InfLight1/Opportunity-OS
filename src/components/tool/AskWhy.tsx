@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { ChevronRight, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 // Seam (DESIGN-BRIEF s6): template text renders first; an LLM rewrite that
@@ -26,24 +26,19 @@ export function AskWhy({ opportunityId, title, templateText, llmText = null, sta
       aria-labelledby={`why-${opportunityId}`}
       onClose={onClose}
       onClick={(e) => { if (e.target === ref.current) onClose() }}
-      className="m-auto w-[560px] max-w-[calc(100vw-32px)] rounded-xl border border-border bg-popover p-0 text-foreground backdrop:bg-black/60"
+      className="nr-dialog"
     >
-      <div className="space-y-4 p-6">
-        <div className="flex items-start justify-between gap-4">
-          <h2 id={`why-${opportunityId}`} className="text-[18px] font-semibold">Why: {title}</h2>
-          <Button variant="ghost" size="icon-sm" aria-label="Close" onClick={onClose}><X /></Button>
-        </div>
-        <p className="max-w-[68ch] text-[15px] leading-[1.55]" aria-live="polite">{useLlm ? llmText : templateText}</p>
-        <p className="text-[12px] text-muted-foreground">
+      <div className="dlg">
+        <h2 id={`why-${opportunityId}`}>Why: {title}</h2>
+        <Button className="dlg-x" variant="outline" size="icon-sm" aria-label="Close" onClick={onClose}><X /></Button>
+        <p className="ans" aria-live="polite">{useLlm ? llmText : templateText}</p>
+        <p className="note">
           {useLlm ? 'Plain-language version, checked against the rules.' : status === 'loading' ? 'From the rules. A plain-language version is loading.' : 'From the rules. Every fact here comes from the engine.'}
         </p>
         {useLlm && (
-          <details className="group rounded-lg border border-border">
-            <summary className="flex cursor-pointer list-none items-center gap-1.5 px-3 py-2 text-[13px] text-muted-foreground hover:text-foreground">
-              <ChevronRight className="size-4 transition-transform group-open:rotate-90" aria-hidden="true" />
-              Exact rule details
-            </summary>
-            <p className="max-w-[68ch] px-3 pb-3 text-[15px] leading-[1.55] text-muted-foreground">{templateText}</p>
+          <details>
+            <summary>Exact rule details</summary>
+            <p>{templateText}</p>
           </details>
         )}
       </div>

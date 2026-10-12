@@ -1,0 +1,952 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opportunity OS · Night Route</title>
+<meta name="description" content="A browser-only planner that narrows a pile of opportunities into a calm, honest plan, with a reason for every cut.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06121F;
+  --bg-2:#081A2D;
+  --navy:#0B2A4A;
+  --navy-2:#123A63;
+  --blue:#4FA3FF;
+  --blue-soft:#9CCBFF;
+  --orange:#FF7A3D;
+  --orange-soft:#FFB08A;
+  --red:#FF5A6A;
+  --white:#FFFFFF;
+  --text:#E4EDF8;
+  --muted:#93AAC4;
+  --dim:#7189A6;
+  --rule:rgba(147,170,196,.16);
+  --rule-strong:rgba(147,170,196,.32);
+  --surface:rgba(11,42,74,.38);
+  --surface-2:rgba(11,42,74,.62);
+  --sans:"Hanken Grotesk",ui-sans-serif,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --gutter:clamp(16px,5vw,88px);
+  --rail:clamp(24px,4.2vw,64px);
+  --ease:cubic-bezier(.16,1,.3,1);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-weight:300;font-size:17px;line-height:1.6;overflow-x:hidden}
+::selection{background:rgba(255,122,61,.38);color:var(--white)}
+html{scrollbar-color:var(--navy-2) var(--bg)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--navy-2);border-radius:10px;border:2px solid var(--bg)}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:4px}
+button,input,textarea{font:inherit;color:inherit}
+.num,.mono{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:400}
+.sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- Nav ---------- */
+.nav{position:fixed;inset:0 0 auto 0;z-index:40;display:flex;align-items:center;gap:32px;padding:18px var(--gutter);background:linear-gradient(to bottom,rgba(6,18,31,.92),rgba(6,18,31,.6) 70%,rgba(6,18,31,0));backdrop-filter:blur(6px)}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:600;font-size:18px;letter-spacing:-.01em;color:var(--white);white-space:nowrap}
+.brand svg{flex:none}
+.nav ul{display:flex;gap:30px;list-style:none;margin:0 auto 0 24px;padding:0}
+.nav ul a{position:relative;display:block;padding:8px 0;text-decoration:none;font-size:12.5px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--text);transition:color .3s}
+.nav ul a::after{content:"";position:absolute;left:-14px;right:-14px;bottom:-14px;height:2px;background:var(--blue);transform:scaleX(0);transition:transform .5s var(--ease)}
+.nav ul a:hover,.nav ul a.on{color:var(--blue)}
+.nav ul a.on::after{transform:scaleX(1)}
+.nav-right{display:flex;align-items:center;gap:22px;margin-left:auto}
+.nav-skip{font-size:12.5px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;color:var(--muted)}
+.nav-skip:hover{color:var(--white)}
+.pill{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:11px 22px;background:var(--navy);color:var(--blue-soft);font-size:12.5px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:background .3s,color .3s}
+.pill:hover{background:var(--navy-2);color:var(--white)}
+
+/* ---------- Route rail (story) ---------- */
+.story{position:relative}
+.rail{position:absolute;top:0;bottom:0;left:var(--rail);width:2px;pointer-events:none;z-index:2}
+.rail::before{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,transparent,rgba(79,163,255,.5) 8%,rgba(79,163,255,.5) 92%,rgba(79,163,255,.9));}
+.rail i{position:absolute;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--bg);border:2px solid var(--blue);box-shadow:0 0 0 5px rgba(79,163,255,.12)}
+.rail i.o{border-color:var(--orange);box-shadow:0 0 0 5px rgba(255,122,61,.14)}
+
+.wrap{padding-left:calc(var(--rail) + clamp(28px,5vw,96px));padding-right:var(--gutter)}
+
+/* heading with a thin rule above */
+.ruled{position:relative;padding-top:26px}
+.ruled::before{content:"";position:absolute;top:0;left:0;width:min(200px,40%);height:3px;background:var(--white)}
+.ruled .tag{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:-6px 0 14px}
+h1,h2,h3{font-weight:500;letter-spacing:-.025em;line-height:1.05;color:var(--white);margin:0;text-wrap:balance}
+h2{font-size:clamp(34px,4.6vw,64px)}
+h3{font-size:clamp(22px,2vw,28px);letter-spacing:-.015em;line-height:1.2}
+.lede{font-size:clamp(17px,1.35vw,20px);color:var(--muted);max-width:60ch;margin:22px 0 0}
+
+/* ---------- Hero ---------- */
+.hero{position:relative;min-height:100svh;display:grid;align-items:end;padding-top:120px;padding-bottom:clamp(56px,9vh,110px);overflow:hidden}
+.city{position:absolute;top:0;right:-4%;bottom:0;left:30%;z-index:0;-webkit-mask-image:radial-gradient(ellipse 62% 64% at 54% 46%,#000 32%,rgba(0,0,0,.55) 58%,transparent 80%);mask-image:radial-gradient(ellipse 62% 64% at 54% 46%,#000 32%,rgba(0,0,0,.55) 58%,transparent 80%)}
+.city svg{width:100%;height:100%;display:block}
+.hero::after{content:"";position:absolute;inset:auto 0 0 0;height:30%;background:linear-gradient(to top,var(--bg),transparent);z-index:1;pointer-events:none}
+.pile{position:absolute;z-index:3;top:118px;right:calc(var(--gutter) - 8px);width:min(60%,880px);display:grid;grid-template-columns:repeat(3,1fr);gap:22px 20px;list-style:none;margin:0;padding:0}
+.chip{position:relative;padding:12px 14px 12px 16px;border-radius:12px;background:rgba(6,18,31,.66);backdrop-filter:blur(3px);box-shadow:0 10px 30px -10px rgba(0,0,0,.7);border:1px solid rgba(156,203,255,.16);transition:transform .7s var(--ease),opacity .7s var(--ease)}
+.chip b{display:block;font-weight:500;font-size:14.5px;line-height:1.3;color:var(--white);letter-spacing:-.005em}
+.chip span{display:block;margin-top:5px;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.chip span em{font-style:normal;color:var(--orange-soft)}
+.chip::before{content:"";position:absolute;left:-5px;top:16px;width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 10px 2px rgba(79,163,255,.7)}
+.pile li:nth-child(1){transform:translate(10px,8px) rotate(-1.5deg)}
+.pile li:nth-child(2){transform:translate(-6px,44px) rotate(1deg)}
+.pile li:nth-child(3){transform:translate(14px,-4px) rotate(-.6deg)}
+.pile li:nth-child(4){transform:translate(-18px,16px) rotate(.8deg)}
+.pile li:nth-child(5){transform:translate(22px,52px) rotate(-1.2deg)}
+.pile li:nth-child(6){transform:translate(-4px,20px) rotate(1.4deg)}
+.pile li:nth-child(7){transform:translate(30px,4px) rotate(.4deg)}
+.pile li:nth-child(8){transform:translate(-14px,44px) rotate(-1deg)}
+.pile li:nth-child(9){transform:translate(6px,14px) rotate(1.1deg)}
+.pile li:nth-child(10){grid-column:2;transform:translate(-30px,2px) rotate(-.8deg)}
+.hero-copy{position:relative;z-index:4;max-width:640px}
+.hero h1{font-size:clamp(44px,6.2vw,92px);font-weight:500;letter-spacing:-.03em;line-height:1}
+.hero h1 span{display:block;color:var(--muted);font-weight:300}
+.stats{display:flex;flex-wrap:wrap;gap:0;margin:34px 0 0;padding:0;list-style:none}
+.stats li{padding:0 22px;border-left:1px solid var(--rule-strong);color:var(--muted);font-size:15px;line-height:1.35}
+.stats li:first-child{padding-left:0;border-left:0}
+.stats strong{display:block;font-family:var(--mono);font-weight:500;font-size:26px;color:var(--white);letter-spacing:-.02em;margin-bottom:2px}
+.hero .line{margin:26px 0 0;font-size:19px;color:var(--text);max-width:40ch}
+.ctas{display:flex;flex-wrap:wrap;gap:14px;margin-top:34px}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:15px 26px;border-radius:999px;font-size:15px;font-weight:500;text-decoration:none;cursor:pointer;border:0;transition:background .3s,color .3s,transform .3s var(--ease)}
+.btn svg{transition:transform .4s var(--ease)}
+.btn:hover svg{transform:translateX(3px)}
+.btn-primary{background:var(--blue);color:#04101C}
+.btn-primary:hover{background:var(--blue-soft)}
+.btn-ghost{background:transparent;color:var(--white);box-shadow:inset 0 0 0 1px var(--rule-strong)}
+.btn-ghost:hover{box-shadow:inset 0 0 0 1px var(--blue);color:var(--blue-soft)}
+.scroll{position:absolute;z-index:4;left:calc(var(--rail) - 22px);bottom:34px;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:11.5px;font-weight:500;letter-spacing:.18em;text-decoration:none;color:var(--white);background:var(--bg);padding:8px 0}
+.scroll svg{animation:nudge 2.4s var(--ease) infinite}
+@keyframes nudge{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+
+/* ---------- Funnel ---------- */
+.funnel{position:relative;padding-top:clamp(90px,14vh,160px);padding-bottom:clamp(90px,14vh,160px)}
+.funnel-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(32px,6vw,110px);align-items:start}
+.counter{margin-top:44px;display:flex;align-items:baseline;gap:14px;font-family:var(--mono);color:var(--muted);font-size:20px}
+.counter b{font-weight:500;font-size:clamp(88px,10vw,148px);line-height:.9;color:var(--white);letter-spacing:-.05em;min-width:1.2ch;transition:color .4s}
+.counter.done b{color:var(--blue)}
+.exits{list-style:none;margin:0;padding:0;position:relative}
+.exits::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:1px;background:var(--rule-strong)}
+.exit{position:relative;display:grid;grid-template-columns:20px 1fr;gap:0 22px;padding:20px 0;border-bottom:1px solid var(--rule)}
+.exit:last-child{border-bottom:0}
+.exit .node{position:relative;margin-top:6px;width:19px;height:19px}
+.exit .node svg{display:block}
+.exit h3{font-size:clamp(19px,1.6vw,23px);transition:color .6s var(--ease)}
+.exit p{margin:6px 0 0;font-family:var(--mono);font-size:14px;color:var(--orange-soft)}
+.exit p svg{vertical-align:-2px;margin-right:8px}
+.exit.out h3{color:var(--dim)}
+.js .exit:not(.out) p{opacity:.0}
+.js .exit p{transition:opacity .6s var(--ease)}
+.js .exit.out p{opacity:1}
+
+/* ---------- Threads (shared) ---------- */
+.threads{list-style:none;margin:0;padding:0;position:relative}
+.source{position:relative;display:inline-flex;align-items:center;gap:14px;padding:16px 22px 16px 18px;border-radius:14px;background:linear-gradient(135deg,var(--navy),#0E3460);box-shadow:0 18px 50px -18px rgba(79,163,255,.45);color:var(--white);font-weight:500;font-size:19px;letter-spacing:-.01em;z-index:1}
+.source i{width:12px;height:12px;border-radius:50%;background:var(--blue);box-shadow:0 0 14px 3px rgba(79,163,255,.75)}
+.thread{display:grid;grid-template-columns:72px minmax(0,1fr);min-height:84px}
+.thread svg{width:72px;height:100%;overflow:visible}
+.thread .spine{stroke:rgba(79,163,255,.55)}
+.thread .branch{fill:none;stroke:var(--blue);stroke-width:2}
+.thread .glow{fill:none;stroke:var(--blue);stroke-width:7;opacity:.18}
+.thread:last-child .spine{display:none}
+.thread .body{align-self:center;padding:14px 0;border-bottom:1px solid var(--rule)}
+.thread .body b{display:block;font-weight:500;font-size:clamp(17px,1.4vw,20px);color:var(--white);letter-spacing:-.01em;line-height:1.3}
+.via{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:13px;color:var(--muted)}
+.via .lbl{font-family:var(--mono);font-size:12px;color:var(--dim);margin-right:2px;align-self:center}
+.via span:not(.lbl){padding:2px 10px;border-radius:999px;background:rgba(79,163,255,.1);color:var(--blue-soft)}
+.thread.locked .branch{stroke:var(--dim);stroke-dasharray:4 6}
+.thread.locked .glow{display:none}
+.thread.locked .body b{color:var(--muted)}
+.thread.locked .via span:not(.lbl){background:transparent;box-shadow:inset 0 0 0 1px var(--rule-strong);color:var(--dim)}
+.lockline{display:flex;align-items:center;gap:8px;margin-top:8px;font-family:var(--mono);font-size:13px;color:var(--orange-soft)}
+.thread.dim .branch{stroke:rgba(79,163,255,.42)}
+.thread.dim .glow{display:none}
+.thread.dim .body b{color:var(--text)}
+.thread.hot .branch{stroke:var(--orange)}
+.thread.hot .glow{stroke:var(--orange);opacity:.28}
+.thread.hot .via span:not(.lbl){background:rgba(255,122,61,.12);color:var(--orange-soft)}
+.thread .state{display:inline-block;margin-left:10px;font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--orange);vertical-align:2px}
+
+.reuse{position:relative;padding-top:clamp(70px,10vh,120px);padding-bottom:clamp(90px,14vh,160px)}
+.reuse-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(32px,6vw,110px);align-items:start}
+.reuse .threads{margin-top:6px}
+.reuse-map{position:relative}
+.reuse-map::before{content:"";position:absolute;inset:-60px -40px -60px -80px;background:radial-gradient(ellipse at 30% 40%,rgba(11,42,74,.75),transparent 70%);z-index:-1}
+
+/* ---------- Hand-off ---------- */
+.handoff{position:relative;padding:clamp(70px,12vh,140px) var(--gutter) clamp(90px,14vh,160px) calc(var(--rail) + clamp(28px,5vw,96px));overflow:hidden}
+.handoff::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 50% 70% at 78% 50%,rgba(255,122,61,.14),transparent 70%),radial-gradient(ellipse 60% 80% at 70% 60%,rgba(79,163,255,.14),transparent 70%)}
+.handoff h2{position:relative;font-size:clamp(40px,6vw,88px)}
+.handoff .btn{position:relative;margin-top:36px}
+
+/* ---------- Planner ---------- */
+.planner{position:relative;border-top:1px solid var(--rule);background:linear-gradient(to bottom,var(--bg-2),var(--bg) 340px)}
+.pwrap{padding-left:var(--gutter);padding-right:var(--gutter);max-width:1440px;margin:0 auto}
+.psec{padding-top:clamp(64px,9vh,104px);padding-bottom:12px;scroll-margin-top:70px}
+.psec h2{font-size:clamp(30px,3.4vw,48px)}
+.psec .lede{font-size:17px}
+
+/* Plan summary */
+.summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin:40px 0 0;border-top:1px solid var(--rule-strong)}
+.summary > div{padding:22px 22px 24px 0;border-right:1px solid var(--rule);margin-right:22px}
+.summary > div:last-of-type{border-right:0;margin-right:0}
+.summary dt{font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.summary dd{margin:10px 0 0}
+.summary .v{display:block;font-size:24px;font-weight:500;color:var(--white);letter-spacing:-.02em;line-height:1.2}
+.summary .v .num{font-weight:500}
+.summary .s{display:block;margin-top:6px;font-size:14.5px;color:var(--muted);line-height:1.4}
+.nextstep{display:flex;align-items:center;gap:18px;margin-top:6px;padding:22px 26px;border-radius:14px;background:linear-gradient(100deg,rgba(255,122,61,.13),rgba(11,42,74,.5) 55%)}
+.nextstep .k{flex:none;font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--orange)}
+.nextstep p{margin:0;font-size:19px;color:var(--white);font-weight:400}
+.nextstep i{flex:none;width:12px;height:12px;border-radius:50%;background:var(--orange);box-shadow:0 0 14px 3px rgba(255,122,61,.55)}
+
+/* Opportunity tiers */
+.tier{margin-top:44px}
+.tier-head{display:flex;align-items:baseline;gap:14px;padding-bottom:14px;border-bottom:1px solid var(--rule-strong)}
+.tier-head h3{font-size:22px}
+.tier-head .count{font-family:var(--mono);font-size:14px;color:var(--muted)}
+.tier-head .what{margin-left:auto;font-size:14.5px;color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;margin-top:18px}
+.card{position:relative;display:flex;flex-direction:column;padding:20px 22px 20px;border-radius:14px;background:var(--surface);transition:background .3s}
+.card:hover{background:var(--surface-2)}
+.card.committed{background:linear-gradient(160deg,rgba(79,163,255,.16),rgba(11,42,74,.45) 60%);box-shadow:inset 0 0 0 1px rgba(79,163,255,.32)}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.tt{display:inline-flex;align-items:center;gap:7px;font-family:var(--sans);font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
+.tt::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.tt.focus{color:var(--blue)}
+.tt.consider{color:var(--orange)}
+.tt.notnow{color:var(--dim)}
+.card h4{margin:12px 0 0;font-size:19px;font-weight:500;line-height:1.28;color:var(--white);letter-spacing:-.01em;text-wrap:balance}
+.card .org{margin:4px 0 0;font-size:14px;color:var(--muted)}
+.card .hrs{margin:10px 0 0;font-family:var(--mono);font-size:13.5px;color:var(--text)}
+.card .hrs small{font-family:var(--sans);font-size:13px;color:var(--dim)}
+.card .shows{margin:10px 0 0;font-size:15px;color:var(--muted);line-height:1.5}
+.card .shows b{font-weight:500;color:var(--blue-soft)}
+.catch{display:inline-flex;align-items:center;gap:8px;margin:12px 0 0;padding:6px 12px;border-radius:999px;background:rgba(255,122,61,.12);color:var(--orange-soft);font-size:13.5px;align-self:flex-start}
+.startby{margin:12px 0 0;font-family:var(--mono);font-size:12.5px;color:var(--blue-soft)}
+.actions{display:flex;gap:10px;margin-top:auto;padding-top:18px}
+.b{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;border:0;font-size:14px;font-weight:500;cursor:pointer;transition:background .25s,color .25s,box-shadow .25s}
+.b-commit{background:var(--white);color:#04101C}
+.b-commit:hover{background:var(--blue-soft)}
+.b-committed{background:var(--blue);color:#04101C}
+.b-committed:hover{background:var(--blue-soft)}
+.b-why{background:transparent;color:var(--text);box-shadow:inset 0 0 0 1px var(--rule-strong)}
+.b-why:hover{box-shadow:inset 0 0 0 1px var(--blue);color:var(--white)}
+.toggle{display:flex;width:100%;align-items:center;gap:14px;padding:0 0 14px;background:none;border:0;border-bottom:1px solid var(--rule-strong);cursor:pointer;text-align:left}
+.toggle h3{font-size:22px}
+.toggle .chev{margin-left:auto;display:inline-flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)}
+.toggle .chev svg{transition:transform .4s var(--ease)}
+.toggle[aria-expanded="true"] .chev svg{transform:rotate(180deg)}
+.toggle:hover .chev{color:var(--white)}
+.locked-list{list-style:none;margin:6px 0 0;padding:0}
+.locked-list[hidden]{display:none}
+.lk{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto;gap:6px 28px;align-items:center;padding:16px 0;border-bottom:1px solid var(--rule)}
+.lk .t{display:flex;align-items:center;gap:12px;font-size:16.5px;color:var(--text);font-weight:400}
+.lk .t svg{flex:none;color:var(--dim)}
+.lk .m{font-family:var(--mono);font-size:12.5px;color:var(--dim)}
+.lk .m .closed{color:var(--muted);letter-spacing:.08em;margin-right:6px}
+.lk .r{font-family:var(--mono);font-size:13.5px;color:var(--orange-soft);text-align:right}
+
+/* Dialog */
+dialog{width:min(620px,calc(100vw - 32px));max-height:calc(100svh - 48px);padding:0;border:0;border-radius:16px;background:#0A2038;color:var(--text);box-shadow:0 40px 90px -20px rgba(0,0,0,.8),0 0 0 1px rgba(156,203,255,.18)}
+dialog::backdrop{background:rgba(3,10,18,.72);backdrop-filter:blur(4px)}
+dialog[open]{animation:pop .5s var(--ease)}
+@keyframes pop{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
+.dlg{padding:30px 30px 26px;position:relative}
+.dlg h3{font-size:24px;padding-right:44px}
+.dlg .ans{margin:18px 0 0;font-size:17.5px;line-height:1.65;color:var(--text);font-weight:300}
+.dlg .ans b{font-weight:500;color:var(--white)}
+.dlg .note{display:flex;align-items:center;gap:8px;margin:14px 0 0;font-size:13.5px;color:var(--muted)}
+.dlg details{margin-top:22px;border-top:1px solid var(--rule)}
+.dlg summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:14px 0;font-size:14px;font-weight:500;color:var(--blue-soft)}
+.dlg summary::-webkit-details-marker{display:none}
+.dlg summary svg{transition:transform .35s var(--ease)}
+.dlg details[open] summary svg{transform:rotate(90deg)}
+.dlg details p{margin:0;padding:16px 18px;border-radius:10px;background:rgba(6,18,31,.6);font-family:var(--mono);font-size:13.5px;line-height:1.7;color:var(--muted)}
+.x{position:absolute;top:22px;right:22px;width:38px;height:38px;display:grid;place-items:center;border-radius:50%;border:0;background:rgba(147,170,196,.1);cursor:pointer;color:var(--text)}
+.x:hover{background:rgba(147,170,196,.2)}
+
+/* Weeks */
+.wk-grid{--max:10;--barh:180px;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:0;margin-top:40px;position:relative;list-style:none;padding:0}
+.wk{position:relative;display:flex;flex-direction:column;padding:0 10px 0 0}
+.wk + .wk{padding-left:10px;border-left:1px solid var(--rule)}
+.wk .lab{font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.wk .dates{font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:2px;white-space:nowrap}
+.wk.now .lab{color:var(--blue)}
+.bar{position:relative;height:var(--barh);margin-top:16px;border-radius:8px}
+.bar .lost{position:absolute;left:0;right:0;top:0;height:calc((var(--max) - var(--avail)) / var(--max) * 100%);border-radius:8px 8px 0 0;background:radial-gradient(circle,rgba(147,170,196,.32) 1px,transparent 1.4px) 0 0/7px 7px}
+.bar .cap{position:absolute;left:0;right:0;bottom:0;height:calc(var(--avail) / var(--max) * 100%);border-radius:8px;background:rgba(79,163,255,.08);box-shadow:inset 0 0 0 1px rgba(79,163,255,.32)}
+.bar .plan{position:absolute;left:0;right:0;bottom:0;height:calc(var(--plan) / var(--max) * 100%);border-radius:8px;background:linear-gradient(to top,var(--blue),#7DBBFF);box-shadow:0 0 18px -2px rgba(79,163,255,.6)}
+.wk .hrs{margin-top:12px;font-family:var(--mono);font-size:13px;color:var(--text);white-space:nowrap}
+.wk .hrs b{font-weight:500;color:var(--white)}
+.wk .notes{display:flex;flex-direction:column;gap:6px;margin-top:10px;font-size:13px;line-height:1.35;color:var(--muted)}
+.exam{display:inline-flex;align-self:flex-start;padding:2px 8px;border-radius:6px;background:var(--navy-2);color:var(--blue-soft);font-size:12px}
+.lands{color:var(--text)}
+.lands .mono{color:var(--white)}
+.dl{display:flex;gap:6px;align-items:flex-start;color:var(--orange-soft);font-size:12.5px}
+.dl svg{flex:none;margin-top:2px}
+.wk.has-dl .bar::after{content:"";position:absolute;top:-8px;bottom:-8px;right:-11px;width:2px;background:var(--orange);box-shadow:0 0 10px rgba(255,122,61,.8);border-radius:2px}
+.wk.has-dl:last-child .bar::after{right:-1px}
+.legend{display:flex;flex-wrap:wrap;gap:12px 26px;margin:34px 0 0;padding:18px 0 0;border-top:1px solid var(--rule);list-style:none;font-size:13.5px;color:var(--muted)}
+.legend li{display:flex;align-items:center;gap:9px}
+.sw{width:18px;height:12px;border-radius:3px;flex:none}
+.sw.p{background:var(--blue)}
+.sw.a{background:rgba(79,163,255,.08);box-shadow:inset 0 0 0 1px rgba(79,163,255,.4)}
+.sw.o{background:var(--red);box-shadow:0 0 10px rgba(255,90,106,.55)}
+.sw.d{width:3px;height:16px;background:var(--orange);border-radius:2px}
+.sw.e{background:var(--navy-2)}
+.sw.b{background:radial-gradient(circle,rgba(147,170,196,.5) 1px,transparent 1.4px) 0 0/5px 5px;box-shadow:inset 0 0 0 1px var(--rule)}
+.foot{margin:14px 0 0;font-size:13.5px;color:var(--dim)}
+
+/* What if */
+.whatif{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:clamp(32px,5vw,80px);margin-top:36px;padding:clamp(24px,3vw,40px);border-radius:16px;background:linear-gradient(140deg,rgba(11,42,74,.6),rgba(11,42,74,.2))}
+.readout{display:flex;align-items:baseline;gap:12px}
+.readout b{font-family:var(--mono);font-weight:500;font-size:clamp(56px,6vw,84px);color:var(--white);letter-spacing:-.04em;line-height:1}
+.readout span{font-size:17px;color:var(--muted)}
+.range{margin-top:22px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;cursor:pointer;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:4px;background:linear-gradient(to right,var(--orange) 0,var(--orange) var(--fill,6.6%),rgba(147,170,196,.25) var(--fill,6.6%))}
+input[type=range]::-moz-range-track{height:4px;border-radius:4px;background:rgba(147,170,196,.25)}
+input[type=range]::-moz-range-progress{height:4px;border-radius:4px;background:var(--orange)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-9px;border-radius:50%;background:var(--white);border:4px solid var(--orange);box-shadow:0 0 0 6px rgba(255,122,61,.18)}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--white);border:4px solid var(--orange);box-shadow:0 0 0 6px rgba(255,122,61,.18)}
+.ticks{position:relative;height:30px;margin:4px 11px 0;font-family:var(--mono);font-size:12px;color:var(--dim)}
+.ticks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.ticks .saved{color:var(--blue-soft)}
+.ticks .saved::before{content:"";display:block;width:1px;height:8px;margin:0 auto 2px;background:var(--blue)}
+.wi-btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.b-save{background:var(--orange);color:#1A0A02}
+.b-save:hover{background:var(--orange-soft)}
+.b-reset{background:transparent;color:var(--text);box-shadow:inset 0 0 0 1px var(--rule-strong)}
+.b-reset:hover{box-shadow:inset 0 0 0 1px var(--white)}
+.preview{display:flex;align-items:center;gap:8px;margin:14px 0 0;font-size:14px;color:var(--muted)}
+.wi-msg{margin:24px 0 0;font-size:16.5px;line-height:1.55;color:var(--text);max-width:58ch}
+.warn{margin:24px 0 0;padding:16px 18px 16px 18px;border-radius:12px;background:rgba(255,90,106,.12);box-shadow:inset 0 0 0 1px rgba(255,90,106,.45);color:#FFD0D5;font-size:15.5px;line-height:1.55;display:flex;gap:12px}
+.warn svg{flex:none;margin-top:3px;color:var(--red)}
+.warn b{color:var(--white);font-weight:500}
+.mini{--barh:150px;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:4px}
+.mini-h{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+/* Add your own */
+.addgrid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(28px,4vw,64px);margin-top:36px;align-items:start}
+.field{display:flex;flex-direction:column;gap:8px}
+.field > span,.fs-legend{font-size:13px;font-weight:500;color:var(--text)}
+input[type=text],input[type=url],input[type=date],input[type=number],textarea{width:100%;padding:12px 14px;border-radius:10px;border:0;background:rgba(6,18,31,.7);box-shadow:inset 0 0 0 1px var(--rule-strong);color:var(--white);font-weight:400;font-size:15.5px;caret-color:var(--orange);transition:box-shadow .25s}
+input::placeholder,textarea::placeholder{color:#7F97B3}
+input:hover,textarea:hover{box-shadow:inset 0 0 0 1px rgba(147,170,196,.5)}
+input:focus,textarea:focus{outline:0;box-shadow:inset 0 0 0 1px var(--blue),0 0 0 4px rgba(79,163,255,.16)}
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.75)}
+textarea{min-height:120px;resize:vertical;line-height:1.55}
+textarea:disabled{opacity:.6;cursor:not-allowed}
+.ai-off{display:flex;gap:10px;margin:10px 0 0;font-size:14px;color:var(--muted)}
+.ai-off svg{flex:none;margin-top:3px;color:var(--orange)}
+.manual{margin-top:30px;padding-top:24px;border-top:1px solid var(--rule)}
+.manual-h{font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 18px}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 18px}
+.fgrid .full{grid-column:1/-1}
+.check{display:flex;align-items:center;gap:12px;cursor:pointer;font-size:15.5px;color:var(--text);font-weight:400}
+.check input{position:absolute;opacity:0;width:1px;height:1px}
+.check .bx{width:20px;height:20px;border-radius:6px;box-shadow:inset 0 0 0 1px var(--rule-strong);display:grid;place-items:center;background:rgba(6,18,31,.7);transition:background .2s}
+.check .bx svg{opacity:0;transition:opacity .2s}
+.check input:checked + .bx{background:var(--blue);box-shadow:none}
+.check input:checked + .bx svg{opacity:1}
+.check input:focus-visible + .bx{outline:2px solid var(--blue);outline-offset:3px}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.tagc{position:relative}
+.tagc input{position:absolute;opacity:0;width:1px;height:1px}
+.tagc span{display:inline-block;padding:7px 14px;border-radius:999px;font-size:14px;color:var(--muted);box-shadow:inset 0 0 0 1px var(--rule-strong);cursor:pointer;transition:all .2s;user-select:none}
+.tagc span:hover{color:var(--white);box-shadow:inset 0 0 0 1px rgba(147,170,196,.6)}
+.tagc input:checked + span{background:rgba(79,163,255,.16);color:var(--blue-soft);box-shadow:inset 0 0 0 1px rgba(79,163,255,.6)}
+.tagc input:focus-visible + span{outline:2px solid var(--blue);outline-offset:2px}
+.checkit{margin-top:26px}
+.result{position:sticky;top:96px;padding:28px;border-radius:16px;background:var(--surface);min-height:260px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:16px}
+.result .ghost{width:100%;padding:18px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--rule);display:flex;flex-direction:column;gap:10px}
+.result .ghost i{display:block;height:10px;border-radius:5px;background:rgba(147,170,196,.12)}
+.result p{margin:0;font-size:15.5px;color:var(--muted);max-width:40ch}
+
+/* Footer */
+footer{margin-top:clamp(80px,12vh,140px);border-top:1px solid var(--rule);padding:34px var(--gutter) 44px;display:flex;flex-wrap:wrap;align-items:center;gap:16px 32px;justify-content:space-between;color:var(--muted);font-size:15px}
+footer .brand{font-size:16px}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1180px){
+  .nav ul{gap:20px;margin-left:12px}
+  .summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .summary > div:nth-of-type(3){border-right:0;margin-right:0}
+  .summary > div:nth-of-type(n+4){border-top:1px solid var(--rule)}
+  .pile{width:62%;gap:16px 14px}
+  .chip b{font-size:13.5px}
+}
+@media (max-width:980px){
+  .nav ul{display:none}
+  .wk-grid:not(.mini){grid-template-columns:repeat(5,minmax(0,1fr));row-gap:34px}
+  .wk-grid:not(.mini) .wk:nth-child(6){border-left:0;padding-left:0}
+  .whatif,.addgrid,.funnel-grid,.reuse-grid{grid-template-columns:minmax(0,1fr)}
+  .result{position:static}
+  .hero{align-items:end}
+  .pile{position:relative;top:auto;right:auto;width:auto;grid-template-columns:repeat(2,1fr);margin:0 0 48px}
+  .city{left:0;right:0;bottom:30%}
+  .hero{grid-template-rows:auto auto}
+  .lk{grid-template-columns:minmax(0,1fr);gap:4px}
+  .lk .r{text-align:left;padding-left:28px}
+  .lk .m{padding-left:28px}
+}
+@media (max-width:640px){
+  body{font-size:16px}
+  :root{--gutter:16px;--rail:14px}
+  .nav{gap:12px;padding:14px 16px}
+  .brand{font-size:16px}
+  .nav-right{gap:12px}
+  .nav-skip{font-size:11px;letter-spacing:.12em}
+  .pill{padding:9px 14px;font-size:11px;letter-spacing:.1em}
+  .wrap,.handoff{padding-left:42px;padding-right:16px}
+  .hero{padding-top:96px;min-height:auto}
+  .pile{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:40px}
+  .pile li{transform:none!important;grid-column:auto!important}
+  .chip{padding:8px 11px 8px 13px;border-radius:10px}
+  .chip b{font-size:12.5px}
+  .chip span{font-size:10.5px;margin-top:2px}
+  .chip::before{top:12px;width:6px;height:6px;left:-4px}
+  .stats li{padding:0 14px;font-size:13.5px}
+  .stats strong{font-size:21px}
+  .scroll{display:none}
+  .btn{padding:14px 22px}
+  .thread{grid-template-columns:44px minmax(0,1fr)}
+  .thread svg{width:44px}
+  .source{font-size:17px}
+  .summary{grid-template-columns:minmax(0,1fr)}
+  .summary > div{border-right:0!important;margin-right:0!important;border-top:1px solid var(--rule);padding-right:0}
+  .summary > div:first-of-type{border-top:0}
+  .nextstep{align-items:flex-start;flex-wrap:wrap;gap:10px 14px;padding:18px}
+  .nextstep i{margin-top:6px}
+  .nextstep p{font-size:17px;flex-basis:100%}
+  .tier-head{flex-wrap:wrap}
+  .tier-head .what{margin-left:0;flex-basis:100%}
+  .cards{grid-template-columns:minmax(0,1fr)}
+  /* weeks become rows with horizontal bars */
+  .wk-grid,.wk-grid.mini{grid-template-columns:minmax(0,1fr)!important;row-gap:0!important}
+  .wk{display:grid;grid-template-columns:96px minmax(0,1fr);grid-template-areas:"lab bar" "dates hrs" "notes notes";gap:2px 14px;padding:14px 0!important;border-left:0!important;border-top:1px solid var(--rule)}
+  .wk:first-child{border-top:0}
+  .wk .lab{grid-area:lab;align-self:center}
+  .wk .dates{grid-area:dates}
+  .wk .hrs{grid-area:hrs;margin-top:0}
+  .wk .notes{grid-area:notes;flex-direction:row;flex-wrap:wrap;gap:6px 12px;margin-top:6px}
+  .wk .notes:empty{display:none}
+  .bar{grid-area:bar;height:16px;margin-top:0;align-self:center}
+  .bar .lost{top:0;bottom:0;left:auto;right:0;height:auto;width:calc((var(--max) - var(--avail)) / var(--max) * 100%);border-radius:0 6px 6px 0}
+  .bar .cap,.bar .plan{top:0;height:auto;width:calc(var(--avail) / var(--max) * 100%);border-radius:6px}
+  .bar .plan{width:calc(var(--plan) / var(--max) * 100%);background:linear-gradient(to right,var(--blue),#7DBBFF)}
+  .wk.has-dl .bar::after{top:-5px;bottom:-5px;right:-1px}
+  .fgrid{grid-template-columns:minmax(0,1fr)}
+  .dlg{padding:24px 20px 20px}
+  .dlg .ans{font-size:16.5px}
+  .whatif{padding:20px}
+  .reuse-map::before{inset:-40px -16px}
+}
+@media (max-width:380px){
+  .nav-skip{display:none}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav" aria-label="Main">
+  <a class="brand" href="#top">
+    <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 21 C9 21 9 6 14 6 S19 14 22 5" fill="none" stroke="#4FA3FF" stroke-width="2.2" stroke-linecap="round"/><circle cx="4" cy="21" r="2.6" fill="#FF7A3D"/><circle cx="22" cy="5" r="2.6" fill="#fff"/></svg>
+    Opportunity OS
+  </a>
+  <ul>
+    <li><a href="#plan">Plan</a></li>
+    <li><a href="#opportunities">Opportunities</a></li>
+    <li><a href="#weeks">Weeks</a></li>
+    <li><a href="#reuse-planner">Reuse</a></li>
+    <li><a href="#add">Add your own</a></li>
+  </ul>
+  <div class="nav-right">
+    <a class="nav-skip" id="navSwap" href="#planner">Skip intro</a>
+    <button class="pill" type="button">Profile</button>
+  </div>
+</nav>
+
+<main id="top">
+<!-- ================= STORY ================= -->
+<div class="story">
+  <div class="rail" aria-hidden="true">
+    <i style="top:72%"></i>
+    <i style="top:calc(100svh + 140px)"></i>
+    <i class="o" style="bottom:330px"></i>
+    <i style="bottom:120px"></i>
+  </div>
+
+  <section class="hero wrap" aria-labelledby="h-hero">
+    <div class="city" aria-hidden="true"><svg id="city" viewBox="0 0 900 760" preserveAspectRatio="xMidYMid slice"></svg></div>
+
+    <ul class="pile" aria-label="The pile: 10 opportunities">
+      <li class="chip"><b>International Machine Learning Competition</b><span>due <em>Dec 13</em> · ~6 h</span></li>
+      <li class="chip"><b>Congressional App Challenge</b><span>due <em>Oct 26</em> · ~6 h</span></li>
+      <li class="chip"><b>OpenCV AI Competition</b><span>due <em>Oct 26</em> · ~30 h</span></li>
+      <li class="chip"><b>Regeneron Science Talent Search</b><span>due <em>Nov 5</em> · ~40 h</span></li>
+      <li class="chip"><b>NASA Space Apps Challenge 2026</b><span>due <em>Nov 14</em> · ~12 h</span></li>
+      <li class="chip"><b>K-State High School Programming Contest</b><span>due <em>Nov 4</em> · ~6 h</span></li>
+      <li class="chip"><b>Cosmo Hacks 2026</b><span>due <em>Dec 21</em> · ~24 h</span></li>
+      <li class="chip"><b>3M Young Scientist Challenge</b><span>due <em>Apr 30</em> · ~6 h</span></li>
+      <li class="chip"><b>Australian STEM Video Game Challenge 2026</b><span>due <em>Sep 9</em> · ~20 h</span></li>
+      <li class="chip"><b>Global Appathon</b><span>due <em>Apr 2</em> · ~10 h</span></li>
+    </ul>
+
+    <div class="hero-copy ruled">
+      <h1 id="h-hero">Too many opportunities. <span>Too little time.</span></h1>
+      <ul class="stats">
+        <li><strong>10</strong>opportunities</li>
+        <li><strong>160 h</strong>of work, estimated</li>
+        <li><strong>10 h</strong>a week to spend</li>
+      </ul>
+      <p class="line">For students juggling more opportunities than hours.</p>
+      <div class="ctas">
+        <a class="btn btn-primary" href="#planner">Open the planner <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <a class="btn btn-ghost" href="#funnel">See how it narrows</a>
+      </div>
+    </div>
+
+    <a class="scroll" href="#funnel" aria-label="Scroll to the next section">SCROLL
+      <svg width="14" height="16" viewBox="0 0 14 16" aria-hidden="true"><path d="M7 1v13M2 9l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </section>
+
+  <section class="funnel wrap" id="funnel" aria-labelledby="h-funnel">
+    <div class="funnel-grid">
+      <div>
+        <h2 id="h-funnel" class="ruled">Most of them aren't for you.</h2>
+        <p class="counter" id="counter" aria-live="polite"><b id="countNum">5</b><span>of 10</span></p>
+      </div>
+      <ol class="exits" id="exits">
+        <li class="exit out"><span class="node"><svg width="19" height="19" viewBox="0 0 19 19" aria-hidden="true"><circle cx="9.5" cy="9.5" r="8" fill="#06121F" stroke="#FF7A3D" stroke-width="1.6"/><path d="M6.5 6.5l6 6M12.5 6.5l-6 6" stroke="#FF7A3D" stroke-width="1.6" stroke-linecap="round"/></svg></span><div><h3>3M Young Scientist Challenge</h3><p>Grade 5-8 only</p></div></li>
+        <li class="exit out"><span class="node"><svg width="19" height="19" viewBox="0 0 19 19" aria-hidden="true"><circle cx="9.5" cy="9.5" r="8" fill="#06121F" stroke="#FF7A3D" stroke-width="1.6"/><path d="M6.5 6.5l6 6M12.5 6.5l-6 6" stroke="#FF7A3D" stroke-width="1.6" stroke-linecap="round"/></svg></span><div><h3>Australian STEM Video Game Challenge 2026</h3><p>Closed Sep 9</p></div></li>
+        <li class="exit out"><span class="node"><svg width="19" height="19" viewBox="0 0 19 19" aria-hidden="true"><circle cx="9.5" cy="9.5" r="8" fill="#06121F" stroke="#FF7A3D" stroke-width="1.6"/><path d="M6.5 6.5l6 6M12.5 6.5l-6 6" stroke="#FF7A3D" stroke-width="1.6" stroke-linecap="round"/></svg></span><div><h3>OpenCV AI Competition</h3><p>Needs 30 h, 18.5 h available by Oct 26</p></div></li>
+        <li class="exit out"><span class="node"><svg width="19" height="19" viewBox="0 0 19 19" aria-hidden="true"><circle cx="9.5" cy="9.5" r="8" fill="#06121F" stroke="#FF7A3D" stroke-width="1.6"/><path d="M6.5 6.5l6 6M12.5 6.5l-6 6" stroke="#FF7A3D" stroke-width="1.6" stroke-linecap="round"/></svg></span><div><h3>K-State High School Programming Contest</h3><p>Manhattan, KS, US only</p></div></li>
+        <li class="exit out"><span class="node"><svg width="19" height="19" viewBox="0 0 19 19" aria-hidden="true"><circle cx="9.5" cy="9.5" r="8" fill="#06121F" stroke="#FF7A3D" stroke-width="1.6"/><path d="M6.5 6.5l6 6M12.5 6.5l-6 6" stroke="#FF7A3D" stroke-width="1.6" stroke-linecap="round"/></svg></span><div><h3>Regeneron Science Talent Search</h3><p>Grade 12 only</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="reuse wrap" id="reuse-story" aria-labelledby="h-reuse">
+    <div class="reuse-grid">
+      <div>
+        <h2 id="h-reuse" class="ruled">One project. Several doors.</h2>
+        <p class="lede">Each thread is a tag Tennis Analytics App shows that the opportunity asks for.</p>
+      </div>
+      <div class="reuse-map">
+        <div class="source"><i></i>Tennis Analytics App</div>
+        <ul class="threads" data-variant="story" aria-label="Opportunities this project counts for"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="handoff" aria-labelledby="h-handoff">
+    <h2 id="h-handoff" class="ruled">Now plan your weeks.</h2>
+    <a class="btn btn-primary" href="#planner">Open the planner <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  </section>
+</div>
+
+<!-- ================= PLANNER ================= -->
+<div class="planner" id="planner">
+ <div class="pwrap">
+
+  <section class="psec" id="plan" aria-labelledby="h-plan">
+    <h2 id="h-plan" class="ruled"><span class="tag">Today · Oct 11</span>Your plan</h2>
+    <dl class="summary">
+      <div><dt>Committed</dt><dd><span class="v">2 of 5 you can do</span><span class="s">2 opportunities on your plan</span></dd></div>
+      <div><dt>Work committed</dt><dd><span class="v"><span class="num">12 h</span></span><span class="s">Estimated, across all deadlines</span></dd></div>
+      <div><dt>Next deadline</dt><dd><span class="v">Oct 26 · in 15 days</span><span class="s">Congressional App Challenge</span></dd></div>
+      <div><dt>Next busy period</dt><dd><span class="v">Midterms</span><span class="s">Oct 20-27 · in 9 days</span></dd></div>
+      <div><dt>This week (Oct 11-17)</dt><dd><span class="v"><span class="num">0 h</span> of <span class="num">10 h</span></span><span class="s">planned</span></dd></div>
+    </dl>
+    <div class="nextstep"><i aria-hidden="true"></i><span class="k">Next step</span><p>Work on Tennis Analytics App for NASA Space Apps Challenge 2026, due Nov 14</p></div>
+  </section>
+
+  <section class="psec" id="opportunities" aria-labelledby="h-opps">
+    <h2 id="h-opps" class="ruled"><span class="tag">Sorted by fixed rules</span>Opportunities</h2>
+    <p class="lede">Focus: your projects already show what it asks for and the hours fit. Consider: possible, with a catch. Not now: locked, with the reason.</p>
+
+    <div class="tier">
+      <div class="tier-head"><h3>Focus</h3><span class="count">(4)</span></div>
+      <div class="cards">
+        <article class="card">
+          <div class="meta"><span class="tt focus">Focus</span><span>due Nov 14 · in 34 days</span></div>
+          <h4>NASA Space Apps Challenge 2026</h4>
+          <p class="hrs">~12 h <small>(estimate)</small></p>
+          <p class="shows">Your projects show <b>data analysis, python</b></p>
+          <div class="actions"><button class="b b-commit" type="button" aria-pressed="false">Commit</button><button class="b b-why" type="button" data-why="nasa">Ask why</button></div>
+        </article>
+        <article class="card committed">
+          <div class="meta"><span class="tt focus">Focus</span><span>due Dec 13 · in 63 days</span></div>
+          <h4>International Machine Learning Competition</h4>
+          <p class="hrs">~6 h <small>(estimate)</small></p>
+          <p class="shows">Your projects show <b>data analysis, python</b></p>
+          <p class="startby">Start by week of Dec 13</p>
+          <div class="actions"><button class="b b-committed" type="button" aria-pressed="true"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Committed</button><button class="b b-why" type="button" data-why="imlc">Ask why</button></div>
+        </article>
+        <article class="card">
+          <div class="meta"><span class="tt focus">Focus</span><span>due Dec 21 · in 71 days</span></div>
+          <h4>Cosmo Hacks 2026</h4>
+          <p class="hrs">~24 h <small>(estimate)</small></p>
+          <p class="shows">Your projects show <b>technical project, python</b></p>
+          <div class="actions"><button class="b b-commit" type="button" aria-pressed="false">Commit</button><button class="b b-why" type="button" data-why="cosmo">Ask why</button></div>
+        </article>
+        <article class="card">
+          <div class="meta"><span class="tt focus">Focus</span><span>due Apr 2 · in 173 days</span></div>
+          <h4>Global Appathon</h4>
+          <p class="org">App Inventor Foundation (MIT App Inventor)</p>
+          <p class="hrs">~10 h <small>(estimate)</small></p>
+          <p class="shows">Your projects show <b>technical project</b></p>
+          <div class="actions"><button class="b b-commit" type="button" aria-pressed="false">Commit</button><button class="b b-why" type="button" data-why="appathon">Ask why</button></div>
+        </article>
+      </div>
+    </div>
+
+    <div class="tier">
+      <div class="tier-head"><h3>Consider</h3><span class="count">(1)</span></div>
+      <div class="cards">
+        <article class="card committed">
+          <div class="meta"><span class="tt consider">Consider</span><span>due Oct 26 · in 15 days</span></div>
+          <h4>Congressional App Challenge</h4>
+          <p class="hrs">~6 h <small>(estimate)</small></p>
+          <p class="shows">Your projects show <b>technical project, python, computer vision, portfolio github</b></p>
+          <p class="catch"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="1.5" y="2.5" width="11" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M1.5 6h11M4.5 1v3M9.5 1v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Due during Midterms</p>
+          <div class="actions"><button class="b b-committed" type="button" aria-pressed="true"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Committed</button><button class="b b-why" type="button" data-why="cac">Ask why</button></div>
+        </article>
+      </div>
+    </div>
+
+    <div class="tier">
+      <button class="toggle" type="button" aria-expanded="false" aria-controls="notnow" id="nnToggle">
+        <h3>Not now</h3><span class="count num" style="font-size:14px;color:var(--muted)">(5)</span>
+        <span class="chev"><span id="nnLabel">Show</span><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 5l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </button>
+      <ul class="locked-list" id="notnow" hidden>
+        <li class="lk"><span class="t"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 7V5a2.5 2.5 0 015 0v2" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>3M Young Scientist Challenge</span><span class="m"><span class="closed">CLOSED</span>due Apr 30 · closed 164 days ago · ~6 h</span><span class="r">Grade 5-8 only</span></li>
+        <li class="lk"><span class="t"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 7V5a2.5 2.5 0 015 0v2" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>Australian STEM Video Game Challenge 2026</span><span class="m"><span class="closed">CLOSED</span>due Sep 9 · closed 32 days ago · ~20 h</span><span class="r">Closed Sep 9</span></li>
+        <li class="lk"><span class="t"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 7V5a2.5 2.5 0 015 0v2" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>OpenCV AI Competition</span><span class="m">due Oct 26 · in 15 days · ~30 h</span><span class="r">Needs 30 h, 18.5 h available by Oct 26</span></li>
+        <li class="lk"><span class="t"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 7V5a2.5 2.5 0 015 0v2" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>K-State High School Programming Contest</span><span class="m">due Nov 4 · in 24 days · ~6 h</span><span class="r">Manhattan, KS, US only</span></li>
+        <li class="lk"><span class="t"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 7V5a2.5 2.5 0 015 0v2" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>Regeneron Science Talent Search</span><span class="m">due Nov 5 · in 25 days · ~40 h</span><span class="r">Grade 12 only</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="psec" id="weeks" aria-labelledby="h-weeks">
+    <h2 id="h-weeks" class="ruled"><span class="tag">Backward from each deadline</span>Your weeks</h2>
+    <p class="lede">Each column is 7 days from today. Hours fill the deadline week first, then earlier weeks.</p>
+    <ol class="wk-grid" id="weekGrid"></ol>
+    <ul class="legend" aria-label="Legend">
+      <li><span class="sw p"></span>Planned hours</li>
+      <li><span class="sw a"></span>Hours available that week</li>
+      <li><span class="sw o"></span>Over capacity</li>
+      <li><span class="sw d"></span>Deadline</li>
+      <li><span class="sw e"></span>Exams</li>
+      <li><span class="sw b"></span>Busy days (fewer hours)</li>
+    </ul>
+    <p class="foot">The week a deadline falls in counts in full.</p>
+  </section>
+
+  <section class="psec" id="whatif" aria-labelledby="h-whatif">
+    <h2 id="h-whatif" class="ruled">What if you had more or less time?</h2>
+    <div class="whatif">
+      <div>
+        <label for="hours" class="sr">Weekly hours, preview</label>
+        <div class="readout"><b id="hrsOut">2 h</b><span>a week</span></div>
+        <div class="range">
+          <input type="range" id="hours" min="0" max="30" step="1" value="2" aria-describedby="wiPreview">
+          <div class="ticks" aria-hidden="true"><span style="left:0">0 h</span><span class="saved" style="left:33.333%">10 h saved</span><span style="left:100%">30 h</span></div>
+        </div>
+        <div class="wi-btns"><button class="b b-save" type="button">Save as my weekly hours</button><button class="b b-reset" type="button" id="resetBtn">Reset to 10 h</button></div>
+        <p class="preview" id="wiPreview"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.8" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M7 6v4M7 4v.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Preview only. Nothing changes until you save.</p>
+        <div id="wiMsg" aria-live="polite"></div>
+      </div>
+      <div>
+        <p class="mini-h" id="miniHead">Weeks at 2 h</p>
+        <ol class="wk-grid mini" id="miniGrid"></ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="psec" id="reuse-planner" aria-labelledby="h-reuse2">
+    <h2 id="h-reuse2" class="ruled"><span class="tag">Reuse</span>One project, several doors</h2>
+    <p class="lede">Each thread is a tag your project shows that the opportunity asks for. Bright threads lead to what you've committed; dashed ones are locked.</p>
+    <div class="reuse-map" style="margin-top:40px;max-width:880px">
+      <div class="source"><i></i>Tennis Analytics App</div>
+      <ul class="threads" data-variant="planner" aria-label="Opportunities this project counts for"></ul>
+    </div>
+  </section>
+
+  <section class="psec" id="add" aria-labelledby="h-add">
+    <h2 id="h-add" class="ruled"><span class="tag">Your list</span>Add your own</h2>
+    <p class="lede">Found something not on the list? The same rules check it before it joins your plan.</p>
+    <div class="addgrid">
+      <form id="addForm" novalidate>
+        <label class="field"><span>Paste the opportunity text</span><textarea disabled aria-describedby="aiOff"></textarea></label>
+        <p class="ai-off" id="aiOff"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.8" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M7 4v3.6M7 9.8v.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Reading pasted text needs the AI extractor, which is off. Fill in manually below.</p>
+
+        <div class="manual">
+          <p class="manual-h">Fill in manually</p>
+          <div class="fgrid">
+            <label class="field full"><span>Title</span><input type="text" name="title"></label>
+            <label class="field"><span>Organizer</span><input type="text" name="org"></label>
+            <label class="field"><span>Link</span><input type="url" name="link"></label>
+            <label class="field"><span>Deadline</span><input type="date" name="deadline"></label>
+            <label class="field"><span>Hours it takes (estimate)</span><input type="number" name="hours" min="0" step="0.5" inputmode="decimal"></label>
+            <label class="field"><span>Lowest grade</span><input type="number" name="gmin" min="1" max="12" inputmode="numeric"></label>
+            <label class="field"><span>Highest grade</span><input type="number" name="gmax" min="1" max="12" inputmode="numeric"></label>
+            <label class="check full"><input type="checkbox" name="online"><span class="bx"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.5l2.3 2.3 4.7-5.6" fill="none" stroke="#04101C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Online, open from anywhere</label>
+            <fieldset class="full">
+              <legend class="fs-legend">What it asks for</legend>
+              <div class="tags" id="tagBox"></div>
+            </fieldset>
+          </div>
+          <button class="btn btn-primary checkit" type="submit">Check it</button>
+        </div>
+      </form>
+      <aside class="result" aria-live="polite">
+        <div class="ghost" aria-hidden="true"><i style="width:30%"></i><i style="width:78%;height:14px"></i><i style="width:52%"></i></div>
+        <p>Fill in the form and press "Check it" to see the card and what still blocks it.</p>
+      </aside>
+    </div>
+  </section>
+ </div>
+
+ <footer>
+   <a class="brand" href="#top"><svg width="22" height="22" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 21 C9 21 9 6 14 6 S19 14 22 5" fill="none" stroke="#4FA3FF" stroke-width="2.2" stroke-linecap="round"/><circle cx="4" cy="21" r="2.6" fill="#FF7A3D"/><circle cx="22" cy="5" r="2.6" fill="#fff"/></svg>Opportunity OS</a>
+   <span>Rule-based. Every reason shown. AI only explains and extracts.</span>
+ </footer>
+</div>
+</main>
+
+<dialog id="why" aria-labelledby="whyTitle">
+  <div class="dlg">
+    <button class="x" type="button" id="whyClose" aria-label="Close"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+    <h3 id="whyTitle">Why: International Machine Learning Competition</h3>
+    <div id="whyBody"></div>
+  </div>
+</dialog>
+
+<script>
+document.documentElement.classList.add('js');
+
+/* ---------- Aerial city (placeholder art: pure SVG geometry) ---------- */
+(function(){
+  var svg=document.getElementById('city'); if(!svg) return;
+  var NS='http://www.w3.org/2000/svg', W=900, H=760, s=7;
+  function rnd(){ s=(s*16807)%2147483647; return (s-1)/2147483646; }
+  function el(n,a,p){ var e=document.createElementNS(NS,n); for(var k in a) e.setAttribute(k,a[k]); (p||svg).appendChild(e); return e; }
+  var defs=el('defs',{});
+  var f=el('filter',{id:'gl',x:'-20%',y:'-20%',width:'140%',height:'140%'},defs); el('feGaussianBlur',{stdDeviation:'6'},f);
+  var f2=el('filter',{id:'gl2',x:'-20%',y:'-20%',width:'140%',height:'140%'},defs); el('feGaussianBlur',{stdDeviation:'2'},f2);
+  el('rect',{width:W,height:H,fill:'#071A2E'});
+  var blocks=el('g',{});
+  var cols=['#0D2C50','#103561','#14407A','#0F3B6E','#1A4F92','#21609F','#0B2746'];
+  for(var y=10;y<H;y+=46){
+    for(var x=10;x<W;x+=40){
+      if(rnd()<.12) continue;
+      var n=1+Math.floor(rnd()*3);
+      for(var i=0;i<n;i++){
+        var w=10+rnd()*22,h=10+rnd()*30,bx=x+rnd()*(36-w),by=y+rnd()*(42-h);
+        var c=cols[Math.floor(rnd()*cols.length)];
+        el('rect',{x:bx.toFixed(1),y:by.toFixed(1),width:w.toFixed(1),height:h.toFixed(1),rx:1.5,fill:c},blocks);
+        var lit=Math.floor(rnd()*5);
+        for(var j=0;j<lit;j++){
+          var wc=rnd()<.82?'#8CC4FF':(rnd()<.6?'#FFFFFF':'#FFB08A');
+          el('rect',{x:(bx+2+rnd()*(w-4)).toFixed(1),y:(by+2+rnd()*(h-4)).toFixed(1),width:1.6,height:1.6,fill:wc,opacity:(.5+rnd()*.5).toFixed(2)},blocks);
+        }
+      }
+    }
+  }
+  /* a few tall lit towers */
+  for(var t=0;t<14;t++){
+    var tx=rnd()*W, ty=rnd()*H, tw=18+rnd()*18, th=26+rnd()*34;
+    el('rect',{x:tx,y:ty,width:tw,height:th,rx:2,fill:'#2B78D0',opacity:.55},blocks);
+    el('rect',{x:tx+3,y:ty+3,width:tw-6,height:th-6,rx:1,fill:'#5AA9FF',opacity:.35},blocks);
+  }
+  /* orange light-trail highways */
+  var trails=['M-20 300 C 160 260, 260 380, 420 330 S 700 250, 920 300','M120 780 C 200 620, 330 560, 400 470 S 520 300, 600 120 S 660 -10, 700 -20','M-20 560 C 180 540, 300 600, 520 520 S 760 470, 920 520'];
+  trails.forEach(function(d,k){
+    el('path',{d:d,fill:'none',stroke:'#FF7A3D',"stroke-width":k===1?14:10,opacity:.45,filter:'url(#gl)'});
+    el('path',{d:d,fill:'none',stroke:'#FF9A5E',"stroke-width":k===1?3.2:2.4,opacity:.95});
+    el('path',{d:d,fill:'none',stroke:'#FFE2CC',"stroke-width":.8,opacity:.9});
+  });
+  /* the route: thin light line with milestone nodes */
+  var route='M60 700 C 220 690, 260 600, 380 560 S 520 520, 560 430 S 640 300, 700 250 S 760 150, 790 40';
+  el('path',{d:route,fill:'none',stroke:'#9CCBFF',"stroke-width":5,opacity:.3,filter:'url(#gl2)'});
+  el('path',{d:route,fill:'none',stroke:'#CFE6FF',"stroke-width":1.6,opacity:.9});
+  [[60,700,'#fff'],[380,560,'#fff'],[560,430,'#FF7A3D'],[700,250,'#fff'],[790,40,'#4FA3FF']].forEach(function(p){
+    el('circle',{cx:p[0],cy:p[1],r:9,fill:p[2],opacity:.25,filter:'url(#gl2)'});
+    el('circle',{cx:p[0],cy:p[1],r:4,fill:p[2]});
+  });
+})();
+
+/* ---------- Funnel: count down as exits light up ---------- */
+(function(){
+  var list=document.getElementById('exits'), num=document.getElementById('countNum'), box=document.getElementById('counter');
+  if(!list||!('IntersectionObserver' in window)||matchMedia('(prefers-reduced-motion: reduce)').matches) { box.classList.add('done'); return; }
+  var items=[].slice.call(list.children);
+  items.forEach(function(li){ li.classList.remove('out'); });
+  num.textContent='10';
+  var io=new IntersectionObserver(function(es){
+    if(!es[0].isIntersecting) return; io.disconnect();
+    items.forEach(function(li,i){ setTimeout(function(){ li.classList.add('out'); num.textContent=String(9-i); if(i===items.length-1) box.classList.add('done'); }, 450+i*520); });
+  },{threshold:.45});
+  io.observe(list);
+})();
+
+/* ---------- Reuse threads ---------- */
+(function(){
+  var data=[
+    {t:'International Machine Learning Competition',via:['data analysis','python'],c:true},
+    {t:'Congressional App Challenge',via:['technical project','python','computer vision','portfolio github'],c:true},
+    {t:'NASA Space Apps Challenge 2026',via:['data analysis','python']},
+    {t:'Cosmo Hacks 2026',via:['technical project','python']},
+    {t:'Global Appathon',via:['technical project']},
+    {t:'OpenCV AI Competition',via:['computer vision','technical project','python','portfolio github'],lock:'Needs 30 h, 18.5 h available by Oct 26'}
+  ];
+  var lockIcon='<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 7V5a2.5 2.5 0 015 0v2" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>';
+  document.querySelectorAll('.threads').forEach(function(ul){
+    var planner=ul.getAttribute('data-variant')==='planner', html='';
+    data.forEach(function(d){
+      var cls='thread'+(d.lock?' locked':'')+(planner&&!d.lock?(d.c?' hot':' dim'):'');
+      html+='<li class="'+cls+'"><svg viewBox="0 0 72 100" preserveAspectRatio="none" aria-hidden="true">'+
+        '<path class="spine" d="M22 0 V100" stroke-width="1.5" vector-effect="non-scaling-stroke"/>'+
+        '<path class="glow" d="M22 0 C22 40, 30 50, 72 50" vector-effect="non-scaling-stroke"/>'+
+        '<path class="branch" d="M22 0 C22 40, 30 50, 72 50" vector-effect="non-scaling-stroke"/></svg>'+
+        '<div class="body"><b>'+d.t+(planner&&d.c?'<span class="state">Committed</span>':'')+'</b>'+
+        '<div class="via"><span class="lbl">via</span>'+d.via.map(function(v){return '<span>'+v+'</span>';}).join('')+'</div>'+
+        (d.lock?'<div class="lockline">'+lockIcon+d.lock+'</div>':'')+'</div></li>';
+    });
+    ul.innerHTML=html;
+  });
+})();
+
+/* ---------- Weeks ---------- */
+var WEEKS=[
+  {l:'This week',d:'Oct 11-17',busy:0},
+  {l:'Week 2',d:'Oct 18-24',busy:5},
+  {l:'Week 3',d:'Oct 25-31',busy:3},
+  {l:'Week 4',d:'Nov 1-7',busy:0},
+  {l:'Week 5',d:'Nov 8-14',busy:0},
+  {l:'Week 6',d:'Nov 15-21',busy:0},
+  {l:'Week 7',d:'Nov 22-28',busy:0},
+  {l:'Week 8',d:'Nov 29-Dec 5',busy:0},
+  {l:'Week 9',d:'Dec 6-12',busy:0},
+  {l:'Week 10',d:'Dec 13-19',busy:0}
+];
+function r5(x){ return Math.round(x*2)/2; }
+function fmt(x){ return (Math.round(x*10)/10).toString(); }
+function cap(v,b){ return r5(v*(1-b/7)); }
+function weekLi(w,avail,plan,max,extra,now){
+  var notes='';
+  if(w.busy) notes+='<span class="exam">Midterms · '+w.busy+' days</span>';
+  if(extra&&extra.lands) notes+='<span class="lands"><span class="mono">'+extra.lands[0]+' h</span> '+extra.lands[1]+'</span>';
+  if(extra&&extra.dl) notes+='<span class="dl"><svg width="10" height="12" viewBox="0 0 10 12" aria-hidden="true"><path d="M1.5 11.5V1h7l-2 2.5 2 2.5h-7" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>'+extra.dl+'</span>';
+  return '<li class="wk'+(now?' now':'')+(extra&&extra.dl?' has-dl':'')+'" style="--avail:'+avail+';--plan:'+Math.min(plan,avail)+';--max:'+(max||1)+'">'+
+    '<span class="lab">'+w.l+'</span><span class="dates">'+w.d+'</span>'+
+    '<div class="bar" aria-hidden="true">'+(avail<max?'<span class="lost"></span>':'')+'<span class="cap"></span><span class="plan"></span></div>'+
+    '<span class="hrs"><b>'+fmt(plan)+'</b> of '+fmt(avail)+' h</span>'+
+    '<div class="notes">'+notes+'</div></li>';
+}
+(function(){
+  var plan=[0,.5,5.5,0,0,0,0,0,0,6];
+  var extra={2:{lands:['5.5','Congressional App Challenge'],dl:'Congressional App Challenge'},9:{lands:['6','International Machine Learning Competition'],dl:'International Machine Learning Competition'}};
+  document.getElementById('weekGrid').innerHTML=WEEKS.map(function(w,i){ return weekLi(w,cap(10,w.busy),plan[i],10,extra[i],i===0); }).join('');
+})();
+
+/* ---------- What if ---------- */
+(function(){
+  var r=document.getElementById('hours'), out=document.getElementById('hrsOut'), msg=document.getElementById('wiMsg'), grid=document.getElementById('miniGrid'), head=document.getElementById('miniHead');
+  var warnIcon='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8l6.6 11.7H1.4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 6.3v3.4M8 11.6v.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+  function render(){
+    var v=+r.value;
+    out.textContent=v+' h';
+    head.textContent='Weeks at '+v+' h';
+    r.style.setProperty('--fill',(v/30*100)+'%');
+    var c=WEEKS.slice(0,3).map(function(w){return cap(v,w.busy);});
+    var byOct26=c[0]+c[1]+c[2];
+    var all=WEEKS.reduce(function(a,w){return a+cap(v,w.busy);},0);
+    var bad=[];
+    if(byOct26<6) bad.push('Congressional App Challenge (Needs 6 h, '+fmt(byOct26)+' h available by Oct 26)');
+    if(all<6) bad.push('International Machine Learning Competition (Needs 6 h, '+fmt(all)+' h available by Dec 13)');
+    if(bad.length){
+      msg.innerHTML='<p class="warn">'+warnIcon+'<span>Can’t be done in time at '+v+' h a week (would be uncommitted if you save): <b>'+bad.join('</b>; <b>')+'</b></span></p>';
+    } else {
+      msg.innerHTML='<p class="wi-msg">At '+v+' h a week, no combination of what you can commit overloads a week. Drag lower to see where it breaks.</p>';
+    }
+    grid.innerHTML=WEEKS.slice(0,3).map(function(w,i){ return weekLi(w,c[i],0,Math.max(v,0.0001),null,i===0); }).join('');
+  }
+  r.addEventListener('input',render);
+  document.getElementById('resetBtn').addEventListener('click',function(){ r.value=10; render(); });
+  render();
+})();
+
+/* ---------- Not now toggle ---------- */
+(function(){
+  var b=document.getElementById('nnToggle'), l=document.getElementById('notnow'), t=document.getElementById('nnLabel');
+  b.addEventListener('click',function(){ var o=b.getAttribute('aria-expanded')==='true'; b.setAttribute('aria-expanded',String(!o)); l.hidden=o; t.textContent=o?'Show':'Hide'; });
+})();
+
+/* ---------- Commit buttons (visual toggle only) ---------- */
+document.querySelectorAll('.b-commit,.b-committed').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var on=btn.getAttribute('aria-pressed')!=='true';
+    btn.setAttribute('aria-pressed',String(on));
+    btn.className='b '+(on?'b-committed':'b-commit');
+    btn.innerHTML=on?'<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Committed':'Commit';
+    btn.closest('.card').classList.toggle('committed',on);
+  });
+});
+
+/* ---------- Ask why dialog ---------- */
+(function(){
+  var dlg=document.getElementById('why'), title=document.getElementById('whyTitle'), body=document.getElementById('whyBody');
+  var chev='<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M4 2.5L7.5 6 4 9.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var check='<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.8" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 7.2l1.8 1.8 3.4-4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var imlc='<p class="ans">This project is <b>Focus</b> because your projects show data analysis and python. You have <b>99 h</b> available before the deadline to complete the <b>6 h</b> needed. This work also counts for the Congressional App Challenge, NASA Space Apps Challenge 2026, Cosmo Hacks 2026, and Global Appathon.</p>'+
+    '<p class="note">'+check+'Plain-language version, checked against the rules.</p>'+
+    '<details><summary>'+chev+'Exact rule details</summary><p>Tennis Analytics App shows data analysis and python, which International Machine Learning Competition asks for. It needs about 6 h, and you have 99 h before Dec 13 at 10 h a week. Focus: nothing it asks for is missing, and the deadline is outside your busy periods. The same work also counts for Congressional App Challenge, NASA Space Apps Challenge 2026, Cosmo Hacks 2026 and Global Appathon.</p></details>';
+  document.querySelectorAll('[data-why]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var name=b.closest('.card').querySelector('h4').textContent;
+      title.textContent='Why: '+name;
+      body.innerHTML=b.getAttribute('data-why')==='imlc'?imlc:'<p class="ans">[TODO] The explanation for this card was not captured in the design content.</p>';
+      dlg.showModal();
+    });
+  });
+  document.getElementById('whyClose').addEventListener('click',function(){ dlg.close(); });
+  dlg.addEventListener('click',function(e){ if(e.target===dlg) dlg.close(); });
+  if(location.hash==='#why'){ document.querySelector('[data-why="imlc"]').click(); }
+})();
+
+/* ---------- Tag chips ---------- */
+(function(){
+  var tags=['technical project','portfolio github','competition experience','writing sample','python','computer vision','data analysis','web dev','ai ml','research writing','public speaking','leadership'];
+  document.getElementById('tagBox').innerHTML=tags.map(function(t){ return '<label class="tagc"><input type="checkbox" name="tags" value="'+t+'"><span>'+t+'</span></label>'; }).join('');
+  document.getElementById('addForm').addEventListener('submit',function(e){ e.preventDefault(); });
+})();
+
+/* ---------- Nav state: active link + Skip intro / Story ---------- */
+(function(){
+  if(!('IntersectionObserver' in window)) return;
+  var swap=document.getElementById('navSwap'), planner=document.getElementById('planner');
+  new IntersectionObserver(function(es){
+    var inP=es[0].isIntersecting||es[0].boundingClientRect.top<0;
+    swap.textContent=inP?'Story':'Skip intro'; swap.setAttribute('href',inP?'#top':'#planner');
+  },{rootMargin:'0px 0px -60% 0px'}).observe(planner);
+  var links={}; document.querySelectorAll('.nav ul a').forEach(function(a){ links[a.getAttribute('href').slice(1)]=a; });
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ for(var k in links) links[k].classList.toggle('on',k===e.target.id); } });
+  },{rootMargin:'-40% 0px -55% 0px'});
+  Object.keys(links).forEach(function(id){ var s=document.getElementById(id); if(s) io.observe(s); });
+})();
+</script>
+</body>
+</html>
