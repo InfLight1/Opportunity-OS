@@ -1,0 +1,1044 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opportunity OS</title>
+<meta name="description" content="A browser-only planner that narrows a pile of opportunities into a calm, honest plan, with a reason for every cut.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Night Route v2a "On the route". Dark-only page by design (theme lock).
+   Type rule: Outfit for all words (nav, buttons, labels, body). IBM Plex Mono only for numbers and dates.
+   Shape rule: buttons and tags are full pill, cards 12px, inputs 8px. */
+:root{
+  --bg:#06121F;
+  --bg-2:#081a2c;
+  --navy:#0B2A4A;
+  --line:rgba(150,190,235,.16);
+  --line-2:rgba(150,190,235,.28);
+  --text:#EEF4FB;
+  --muted:#AFC1D4;
+  --dim:#8A9FB6;
+  --blue:#4FA3FF;
+  --blue-hi:#9fcbff;
+  --blue-soft:rgba(79,163,255,.14);
+  --orange:#FF7A3D;
+  --orange-hi:#ffb48e;
+  --orange-soft:rgba(255,122,61,.14);
+  --r-card:12px;
+  --r-input:8px;
+  --sans:"Outfit",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --gutter:clamp(16px,4vw,56px);
+  --chip-w:220px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-weight:400;font-size:17px;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+main,footer,header{overflow-x:clip}
+a{color:inherit}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+.wrap{max-width:1320px;margin:0 auto;padding:0 var(--gutter)}
+.mono{font-family:var(--mono);font-weight:400;letter-spacing:0}
+.eyebrow{font-size:14px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-hi);margin:0 0 12px}
+.eyebrow .mono{font-weight:500;letter-spacing:.04em}
+.rule{display:block;width:120px;height:2px;background:var(--text);margin:0 0 24px;border:0}
+h1,h2,h3,h4{font-weight:500;letter-spacing:-.02em;line-height:1.1;margin:0}
+h2{font-size:clamp(2rem,3.6vw,3.1rem)}
+h3{font-size:1.2rem;letter-spacing:-.01em;line-height:1.3}
+p{margin:0}
+.lead{color:var(--muted);max-width:62ch;font-size:18px;font-weight:300;line-height:1.6}
+
+/* Buttons: sans, sentence case, full pill */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;border-radius:999px;padding:12px 24px;font-family:var(--sans);font-size:16px;font-weight:500;letter-spacing:0;text-decoration:none;border:1px solid transparent;cursor:pointer;transition:transform .25s var(--ease),background-color .25s var(--ease),border-color .25s var(--ease),box-shadow .25s var(--ease)}
+.btn:active{transform:translateY(1px) scale(.98)}
+.btn-primary{background:var(--blue);color:#04101c}
+.btn-primary:hover{background:#79b9ff;box-shadow:0 0 0 6px rgba(79,163,255,.14)}
+.btn-ghost{background:rgba(11,42,74,.6);color:#d7eaff;border-color:var(--line-2)}
+.btn-ghost:hover{border-color:var(--blue)}
+.btn-sm{padding:8px 18px;font-size:15px}
+.btn[aria-pressed="true"]{background:var(--blue-soft);color:#d7eaff;border-color:rgba(79,163,255,.6)}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:30;background:linear-gradient(to bottom,rgba(6,18,31,.95),rgba(6,18,31,.8));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav-in{height:68px;display:flex;align-items:center;gap:28px}
+.brand{font-weight:500;font-size:18px;letter-spacing:-.01em;text-decoration:none;display:flex;align-items:center;gap:10px;flex:none}
+.brand-mark{width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,var(--blue),#1d4f86);position:relative}
+.brand-mark::after{content:"";position:absolute;left:6px;top:6px;width:8px;height:8px;border-radius:50%;background:var(--orange);box-shadow:0 0 0 2px #06121F}
+.links{display:flex;gap:30px;margin:0 auto;padding:0;list-style:none}
+.links a{font-size:15.5px;font-weight:400;text-decoration:none;color:var(--muted);padding:22px 0;border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
+.links a:hover,.links a.on{color:var(--text);border-bottom-color:var(--blue)}
+.nav-right{display:flex;align-items:center;gap:16px;flex:none}
+.textlink{font-size:15.5px;color:var(--muted);text-decoration:none}
+.textlink:hover{color:var(--text)}
+.links-m{display:none}
+
+/* HERO */
+.hero{position:relative;isolation:isolate}
+.city{position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+/* [TODO] Real hero image goes here later: aerial city at night, blue towers, orange light-trail roads, room on the left. */
+.city svg{position:absolute;inset:-6% -4% -6% 18%;width:86%;height:112%;display:block;-webkit-mask-image:radial-gradient(ellipse 60% 62% at 58% 52%,#000 35%,rgba(0,0,0,.55) 60%,transparent 80%);mask-image:radial-gradient(ellipse 60% 62% at 58% 52%,#000 35%,rgba(0,0,0,.55) 60%,transparent 80%)}
+.city::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 0%,rgba(6,18,31,.9) 24%,rgba(6,18,31,.35) 52%,rgba(6,18,31,.1) 75%),linear-gradient(to bottom,transparent 70%,var(--bg))}
+.hero-in{position:relative}
+.hero-copy{position:relative;z-index:3;max-width:640px;padding-top:48px}
+.hero h1{font-size:clamp(2.4rem,4vw,3.7rem);line-height:1.08}
+.hero h1 .l2{display:block;color:var(--blue-hi);font-weight:300}
+.hero-line{margin-top:20px;color:var(--muted);font-size:19px;font-weight:300;max-width:40ch}
+.stats{display:flex;flex-wrap:wrap;gap:12px 34px;margin:26px 0 30px;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.stat b{display:block;font-family:var(--mono);font-weight:500;font-size:1.6rem;color:var(--text);line-height:1.25}
+.stat span{font-size:15px;color:var(--muted)}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px}
+
+/* Route stage: stacked vertical route by default (mobile + no-JS). JS places chips along the curve on wide screens. */
+.stage{position:relative;margin:40px 0 0;padding:0 0 56px 30px}
+.stage svg.route{display:none}
+.chips{list-style:none;margin:0;padding:0;display:grid;gap:10px;position:relative}
+.chips::before{content:"";position:absolute;left:-21px;top:10px;bottom:10px;width:2px;background:linear-gradient(to bottom,rgba(143,196,255,.35),#cfe6ff 22%,var(--blue));box-shadow:0 0 14px rgba(79,163,255,.7)}
+.chip{position:relative;padding:11px 14px 12px;border-radius:var(--r-card);background:rgba(6,18,31,.84);border:1px solid var(--line-2);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 14px 40px rgba(2,8,16,.55);transition:border-color .25s var(--ease),box-shadow .25s var(--ease)}
+.chip::before{content:"";position:absolute;left:-26px;top:18px;width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(79,163,255,.3)}
+.chip.past::before{background:var(--bg);border:2px solid var(--dim);box-shadow:none;width:10px;height:10px;left:-27px}
+.chip strong{display:block;font-weight:500;font-size:15px;line-height:1.3}
+.chip .meta{display:flex;gap:14px;margin-top:4px;font-family:var(--mono);font-size:14px;color:var(--muted)}
+.chip .meta .h{color:var(--blue-hi)}
+.chip.past{border-style:dashed;background:rgba(6,18,31,.7)}
+.chip.past strong{color:var(--muted)}
+.chip.today{background:none;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;padding:2px 0;font-family:var(--mono);font-size:14px;color:var(--orange-hi)}
+.chip.today::before{background:var(--orange);box-shadow:0 0 0 4px rgba(255,122,61,.3),0 0 14px rgba(255,122,61,.8);top:9px}
+.chip:hover,.chip.hot{border-color:rgba(159,203,255,.7);box-shadow:0 14px 40px rgba(2,8,16,.55),0 0 0 4px rgba(79,163,255,.12)}
+
+.hero.placed .hero-in{min-height:max(calc(100dvh - 68px),720px)}
+.hero.placed .stage{position:absolute;inset:0 var(--gutter);margin:0;padding:0;z-index:2}
+.hero.placed svg.route{display:block;position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.hero.placed .chips{position:absolute;inset:0;display:block}
+.hero.placed .chips::before,.hero.placed .chip::before{display:none}
+.hero.placed .chip{position:absolute;width:var(--chip-w)}
+.hero.placed .chip.today{display:none}
+.hero.pending .chips{visibility:hidden}
+
+.seg{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.seg.core{stroke:#e3f0ff;stroke-width:2.2}
+.seg.glow{stroke:var(--blue);stroke-width:9;opacity:.55}
+.seg.past{stroke:rgba(163,190,220,.55);stroke-width:1.6}
+.seg.gap{stroke:rgba(163,190,220,.55);stroke-width:1.6;stroke-dasharray:3 7}
+.seg.gap.future{stroke:rgba(200,225,255,.75)}
+.mtick{stroke:rgba(200,225,255,.55);stroke-width:1.2}
+.mlabel{font-family:var(--mono);font-size:13px;fill:#9fb4cb}
+.mlabel.brk{fill:#7f95ad}
+.today-ring{fill:var(--bg);stroke:var(--orange);stroke-width:2.5}
+.today-core{fill:var(--orange)}
+.today-label{font-family:var(--mono);font-size:14px;fill:var(--orange-hi)}
+.stem{stroke:rgba(180,215,255,.7);stroke-width:1.4;transition:stroke .25s}
+.stem.past{stroke:rgba(185,208,232,.6);stroke-dasharray:3 4}
+.stem.hot{stroke:#cfe6ff}
+.ddot{fill:#fff}
+.dhalo{fill:rgba(79,163,255,.28)}
+.ddot.past{fill:var(--bg);stroke:var(--dim);stroke-width:2}
+
+/* SECTIONS */
+section{position:relative}
+.sec{padding:clamp(64px,7vw,96px) 0}
+.sec-tight{padding:clamp(56px,7vw,96px) 0}
+
+/* FUNNEL as off-ramps */
+.funnel-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:24px 48px}
+.count{display:flex;align-items:baseline;gap:12px}
+.count .n{font-family:var(--mono);font-weight:500;font-size:clamp(4rem,8vw,6.5rem);line-height:1;color:var(--blue-hi);min-width:2ch;text-align:right}
+.count .of{font-family:var(--mono);font-size:20px;color:var(--muted)}
+.count .of span{font-family:var(--sans);margin-left:2px}
+.ramps{position:relative;margin-top:56px}
+.mainline{position:relative;height:2px;background:linear-gradient(90deg,rgba(143,196,255,.4),#d9ecff 20%,var(--blue) 85%,rgba(79,163,255,.6));box-shadow:0 0 16px rgba(79,163,255,.75),0 0 2px #cfe6ff;margin-right:calc(var(--gutter) * -1);margin-left:-40px}
+.mainline::after{content:"";position:absolute;right:calc(var(--gutter) + 0px);top:-6px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 0 0 5px rgba(79,163,255,.3),0 0 18px rgba(79,163,255,.9)}
+.exits{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:24px;counter-reset:x}
+.exit{position:relative;padding:98px 0 0 0}
+.ramp{position:absolute;left:-30px;top:-1px;width:64px;height:92px;overflow:visible}
+.ramp path{fill:none;stroke-linecap:round}
+.ramp .r-base{stroke:rgba(255,140,90,.9);stroke-width:2.2}
+.ramp .r-glow{stroke:var(--orange);stroke-width:8;opacity:.35}
+.ramp .r-hl{stroke:#ffd2bc;stroke-width:2.4;stroke-dasharray:1;stroke-dashoffset:1;opacity:0}
+.ramp-dot{position:absolute;left:0;top:80px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--orange);box-shadow:0 0 12px rgba(255,122,61,.6)}
+.exit .out{font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--orange)}
+.exit h3{margin-top:6px;font-size:19px;color:var(--text);line-height:1.3}
+.exit .why{margin-top:8px;font-size:16px;color:var(--orange-hi);line-height:1.45}
+.ramps.play .r-hl{animation:rampdraw 1s var(--ease) both;animation-delay:calc(var(--i) * .38s + .1s)}
+.ramps.play .exit .txt{animation:slidein .8s var(--ease) both;animation-delay:calc(var(--i) * .38s + .25s)}
+@keyframes rampdraw{0%{opacity:1;stroke-dashoffset:1}80%{opacity:1;stroke-dashoffset:0}100%{opacity:0;stroke-dashoffset:0}}
+@keyframes slidein{from{transform:translate(-10px,-6px);color:inherit}to{transform:none}}
+
+/* THREADS (story + planner) */
+.threads{position:relative;display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr);column-gap:clamp(90px,14vw,220px);align-items:center;margin-top:48px}
+.threads svg.lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.t-src{position:relative;z-index:1;padding:22px 24px;border-radius:var(--r-card);background:linear-gradient(160deg,#11396a,#0a2340);border:1px solid rgba(79,163,255,.55);box-shadow:0 0 0 6px rgba(79,163,255,.08),0 20px 60px rgba(2,10,22,.6)}
+.t-src small{display:block;font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--blue-hi);margin-bottom:6px}
+.t-src strong{font-weight:500;font-size:1.4rem;letter-spacing:-.01em}
+.t-dests{list-style:none;margin:0;padding:0;display:grid;gap:14px;position:relative;z-index:1}
+.t-dest{padding:14px 18px;border-radius:var(--r-card);background:rgba(8,26,44,.88);border:1px solid var(--line-2)}
+.t-dest strong{display:block;font-weight:500;font-size:17px}
+.t-dest .via{display:block;margin-top:3px;font-size:15.5px;color:var(--muted)}
+.t-dest .via b{font-weight:500;color:var(--blue-hi)}
+.t-dest[data-state="locked"]{border-style:dashed;background:rgba(6,18,31,.6)}
+.t-dest[data-state="locked"] strong{color:var(--muted)}
+.t-dest .lock{display:block;margin-top:6px;font-size:15.5px;color:var(--orange-hi)}
+.t-dest[data-state="committed"]{border-color:rgba(79,163,255,.65);background:linear-gradient(160deg,rgba(17,57,106,.9),rgba(10,35,64,.9))}
+.tag-word{display:inline-block;margin-left:10px;padding:1px 10px;border-radius:999px;font-size:13.5px;font-weight:500;vertical-align:2px;border:1px solid rgba(79,163,255,.55);color:var(--blue-hi);background:var(--blue-soft)}
+.thread{fill:none;stroke-linecap:round}
+.thread.open{stroke:rgba(170,210,255,.8);stroke-width:1.8}
+.thread.committed{stroke:#7cbcff;stroke-width:2.8}
+.thread.locked{stroke:rgba(255,122,61,.8);stroke-width:1.6;stroke-dasharray:5 6}
+.thread-glow{fill:none;stroke:var(--blue);stroke-width:8;opacity:.32}
+.thread-glow.committed{opacity:.6;stroke-width:12}
+.thread-hl{fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-dasharray:.12 1;stroke-dashoffset:.12;opacity:0}
+.threads.in .thread-hl{animation:pulse 1.8s var(--ease) both;animation-delay:calc(var(--i) * .12s)}
+@keyframes pulse{0%{opacity:1;stroke-dashoffset:.12}90%{opacity:1}100%{opacity:0;stroke-dashoffset:-1}}
+.tnode{fill:var(--bg);stroke:var(--blue);stroke-width:2}
+.tnode.locked{stroke:var(--orange)}
+.planner-threads .thread.open{stroke:rgba(170,210,255,.5)}
+.planner-threads .thread-glow.open{opacity:.16}
+
+/* HANDOFF */
+.handoff{display:grid;grid-template-columns:auto minmax(40px,1fr) auto;align-items:center;gap:28px;padding:clamp(56px,7vw,96px) 0}
+.handoff h2{font-size:clamp(2.2rem,4.4vw,3.8rem)}
+.handoff .link-line{height:2px;background:linear-gradient(90deg,rgba(79,163,255,.2),var(--blue));box-shadow:0 0 14px rgba(79,163,255,.7);position:relative}
+.handoff .link-line::after{content:"";position:absolute;right:-2px;top:-5px;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(79,163,255,.3)}
+
+/* PLANNER */
+.planner{background:linear-gradient(to bottom,var(--bg),var(--bg-2) 12%,var(--bg-2) 88%,var(--bg));border-top:1px solid var(--line)}
+.sec-head{margin-bottom:40px}
+.sec-head .lead{margin-top:14px}
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden}
+.cell{background:var(--bg-2);padding:22px 24px 24px}
+.cell .k{font-size:15px;font-weight:500;color:var(--dim)}
+.cell .v{display:block;margin-top:8px;font-weight:500;font-size:1.5rem;line-height:1.2;letter-spacing:-.01em}
+.cell .v .sm{font-size:.62em;color:var(--muted);font-weight:400}
+.cell .s{display:block;margin-top:6px;color:var(--muted);font-size:15.5px}
+.cell.next{grid-column:span 3;background:linear-gradient(110deg,rgba(14,50,90,.95),rgba(8,26,44,.95) 60%),var(--bg-2);position:relative;overflow:hidden}
+.cell.next::after{content:"";position:absolute;right:-40px;top:50%;width:260px;height:2px;background:linear-gradient(90deg,transparent,var(--blue));box-shadow:0 0 18px rgba(79,163,255,.7)}
+.cell.next .k{color:var(--blue-hi)}
+.cell.next .v{font-weight:400;font-size:1.35rem;max-width:44ch}
+.cell.next .v b{font-weight:500;color:var(--blue-hi)}
+
+.tier{margin-top:56px}
+.tier-h{display:flex;align-items:baseline;gap:14px;padding-bottom:14px;margin-bottom:22px;border-bottom:1px solid var(--line)}
+.tier-h .c{font-family:var(--mono);color:var(--muted);font-size:16px}
+.tier-h .btn{margin-left:auto}
+.tier-h .what{font-size:15.5px;color:var(--muted)}
+.tier.focus .tier-h h3{font-size:2rem;color:var(--text)}
+.tier.focus .tier-h{border-bottom-color:rgba(79,163,255,.45)}
+.tier.consider .tier-h h3{font-size:1.55rem}
+.tier.notnow .tier-h h3{font-size:1.3rem;color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.card{position:relative;padding:24px 24px 22px;border-radius:var(--r-card);display:flex;flex-direction:column;gap:12px;transition:border-color .3s var(--ease),transform .3s var(--ease)}
+.card:hover{transform:translateY(-2px)}
+.card.focus{background:linear-gradient(160deg,#0f3561 0%,#0a2340 70%);border:1px solid rgba(79,163,255,.32);box-shadow:0 18px 50px rgba(2,10,22,.45)}
+.card.focus::before{content:"";position:absolute;left:-1px;top:20px;bottom:20px;width:3px;border-radius:0 3px 3px 0;background:var(--blue);box-shadow:0 0 12px rgba(79,163,255,.8)}
+.card.focus:hover{border-color:rgba(79,163,255,.6)}
+.card.consider{background:rgba(8,26,44,.6);border:1px solid var(--line-2)}
+.card.is-committed{border-color:rgba(159,203,255,.75)}
+.card-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;font-size:15px;color:var(--muted)}
+.card-top .mono{font-size:14.5px}
+.tierword{padding:2px 12px;border-radius:999px;font-size:14px;font-weight:500;border:1px solid}
+.tierword.focus{color:#d7eaff;border-color:rgba(79,163,255,.6);background:rgba(79,163,255,.22)}
+.tierword.consider{color:#e3ecf6;border-color:var(--line-2)}
+.tierword.notnow{color:var(--muted);border-color:var(--line-2)}
+.tierword.closed{color:var(--orange-hi);border-color:rgba(255,122,61,.45)}
+.card h4{font-weight:500;font-size:1.32rem;letter-spacing:-.01em;line-height:1.25}
+.card .org{display:block;margin-top:4px;font-size:15.5px;color:var(--dim)}
+.card .hrs{font-size:15.5px;color:var(--muted)}
+.card .hrs .mono{color:var(--text);font-size:15.5px}
+.shows{font-size:16px;color:var(--muted)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{padding:3px 12px;border-radius:999px;font-size:14.5px;background:rgba(79,163,255,.12);color:#cfe5ff;border:1px solid rgba(79,163,255,.26)}
+.catch{display:flex;gap:10px;align-items:baseline;padding:10px 14px;border-radius:var(--r-input);background:var(--orange-soft);border:1px solid rgba(255,122,61,.4);font-size:16px;color:#ffd9c6}
+.catch em{font-style:normal;font-size:14px;font-weight:600;color:var(--orange)}
+.card-foot{margin-top:auto;padding-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.startby{margin-left:auto;font-size:15px;color:var(--blue-hi)}
+.card.wide{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:12px 40px;align-items:start}
+.card.wide .card-foot{grid-column:1/-1}
+.notnow-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.nn{padding:14px 18px;border-radius:var(--r-card);border:1px dashed var(--line-2);display:grid;gap:5px;background:transparent}
+.nn .top{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:15px;color:var(--dim)}
+.nn .top .mono{font-size:14px}
+.nn strong{font-weight:500;color:var(--muted);font-size:17px}
+.nn .reason{font-size:15.5px;color:var(--orange-hi)}
+.nn .reason em{font-style:normal;font-weight:600;color:var(--dim);margin-right:8px}
+
+/* DIALOG */
+dialog{width:min(620px,calc(100vw - 32px));max-height:calc(100dvh - 48px);padding:0;border-radius:var(--r-card);border:1px solid rgba(79,163,255,.4);background:#081a2c;color:var(--text);box-shadow:0 30px 90px rgba(0,0,0,.6)}
+dialog::backdrop{background:rgba(3,9,16,.72);backdrop-filter:blur(3px)}
+.dlg{padding:28px 28px 24px;position:relative}
+.dlg h3{font-size:1.3rem;padding-right:44px}
+.dlg .ans{margin-top:16px;font-size:17px;line-height:1.65;color:#dbe7f4}
+.dlg .note{margin-top:12px;font-size:15px;color:var(--dim)}
+.dlg details{margin-top:20px;border-top:1px solid var(--line);padding-top:14px}
+.dlg summary{cursor:pointer;font-size:15.5px;font-weight:500;color:var(--blue-hi)}
+.dlg details p{margin-top:12px;font-size:16px;line-height:1.7;color:var(--muted)}
+.x{position:absolute;top:18px;right:18px;width:38px;height:38px;border-radius:999px;border:1px solid var(--line-2);background:transparent;cursor:pointer;font-size:16px;color:var(--muted)}
+.x:hover{border-color:var(--blue);color:var(--text)}
+
+/* WEEKS (route with stops; numbers only, no bars) */
+.weeks-scroll{overflow-x:auto;padding-bottom:10px;margin:0 calc(var(--gutter) * -1);padding-left:var(--gutter);padding-right:var(--gutter);scrollbar-color:var(--navy) transparent}
+.weeks{position:relative;display:grid;grid-template-columns:repeat(var(--n),minmax(116px,1fr));gap:8px;min-width:calc(var(--n) * 124px);padding-top:46px}
+.weeks::before{content:"";position:absolute;left:0;right:0;top:18px;height:2px;background:linear-gradient(90deg,#d9ecff,var(--blue) 40%,rgba(79,163,255,.45));box-shadow:0 0 12px rgba(79,163,255,.6)}
+.wk{position:relative;padding:14px 13px 16px;border-radius:var(--r-card);background:rgba(11,42,74,.32);border:1px solid var(--line);display:flex;flex-direction:column;gap:6px;min-height:100%}
+.wk::before{content:"";position:absolute;top:-33px;left:50%;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--bg-2);border:2px solid rgba(159,203,255,.8)}
+.wk.dl::before{width:16px;height:16px;margin-left:-8px;top:-36px;background:var(--orange);border-color:#ffd2bc;box-shadow:0 0 16px rgba(255,122,61,.8)}
+.wk.busy{background-image:repeating-linear-gradient(135deg,rgba(143,196,255,.07) 0 6px,transparent 6px 12px);background-color:rgba(11,42,74,.32)}
+.wk.has{border-color:rgba(79,163,255,.45);background-color:rgba(15,53,97,.55)}
+.wk.over{border-color:var(--orange);background-color:rgba(255,122,61,.12)}
+.wk .lab{font-size:14.5px;font-weight:600;color:var(--dim)}
+.wk.now .lab{color:var(--blue-hi)}
+.wk .dates{font-family:var(--mono);font-size:14.5px;color:var(--text)}
+.wk .hrs{margin-top:6px;font-family:var(--mono);font-size:14.5px;color:var(--dim);line-height:1.2}
+.wk .hrs b{display:block;font-weight:500;font-size:26px;color:var(--text)}
+.wk.zero .hrs b{color:var(--dim)}
+.wk.has .hrs b{color:var(--blue-hi)}
+.wk .busy-note{font-size:15px;color:#c9d9ea}
+.wk .busy-note .mono{font-size:14px}
+.wk .item{font-size:15px;line-height:1.35;color:#cfe5ff}
+.wk .item b{font-family:var(--mono);font-weight:500}
+.wk .dlm{font-size:15px;line-height:1.35;color:var(--orange-hi);padding-top:6px;border-top:1px dashed rgba(255,122,61,.4)}
+.legend{display:flex;flex-wrap:wrap;gap:12px 28px;margin-top:26px;font-size:15.5px;color:var(--muted);list-style:none;padding:0}
+.legend li{display:flex;align-items:center;gap:9px}
+.sw{flex:none}
+.sw.num{font-family:var(--mono);font-weight:500;font-size:16px;color:var(--blue-hi)}
+.sw.of{font-family:var(--mono);font-size:14.5px;color:var(--dim)}
+.sw.over{width:22px;height:16px;border-radius:4px;border:2px solid var(--orange);background:rgba(255,122,61,.18)}
+.sw.dl{width:12px;height:12px;border-radius:50%;background:var(--orange);box-shadow:0 0 10px rgba(255,122,61,.7)}
+.sw.exam{border:1px solid var(--line-2);background:rgba(11,42,74,.6);font-size:14px;padding:1px 8px;border-radius:999px;color:#c9d9ea}
+.sw.busy{width:22px;height:16px;border-radius:4px;background:repeating-linear-gradient(135deg,rgba(143,196,255,.4) 0 3px,transparent 3px 6px);border:1px solid var(--line-2)}
+.foot-note{margin-top:14px;font-size:15.5px;color:var(--dim)}
+
+/* WHAT IF */
+.whatif{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(32px,6vw,90px);align-items:start;padding-top:clamp(56px,7vw,88px);margin-top:clamp(56px,7vw,88px);border-top:1px solid var(--line)}
+.whatif h3{font-size:clamp(1.6rem,2.6vw,2.2rem);letter-spacing:-.02em;line-height:1.15;font-weight:500}
+.readout{margin-top:24px;font-family:var(--mono);font-size:clamp(2.6rem,5vw,3.6rem);font-weight:500;line-height:1}
+.readout small{font-family:var(--sans);font-size:18px;color:var(--muted);font-weight:400;margin-left:10px}
+.slider{margin-top:22px}
+.slider label{font-size:15.5px;font-weight:500;color:#c9d9ea}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--line-2)}
+input[type=range]::-moz-range-track{height:2px;background:var(--line-2)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-10px;border-radius:50%;background:var(--bg);border:2px solid var(--blue);box-shadow:0 0 0 5px rgba(79,163,255,.15)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--bg);border:2px solid var(--blue)}
+.ends{position:relative;height:22px;font-family:var(--mono);font-size:14px;color:var(--dim)}
+.ends span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.ends span:first-child{transform:none}
+.ends span:last-child{transform:translateX(-100%)}
+.ends .saved{color:var(--blue-hi)}
+.ends .saved i{font-style:normal;font-family:var(--sans)}
+.wi-panel{display:grid;gap:18px}
+.wi-actions{display:flex;flex-wrap:wrap;gap:10px}
+.wi-note{font-size:15.5px;color:var(--muted)}
+.warn{padding:16px 18px;border-radius:var(--r-card);border:1px solid rgba(255,122,61,.65);background:var(--orange-soft);color:#ffe0d0;font-size:16.5px;line-height:1.55}
+.warn b{font-weight:500;color:#fff1e9}
+.calm{padding:16px 18px;border-radius:var(--r-card);border:1px solid var(--line-2);background:rgba(11,42,74,.4);color:var(--muted);font-size:16px}
+.weeks.mini{--n:3;min-width:0;grid-template-columns:repeat(3,minmax(0,1fr))}
+[hidden]{display:none !important}
+
+/* ADD YOUR OWN */
+.add{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(28px,5vw,72px);align-items:start}
+.field{display:grid;gap:8px}
+.field label,.fs-label{font-size:15.5px;font-weight:500;color:#d3e0ee}
+.field input,.field textarea{width:100%;padding:12px 14px;border-radius:var(--r-input);border:1px solid var(--line-2);background:rgba(4,12,22,.6);color:var(--text);font-size:16px}
+.field textarea{min-height:110px;resize:vertical}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,163,255,.22)}
+.help{font-size:15.5px;color:var(--muted)}
+.help.off{color:#ffc9ae}
+.grid-f{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 20px;margin-top:18px}
+.grid-f .full{grid-column:1/-1}
+.manual{margin-top:36px;padding-top:26px;border-top:1px solid var(--line)}
+.manual > .fs-label{color:var(--blue-hi);font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.check{display:flex;align-items:center;gap:10px;font-size:16px;cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--blue)}
+.tagpick{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.tagpick input{position:absolute;opacity:0;pointer-events:none}
+.tagpick label{padding:7px 15px;border-radius:999px;border:1px solid var(--line-2);font-size:15px;color:var(--muted);cursor:pointer;transition:all .2s var(--ease)}
+.tagpick label:hover{border-color:rgba(159,203,255,.6);color:var(--text)}
+.tagpick input:checked + label{background:var(--blue-soft);border-color:var(--blue);color:#d7eaff}
+.tagpick input:focus-visible + label{outline:2px solid var(--blue);outline-offset:2px}
+.result{position:sticky;top:110px;min-height:240px;padding:28px;border-radius:var(--r-card);border:1px dashed var(--line-2);display:flex;flex-direction:column;justify-content:flex-end;gap:14px;background:radial-gradient(ellipse at 80% 0%,rgba(79,163,255,.12),transparent 60%)}
+.result .ghost-route{height:2px;background:linear-gradient(90deg,rgba(143,196,255,.5),transparent);position:relative}
+.result .ghost-route::before,.result .ghost-route::after{content:"";position:absolute;top:-5px;width:12px;height:12px;border-radius:50%;border:2px solid rgba(143,196,255,.6);background:var(--bg-2)}
+.result .ghost-route::before{left:0}
+.result .ghost-route::after{left:45%}
+.result p{color:var(--muted);font-size:16px}
+
+/* FOOTER */
+.footer{border-top:1px solid var(--line);padding:40px 0 52px}
+.footer-in{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;align-items:center}
+.footer p{font-size:16px;color:var(--muted)}
+
+/* MOTION (gated). Nothing is hidden waiting for scroll: base content is always visible, motion only adds highlights. */
+@media (prefers-reduced-motion:no-preference){
+  .js .hero-copy > *{animation:up .9s var(--ease) both}
+  .js .hero-copy > *:nth-child(2){animation-delay:.08s}
+  .js .hero-copy > *:nth-child(3){animation-delay:.16s}
+  .js .hero-copy > *:nth-child(4){animation-delay:.24s}
+  .js .hero-copy > *:nth-child(5){animation-delay:.32s}
+  .route.drawing .seg{stroke-dasharray:1;animation:segdraw 2.2s var(--ease) both}
+  .route.drawing .seg.gap{stroke-dasharray:none;animation:fade 1s 1s both}
+  .route.drawing .pop{animation:fade .5s var(--ease) both;animation-delay:calc(.5s + var(--t,0) * 1.8s)}
+  .hero.placed .chips.drawing .chip{animation:chipin .7s var(--ease) both;animation-delay:calc(.6s + var(--t,0) * 1.8s)}
+  .rise-arm{transform:translateY(22px);transition:transform 1s var(--ease)}
+  .rise-arm.in{transform:none}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .ramps.play .r-hl,.ramps.play .exit .txt,.threads.in .thread-hl{animation:none}
+}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes segdraw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes chipin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* RESPONSIVE */
+@media (max-width:1100px){
+  .links{gap:20px}
+  .exits{gap:18px}
+  .exit h3{font-size:17.5px}
+}
+@media (max-width:960px){
+  .links{display:none}
+  .nav-right{margin-left:auto}
+  .links-m{display:flex;gap:22px;overflow-x:auto;padding:0 var(--gutter);height:44px;align-items:center;border-top:1px solid var(--line);list-style:none;margin:0;scrollbar-width:none}
+  .links-m::-webkit-scrollbar{display:none}
+  .links-m a{font-size:15px;color:var(--muted);text-decoration:none;white-space:nowrap}
+  html{scroll-padding-top:124px}
+  .city svg{inset:0 -30% 0 -10%;width:140%;height:100%}
+  .city::after{background:linear-gradient(to bottom,rgba(6,18,31,.55),rgba(6,18,31,.75) 40%,rgba(6,18,31,.9) 80%,var(--bg))}
+  .hero-copy{padding-top:44px}
+  /* Off-ramps turn vertical: route runs down the left, each exit branches right */
+  .ramps{padding-left:34px;margin-top:40px}
+  .mainline{position:absolute;left:6px;top:0;bottom:0;width:2px;height:auto;margin:0;background:linear-gradient(to bottom,#d9ecff,var(--blue))}
+  .mainline::after{right:auto;left:-6px;top:auto;bottom:-6px}
+  .exits{grid-template-columns:1fr;gap:26px;padding-bottom:28px}
+  .exit{padding:0}
+  .ramp{display:none}
+  .exit::before{content:"";position:absolute;left:-28px;top:2px;width:20px;height:14px;border:2px solid rgba(255,122,61,.8);border-left:0;border-bottom:0;border-top-right-radius:14px}
+  .ramp-dot{left:-14px;top:14px;width:12px;height:12px}
+  .exit .txt{padding-left:8px}
+  .threads{grid-template-columns:1fr;row-gap:28px}
+  .t-dests{padding-left:34px}
+  .handoff{grid-template-columns:1fr}
+  .handoff .link-line{display:none}
+  .summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cell.next{grid-column:1/-1}
+  .whatif,.add{grid-template-columns:1fr}
+  .result{position:static}
+}
+@media (max-width:720px){
+  body{font-size:16px}
+  .lead{font-size:17px}
+  .cards,.notnow-list{grid-template-columns:1fr}
+  .card.wide{grid-template-columns:1fr}
+  .grid-f{grid-template-columns:1fr}
+  .summary{grid-template-columns:1fr}
+  .cell.next::after{display:none}
+  .stats{gap:12px 24px}
+  .stat b{font-size:1.4rem}
+  .nav-right{gap:12px}
+  .nav-right .btn{padding:7px 14px}
+  .tier-h{flex-wrap:wrap}
+  .startby{margin-left:0;width:100%}
+  .weeks.mini{grid-template-columns:1fr;padding-top:0}
+  .weeks.mini::before,.weeks.mini .wk::before{display:none}
+  .count .n{font-size:4rem}
+}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>Opportunity OS</a>
+    <ul class="links">
+      <li><a href="#plan">Plan</a></li>
+      <li><a href="#opportunities">Opportunities</a></li>
+      <li><a href="#weeks">Weeks</a></li>
+      <li><a href="#reuse">Reuse</a></li>
+      <li><a href="#add">Add your own</a></li>
+    </ul>
+    <div class="nav-right">
+      <a class="textlink" id="introToggle" href="#plan">Skip intro</a>
+      <button class="btn btn-ghost btn-sm" type="button">Profile</button>
+    </div>
+  </div>
+  <ul class="links-m">
+    <li><a href="#plan">Plan</a></li>
+    <li><a href="#opportunities">Opportunities</a></li>
+    <li><a href="#weeks">Weeks</a></li>
+    <li><a href="#reuse">Reuse</a></li>
+    <li><a href="#add">Add your own</a></li>
+  </ul>
+</header>
+
+<main id="top">
+  <!-- PART 1: STORY -->
+  <section class="hero" id="hero" aria-labelledby="hero-h">
+    <div class="city" aria-hidden="true"><svg id="city" viewBox="0 0 900 800" preserveAspectRatio="xMidYMid slice"></svg></div>
+    <div class="wrap hero-in">
+      <div class="hero-copy" id="heroCopy">
+        <span class="rule" aria-hidden="true"></span>
+        <h1 id="hero-h">Too many opportunities.<span class="l2">Too little time.</span></h1>
+        <p class="hero-line">For students juggling more opportunities than hours.</p>
+        <div class="stats">
+          <div class="stat"><b>10</b><span>opportunities</span></div>
+          <div class="stat"><b>160 h</b><span>of work, estimated</span></div>
+          <div class="stat"><b>10 h</b><span>a week to spend</span></div>
+        </div>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#plan">Open the planner</a>
+          <a class="btn btn-ghost" href="#narrow">See how it narrows</a>
+        </div>
+      </div>
+      <!-- The pile is also a timeline: each chip sits on the route at its deadline date. -->
+      <div class="stage" id="stage" aria-label="10 opportunities, in deadline order">
+        <svg class="route" id="routeSvg" aria-hidden="true"></svg>
+        <ol class="chips" id="chips">
+          <li class="chip past" data-f=".085"><strong>3M Young Scientist Challenge</strong><span class="meta"><span>due Apr 30</span><span class="h">~6 h</span></span></li>
+          <li class="chip past" data-f=".205"><strong>Australian STEM Video Game Challenge 2026</strong><span class="meta"><span>due Sep 9</span><span class="h">~20 h</span></span></li>
+          <li class="chip today" aria-hidden="true">Today, Oct 11</li>
+          <li class="chip" data-f=".469"><strong>Congressional App Challenge</strong><span class="meta"><span>due Oct 26</span><span class="h">~6 h</span></span></li>
+          <li class="chip" data-f=".469"><strong>OpenCV AI Competition</strong><span class="meta"><span>due Oct 26</span><span class="h">~30 h</span></span></li>
+          <li class="chip" data-f=".520"><strong>K-State High School Programming Contest</strong><span class="meta"><span>due Nov 4</span><span class="h">~6 h</span></span></li>
+          <li class="chip" data-f=".525"><strong>Regeneron Science Talent Search</strong><span class="meta"><span>due Nov 5</span><span class="h">~40 h</span></span></li>
+          <li class="chip" data-f=".576"><strong>NASA Space Apps Challenge 2026</strong><span class="meta"><span>due Nov 14</span><span class="h">~12 h</span></span></li>
+          <li class="chip" data-f=".739"><strong>International Machine Learning Competition</strong><span class="meta"><span>due Dec 13</span><span class="h">~6 h</span></span></li>
+          <li class="chip" data-f=".784"><strong>Cosmo Hacks 2026</strong><span class="meta"><span>due Dec 21</span><span class="h">~24 h</span></span></li>
+          <li class="chip" data-f=".913"><strong>Global Appathon</strong><span class="meta"><span>due Apr 2</span><span class="h">~10 h</span></span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="narrow" aria-labelledby="funnel-h">
+    <div class="wrap">
+      <div class="funnel-head">
+        <div>
+          <span class="rule" aria-hidden="true"></span>
+          <h2 id="funnel-h">Most of them aren't for you.</h2>
+        </div>
+        <div class="count" aria-live="polite"><span class="n" id="count">5</span><span class="of">of 10</span></div>
+      </div>
+      <div class="ramps" id="ramps">
+        <div class="mainline" aria-hidden="true"></div>
+        <ol class="exits">
+          <li class="exit" style="--i:0"><svg class="ramp" viewBox="0 0 64 92" aria-hidden="true"><path class="r-glow" d="M0 1 C 26 1, 36 18, 36 50 L 36 86"/><path class="r-base" d="M0 1 C 26 1, 36 18, 36 50 L 36 86"/><path class="r-hl" pathLength="1" d="M0 1 C 26 1, 36 18, 36 50 L 36 86"/></svg><span class="ramp-dot" aria-hidden="true"></span><div class="txt"><p class="out">Off here</p><h3>3M Young Scientist Challenge</h3><p class="why">Grade 5-8 only</p></div></li>
+          <li class="exit" style="--i:1"><svg class="ramp" viewBox="0 0 64 92" aria-hidden="true"><path class="r-glow" d="M0 1 C 26 1, 36 18, 36 50 L 36 86"/><path class="r-base" d="M0 1 C 26 1, 36 18, 36 50 L 36 86"/><path class="r-hl" pathLength="1" d="M0 1 C 26 1, 36 18, 36 50 L 36 86"/></svg><span class="ramp-dot" aria-hidden="true"></span><div class="txt"><p class="out">Off here</p><h3>Australian STEM Video Game Challenge 2026</h3><p class="why">Closed Sep 9</p></div></li>
+          <li class="exit" style="--i:2"><svg class="ramp" viewBox="0 0 64 92" aria-hidden="true"><path class="r-glow" d="M0 1 C 26 1, 36 18, 36 50 L 36 86"/><path class="r-base" d="M0 1 C 26 1, 36 18, 36 50 L 36 86"/><path class="r-hl" pathLength="1" d="M0 1 C 26 1, 36 18, 36 50 L 36 86"/></svg><span class="ramp-dot" aria-hidden="true"></span><div class="txt"><p class="out">Off here</p><h3>OpenCV AI Competition</h3><p class="why">Needs 30 h, 18.5 h available by Oct 26</p></div></li>
+          <li class="exit" style="--i:3"><svg class="ramp" viewBox="0 0 64 92" aria-hidden="true"><path class="r-glow" d="M0 1 C 26 1, 36 18, 36 50 L 36 86"/><path class="r-base" d="M0 1 C 26 1, 36 18, 36 50 L 36 86"/><path class="r-hl" pathLength="1" d="M0 1 C 26 1, 36 18, 36 50 L 36 86"/></svg><span class="ramp-dot" aria-hidden="true"></span><div class="txt"><p class="out">Off here</p><h3>K-State High School Programming Contest</h3><p class="why">Manhattan, KS, US only</p></div></li>
+          <li class="exit" style="--i:4"><svg class="ramp" viewBox="0 0 64 92" aria-hidden="true"><path class="r-glow" d="M0 1 C 26 1, 36 18, 36 50 L 36 86"/><path class="r-base" d="M0 1 C 26 1, 36 18, 36 50 L 36 86"/><path class="r-hl" pathLength="1" d="M0 1 C 26 1, 36 18, 36 50 L 36 86"/></svg><span class="ramp-dot" aria-hidden="true"></span><div class="txt"><p class="out">Off here</p><h3>Regeneron Science Talent Search</h3><p class="why">Grade 12 only</p></div></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec-tight" aria-labelledby="reuse-story-h">
+    <div class="wrap">
+      <div class="rise">
+        <span class="rule" aria-hidden="true"></span>
+        <h2 id="reuse-story-h">One project. Several doors.</h2>
+        <p class="lead" style="margin-top:14px">Each thread is a tag Tennis Analytics App shows that the opportunity asks for.</p>
+      </div>
+      <div class="threads" data-threads="story"></div>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <div class="handoff rise">
+      <h2>Now plan your weeks.</h2>
+      <span class="link-line" aria-hidden="true"></span>
+      <a class="btn btn-primary" href="#plan">Open the planner</a>
+    </div>
+  </section>
+
+  <!-- PART 2: PLANNER -->
+  <div class="planner" id="planner">
+    <section class="sec-tight" id="plan" aria-labelledby="plan-h">
+      <div class="wrap">
+        <div class="sec-head rise">
+          <p class="eyebrow">Today · <span class="mono">Oct 11</span></p>
+          <h2 id="plan-h">Your plan</h2>
+        </div>
+        <div class="summary rise">
+          <div class="cell"><span class="k">Committed</span><span class="v">2 of 5 you can do</span><span class="s">2 opportunities on your plan</span></div>
+          <div class="cell"><span class="k">Work committed</span><span class="v mono">12 h</span><span class="s">Estimated, across all deadlines</span></div>
+          <div class="cell"><span class="k">Next deadline</span><span class="v"><span class="mono">Oct 26</span> <span class="sm">in <span class="mono">15</span> days</span></span><span class="s">Congressional App Challenge</span></div>
+          <div class="cell"><span class="k">Next busy period</span><span class="v">Midterms</span><span class="s"><span class="mono">Oct 20-27</span> · in <span class="mono">9</span> days</span></div>
+          <div class="cell"><span class="k">This week, <span class="mono">Oct 11-17</span></span><span class="v"><span class="mono">0 h</span> <span class="sm">of <span class="mono">10 h</span> planned</span></span></div>
+          <div class="cell next"><span class="k">Next step</span><span class="v">Work on <b>Tennis Analytics App</b> for NASA Space Apps Challenge 2026, due <span class="mono">Nov 14</span></span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec-tight" id="opportunities" aria-labelledby="opps-h">
+      <div class="wrap">
+        <div class="sec-head rise">
+          <p class="eyebrow">Sorted by fixed rules</p>
+          <h2 id="opps-h">Opportunities</h2>
+          <p class="lead">Focus: your projects already show what it asks for and the hours fit. Consider: possible, with a catch. Not now: locked, with the reason.</p>
+        </div>
+
+        <div class="tier focus">
+          <div class="tier-h"><h3>Focus</h3><span class="c">4</span></div>
+          <div class="cards">
+            <article class="card focus">
+              <div class="card-top"><span class="tierword focus">Focus</span><span>due <span class="mono">Nov 14</span></span><span>in <span class="mono">34</span> days</span></div>
+              <h4>NASA Space Apps Challenge 2026</h4>
+              <span class="hrs"><span class="mono">~12 h</span> (estimate)</span>
+              <div class="shows">Your projects show<div class="tags"><span class="tag">data analysis</span><span class="tag">python</span></div></div>
+              <div class="card-foot"><button class="btn btn-primary btn-sm" type="button" aria-pressed="false">Commit</button><button class="btn btn-ghost btn-sm" type="button" data-why="NASA Space Apps Challenge 2026">Ask why</button></div>
+            </article>
+            <article class="card focus is-committed">
+              <div class="card-top"><span class="tierword focus">Focus</span><span>due <span class="mono">Dec 13</span></span><span>in <span class="mono">63</span> days</span></div>
+              <h4>International Machine Learning Competition</h4>
+              <span class="hrs"><span class="mono">~6 h</span> (estimate)</span>
+              <div class="shows">Your projects show<div class="tags"><span class="tag">data analysis</span><span class="tag">python</span></div></div>
+              <div class="card-foot"><button class="btn btn-sm" type="button" aria-pressed="true">Committed</button><button class="btn btn-ghost btn-sm" type="button" data-why="imlc">Ask why</button><span class="startby">Start by week of <span class="mono">Dec 13</span></span></div>
+            </article>
+            <article class="card focus">
+              <div class="card-top"><span class="tierword focus">Focus</span><span>due <span class="mono">Dec 21</span></span><span>in <span class="mono">71</span> days</span></div>
+              <h4>Cosmo Hacks 2026</h4>
+              <span class="hrs"><span class="mono">~24 h</span> (estimate)</span>
+              <div class="shows">Your projects show<div class="tags"><span class="tag">technical project</span><span class="tag">python</span></div></div>
+              <div class="card-foot"><button class="btn btn-primary btn-sm" type="button" aria-pressed="false">Commit</button><button class="btn btn-ghost btn-sm" type="button" data-why="Cosmo Hacks 2026">Ask why</button></div>
+            </article>
+            <article class="card focus">
+              <div class="card-top"><span class="tierword focus">Focus</span><span>due <span class="mono">Apr 2</span></span><span>in <span class="mono">173</span> days</span></div>
+              <div><h4>Global Appathon</h4><span class="org">App Inventor Foundation (MIT App Inventor)</span></div>
+              <span class="hrs"><span class="mono">~10 h</span> (estimate)</span>
+              <div class="shows">Your projects show<div class="tags"><span class="tag">technical project</span></div></div>
+              <div class="card-foot"><button class="btn btn-primary btn-sm" type="button" aria-pressed="false">Commit</button><button class="btn btn-ghost btn-sm" type="button" data-why="Global Appathon">Ask why</button></div>
+            </article>
+          </div>
+        </div>
+
+        <div class="tier consider">
+          <div class="tier-h"><h3>Consider</h3><span class="c">1</span></div>
+          <article class="card consider wide is-committed">
+            <div style="display:grid;gap:12px">
+              <div class="card-top"><span class="tierword consider">Consider</span><span>due <span class="mono">Oct 26</span></span><span>in <span class="mono">15</span> days</span></div>
+              <h4>Congressional App Challenge</h4>
+              <span class="hrs"><span class="mono">~6 h</span> (estimate)</span>
+            </div>
+            <div style="display:grid;gap:12px">
+              <div class="shows">Your projects show<div class="tags"><span class="tag">technical project</span><span class="tag">python</span><span class="tag">computer vision</span><span class="tag">portfolio github</span></div></div>
+              <p class="catch"><em>Catch</em>Due during Midterms</p>
+            </div>
+            <div class="card-foot"><button class="btn btn-sm" type="button" aria-pressed="true">Committed</button><button class="btn btn-ghost btn-sm" type="button" data-why="Congressional App Challenge">Ask why</button></div>
+          </article>
+        </div>
+
+        <div class="tier notnow">
+          <div class="tier-h"><h3>Not now</h3><span class="c">5</span><button class="btn btn-ghost btn-sm" type="button" id="nnToggle" aria-expanded="false" aria-controls="nnList">Show 5</button></div>
+          <ul class="notnow-list" id="nnList" hidden>
+            <li class="nn"><div class="top"><span class="tierword closed">Closed</span><span>due <span class="mono">Apr 30</span></span><span>closed <span class="mono">164</span> days ago</span><span class="mono">~6 h</span></div><strong>3M Young Scientist Challenge</strong><span class="reason"><em>Locked</em>Grade 5-8 only</span></li>
+            <li class="nn"><div class="top"><span class="tierword closed">Closed</span><span>due <span class="mono">Sep 9</span></span><span>closed <span class="mono">32</span> days ago</span><span class="mono">~20 h</span></div><strong>Australian STEM Video Game Challenge 2026</strong><span class="reason"><em>Locked</em>Closed Sep 9</span></li>
+            <li class="nn"><div class="top"><span class="tierword notnow">Not now</span><span>due <span class="mono">Oct 26</span></span><span>in <span class="mono">15</span> days</span><span class="mono">~30 h</span></div><strong>OpenCV AI Competition</strong><span class="reason"><em>Locked</em>Needs 30 h, 18.5 h available by Oct 26</span></li>
+            <li class="nn"><div class="top"><span class="tierword notnow">Not now</span><span>due <span class="mono">Nov 4</span></span><span>in <span class="mono">24</span> days</span><span class="mono">~6 h</span></div><strong>K-State High School Programming Contest</strong><span class="reason"><em>Locked</em>Manhattan, KS, US only</span></li>
+            <li class="nn"><div class="top"><span class="tierword notnow">Not now</span><span>due <span class="mono">Nov 5</span></span><span>in <span class="mono">25</span> days</span><span class="mono">~40 h</span></div><strong>Regeneron Science Talent Search</strong><span class="reason"><em>Locked</em>Grade 12 only</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec-tight" id="weeks" aria-labelledby="weeks-h">
+      <div class="wrap">
+        <div class="sec-head rise">
+          <p class="eyebrow">Backward from each deadline</p>
+          <h2 id="weeks-h">Your weeks</h2>
+          <p class="lead">Each column is 7 days from today. Hours fill the deadline week first, then earlier weeks.</p>
+        </div>
+        <div class="weeks-scroll"><div class="weeks" id="weeksMain" style="--n:10"></div></div>
+        <ul class="legend">
+          <li><span class="sw num">5.5</span>Planned hours</li>
+          <li><span class="sw of">of 10 h</span>Hours available that week</li>
+          <li><span class="sw over"></span>Over capacity</li>
+          <li><span class="sw dl"></span>Deadline</li>
+          <li><span class="sw exam">Midterms</span>Exams</li>
+          <li><span class="sw busy"></span>Busy days (fewer hours)</li>
+        </ul>
+        <p class="foot-note">The week a deadline falls in counts in full.</p>
+
+        <div class="whatif">
+          <div>
+            <h3>What if you had more or less time?</h3>
+            <div class="readout"><span id="wiVal">2</span> h<small>a week</small></div>
+            <div class="slider">
+              <label for="wi">Weekly hours</label>
+              <input id="wi" type="range" min="0" max="30" step="0.5" value="2" aria-describedby="wiVal">
+              <div class="ends"><span style="left:0">0 h</span><span class="saved" style="left:33.33%">10 h <i>saved</i></span><span style="left:100%">30 h</span></div>
+            </div>
+          </div>
+          <div class="wi-panel" aria-live="polite">
+            <p class="calm" id="wi10" hidden>At 10 h a week, no combination of what you can commit overloads a week. Drag lower to see where it breaks.</p>
+            <div id="wiPreview" class="wi-panel">
+              <div class="wi-actions"><button class="btn btn-primary btn-sm" type="button">Save as my weekly hours</button><button class="btn btn-ghost btn-sm" type="button" id="wiReset">Reset to 10 h</button></div>
+              <p class="wi-note">Preview only. Nothing changes until you save.</p>
+              <div id="wi2" class="wi-panel">
+                <p class="warn"><b>Can't be done in time at 2 h a week</b> (would be uncommitted if you save): Congressional App Challenge (Needs 6 h, 3.5 h available by Oct 26)</p>
+                <div class="weeks mini" id="weeksMini"></div>
+              </div>
+              <p class="calm" id="wiOther" hidden>[TODO] Preview text for this value was not captured from the app.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec-tight" id="reuse" aria-labelledby="reuse-h">
+      <div class="wrap">
+        <div class="sec-head rise">
+          <p class="eyebrow">Reuse</p>
+          <h2 id="reuse-h">One project, several doors</h2>
+          <p class="lead">Each thread is a tag your project shows that the opportunity asks for. Bright threads lead to what you've committed; dashed ones are locked.</p>
+        </div>
+        <div class="threads planner-threads" data-threads="planner"></div>
+      </div>
+    </section>
+
+    <section class="sec-tight" id="add" aria-labelledby="add-h">
+      <div class="wrap">
+        <div class="sec-head rise">
+          <p class="eyebrow">Your list</p>
+          <h2 id="add-h">Add your own</h2>
+          <p class="lead">Found something not on the list? The same rules check it before it joins your plan.</p>
+        </div>
+        <div class="add">
+          <form onsubmit="return false" novalidate>
+            <div class="field">
+              <label for="paste">Paste the opportunity text</label>
+              <textarea id="paste" aria-describedby="paste-help" disabled></textarea>
+              <p class="help off" id="paste-help">Reading pasted text needs the AI extractor, which is off. Fill in manually below.</p>
+            </div>
+            <div class="manual">
+              <span class="fs-label">Fill in manually</span>
+              <div class="grid-f">
+                <div class="field full"><label for="f-title">Title</label><input id="f-title" type="text"></div>
+                <div class="field"><label for="f-org">Organizer</label><input id="f-org" type="text"></div>
+                <div class="field"><label for="f-link">Link</label><input id="f-link" type="url"></div>
+                <div class="field"><label for="f-dl">Deadline</label><input id="f-dl" type="date"></div>
+                <div class="field"><label for="f-h">Hours it takes (estimate)</label><input id="f-h" type="number" min="0" step="0.5" inputmode="decimal"></div>
+                <div class="field"><label for="f-lo">Lowest grade</label><input id="f-lo" type="number" min="1" max="12" inputmode="numeric"></div>
+                <div class="field"><label for="f-hi">Highest grade</label><input id="f-hi" type="number" min="1" max="12" inputmode="numeric"></div>
+                <div class="full"><label class="check"><input type="checkbox">Online, open from anywhere</label></div>
+                <fieldset class="full" style="border:0;padding:0;margin:0">
+                  <legend class="fs-label">What it asks for</legend>
+                  <div class="tagpick" id="tagpick"></div>
+                </fieldset>
+                <div class="full"><button class="btn btn-primary" type="button" id="checkIt">Check it</button></div>
+              </div>
+            </div>
+          </form>
+          <aside class="result" aria-live="polite">
+            <div class="ghost-route" aria-hidden="true"></div>
+            <p id="resultMsg">Fill in the form and press "Check it" to see the card and what still blocks it.</p>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-in">
+    <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>Opportunity OS</a>
+    <p>Rule-based. Every reason shown. AI only explains and extracts.</p>
+  </div>
+</footer>
+
+<dialog id="why" aria-labelledby="whyTitle">
+  <div class="dlg">
+    <button class="x" type="button" id="whyClose" aria-label="Close">X</button>
+    <h3 id="whyTitle">Why: International Machine Learning Competition</h3>
+    <div id="whyBody">
+      <p class="ans">This project is Focus because your projects show data analysis and python. You have 99 h available before the deadline to complete the 6 h needed. This work also counts for the Congressional App Challenge, NASA Space Apps Challenge 2026, Cosmo Hacks 2026, and Global Appathon.</p>
+      <p class="note">Plain-language version, checked against the rules.</p>
+      <details>
+        <summary>Exact rule details</summary>
+        <p>Tennis Analytics App shows data analysis and python, which International Machine Learning Competition asks for. It needs about 6 h, and you have 99 h before Dec 13 at 10 h a week. Focus: nothing it asks for is missing, and the deadline is outside your busy periods. The same work also counts for Congressional App Challenge, NASA Space Apps Challenge 2026, Cosmo Hacks 2026 and Global Appathon.</p>
+      </details>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(function(){
+  document.documentElement.classList.add('js');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent){ var e=document.createElementNS(NS,tag); for(var k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.appendChild(e); return e; }
+  var io = 'IntersectionObserver' in window;
+
+  /* ---------- City placeholder (procedural SVG, seeded). [TODO] swap for the real hero image. ---------- */
+  (function city(){
+    var svg=document.getElementById('city'); if(!svg) return;
+    var s=20261011; function r(){ s|=0; s=s+0x6D2B79F5|0; var t=Math.imul(s^s>>>15,1|s); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }
+    var defs=el('defs',{},svg);
+    function pat(id,bg,dot,op,step){ var p=el('pattern',{id:id,width:step,height:step,patternUnits:'userSpaceOnUse'},defs); el('rect',{width:step,height:step,fill:bg},p); el('rect',{x:1,y:1,width:2,height:2,fill:dot,opacity:op},p); }
+    pat('w1','#0d3157','#5aaeff',.9,5); pat('w2','#113a66','#e0efff',.75,6); pat('w3','#0c2848','#FFB27A',.8,6); pat('w4','#0a2240','#4FA3FF',.5,4);
+    var f=el('filter',{id:'glow',x:'-20%',y:'-20%',width:'140%',height:'140%'},defs); el('feGaussianBlur',{stdDeviation:'6'},f);
+    el('rect',{width:900,height:800,fill:'#071a30'},svg);
+    var g=el('g',{transform:'rotate(-16 450 400) scale(1.18) translate(-70 -60)'},svg);
+    var fills=['url(#w1)','url(#w1)','url(#w2)','url(#w4)','url(#w1)','url(#w3)','url(#w4)','#0b223d'];
+    for(var bx=-180; bx<1100; bx+=118){
+      for(var by=-200; by<1050; by+=104){
+        var bw=98, bh=86, cols=1+Math.floor(r()*3), rows=1+Math.floor(r()*3);
+        var cw=bw/cols, rh=bh/rows;
+        for(var i=0;i<cols;i++) for(var j=0;j<rows;j++){
+          var x=bx+i*cw+1.5, y=by+j*rh+1.5, w=cw-3, h=rh-3;
+          el('rect',{x:x.toFixed(1),y:y.toFixed(1),width:w.toFixed(1),height:h.toFixed(1),fill:fills[Math.floor(r()*fills.length)]},g);
+          if(r()>.75){ var iw=w*(.4+r()*.35), ih=h*(.4+r()*.35); el('rect',{x:(x+(w-iw)/2).toFixed(1),y:(y+(h-ih)/2).toFixed(1),width:iw.toFixed(1),height:ih.toFixed(1),fill:'url(#w2)',stroke:'rgba(170,215,255,.7)','stroke-width':.8},g); }
+        }
+      }
+    }
+    var hw=[['M -200 470 C 120 420, 300 560, 520 430 S 860 300, 1150 360','#FF7A3D'],['M 380 -200 C 420 120, 300 300, 440 520 S 560 900, 520 1100','#FF9A62'],['M -200 760 C 200 700, 600 820, 1150 640','#9fd0ff']];
+    hw.forEach(function(h){ el('path',{d:h[0],fill:'none',stroke:h[1],'stroke-width':16,opacity:.45,filter:'url(#glow)'},g); el('path',{d:h[0],fill:'none',stroke:h[1],'stroke-width':2.8,opacity:.95},g); });
+  })();
+
+  /* ---------- Hero: chips on the route by deadline ----------
+     Route = arc-length scale. Apr 2026 (closed) .02-.09 | May-Aug gap .09-.16 | Sep 1-Dec 31 2026 .16-.84 (linear by day) | Jan-Mar gap .84-.91 | Apr 2027 .91-.99.
+     Gaps are drawn dashed and labelled so the compression is honest. */
+  (function hero(){
+    var hero=document.getElementById('hero'), stage=document.getElementById('stage'), svg=document.getElementById('routeSvg'), copy=document.getElementById('heroCopy'), list=document.getElementById('chips');
+    var chips=[].slice.call(list.querySelectorAll('.chip:not(.today)'));
+    var PTS=[[0,.86],[.15,.865],[.31,.855],[.47,.79],[.6,.66],[.7,.53],[.81,.41],[.91,.25],[1,.07]];
+    var TODAY=.385;
+    var TICKS=[{f:.02,t:'Apr 2026'},{f:.125,t:'May to Aug',b:1},{f:.16,t:'Sep'},{f:.329,t:'Oct'},{f:.503,t:'Nov'},{f:.671,t:'Dec'},{f:.875,t:'Jan to Mar',b:1},{f:.91,t:'Apr 2027'}];
+    var first=true;
+    function crd(P){ var d='M '+P[0][0]+' '+P[0][1];
+      for(var i=0;i<P.length-1;i++){ var p0=P[i-1]||P[i], p1=P[i], p2=P[i+1], p3=P[i+2]||p2;
+        d+=' C '+(p1[0]+(p2[0]-p0[0])/6)+' '+(p1[1]+(p2[1]-p0[1])/6)+', '+(p2[0]-(p3[0]-p1[0])/6)+' '+(p2[1]-(p3[1]-p1[1])/6)+', '+p2[0]+' '+p2[1]; }
+      return d; }
+    function hit(a,b,pad){ return a.x < b.x+b.w+pad && a.x+a.w+pad > b.x && a.y < b.y+b.h+pad && a.y+a.h+pad > b.y; }
+    function inside(p,r,pad){ return p.x>r.x-pad && p.x<r.x+r.w+pad && p.y>r.y-pad && p.y<r.y+r.h+pad; }
+    function stacked(){ hero.classList.remove('placed'); while(svg.firstChild) svg.removeChild(svg.firstChild); chips.forEach(function(c){ c.style.left=''; c.style.top=''; }); }
+    function layout(){
+      if(window.innerWidth<1024){ stacked(); return; }
+      hero.classList.add('placed');
+      while(svg.firstChild) svg.removeChild(svg.firstChild);
+      var SR=stage.getBoundingClientRect(), W=SR.width, H=SR.height;
+      svg.setAttribute('viewBox','0 0 '+W+' '+H);
+      var defs=el('defs',{},svg), fl=el('filter',{id:'rglow',x:'-10%',y:'-10%',width:'120%',height:'120%'},defs); el('feGaussianBlur',{stdDeviation:'5'},fl);
+      var guide=el('path',{d:crd(PTS.map(function(p){return [p[0]*W,p[1]*H];})),fill:'none',stroke:'none'},svg);
+      var L=guide.getTotalLength();
+      function at(f){ var q=guide.getPointAtLength(L*Math.max(0,Math.min(1,f))); return {x:q.x,y:q.y}; }
+      function nrm(f){ var a=at(f-.004), b=at(f+.004), dx=b.x-a.x, dy=b.y-a.y, l=Math.hypot(dx,dy)||1, n={x:-dy/l,y:dx/l}; if(n.y<0){n.x=-n.x;n.y=-n.y;} return n; }
+      var samples=[]; for(var i=0;i<=260;i++) samples.push(at(i/260));
+      var drawing = first && !reduce; svg.classList.toggle('drawing',drawing); list.classList.toggle('drawing',drawing);
+      function seg(a,b,cls,glow){ var pts=[], n=Math.max(2,Math.round((b-a)*320)); for(var i=0;i<=n;i++){ var p=at(a+(b-a)*i/n); pts.push(p.x.toFixed(1)+','+p.y.toFixed(1)); }
+        var attrs={points:pts.join(' '),class:'seg '+cls,pathLength:1,style:'animation-delay:'+(.2+a*1.8).toFixed(2)+'s;animation-duration:'+Math.max(.3,(b-a)*2.4).toFixed(2)+'s'};
+        if(glow){ var g=el('polyline',Object.assign({},attrs,{class:'seg glow',filter:'url(#rglow)'}),svg); } el('polyline',attrs,svg); }
+      seg(0,.09,'past'); seg(.09,.16,'gap'); seg(.16,TODAY,'past');
+      seg(TODAY,.84,'core',true); seg(.84,.91,'gap future'); seg(.91,1,'core',true);
+      var obstacles=[], labels=[];
+      obstacles.push({x:copy.offsetLeft-stage.offsetLeft-10,y:copy.offsetTop-stage.offsetTop-10,w:copy.offsetWidth+20,h:copy.offsetHeight+20});
+      TICKS.forEach(function(t){ var p=at(t.f), n=nrm(t.f), g=el('g',{class:'pop',style:'--t:'+t.f},svg);
+        if(!t.b) el('line',{x1:p.x-n.x*5,y1:p.y-n.y*5,x2:p.x+n.x*6,y2:p.y+n.y*6,class:'mtick'},g);
+        var sd=t.b?-1:1, wv=t.t.length*7.9, off=24, lx, ly, box;
+        for(var k=0;k<6;k++){ lx=p.x+n.x*off*sd; ly=p.y+n.y*off*sd+4; lx=Math.max(wv/2+2,Math.min(W-wv/2-2,lx)); ly=Math.min(H-4,ly);
+          box={x:lx-wv/2-4,y:ly-14,w:wv+8,h:20}; if(!labels.some(function(o){return hit(box,o,2);})) break; off+=16; }
+        labels.push(box);
+        el('text',{x:lx,y:ly,'text-anchor':'middle',class:'mlabel'+(t.b?' brk':'')},g).textContent=t.t;
+        obstacles.push({x:lx-wv/2-4,y:ly-14,w:wv+8,h:20}); });
+      (function(){ var p=at(TODAY), n=nrm(TODAY), g=el('g',{class:'pop',style:'--t:'+TODAY},svg);
+        el('circle',{cx:p.x,cy:p.y,r:8,class:'today-ring'},g); el('circle',{cx:p.x,cy:p.y,r:3.5,class:'today-core'},g);
+        var lx=p.x-n.x*30, ly=p.y-n.y*30+4; el('text',{x:lx,y:ly,'text-anchor':'middle',class:'today-label'},g).textContent='Today, Oct 11';
+        obstacles.push({x:lx-58,y:ly-16,w:116,h:22}); obstacles.push({x:p.x-12,y:p.y-12,w:24,h:24}); })();
+      var items=chips.map(function(c){ var f=parseFloat(c.getAttribute('data-f')); return {el:c,f:f,p:at(f),w:c.offsetWidth,h:c.offsetHeight,past:c.classList.contains('past')}; });
+      items.forEach(function(it){ it.den=items.filter(function(o){ return Math.hypot(o.p.x-it.p.x,o.p.y-it.p.y)<170; }).length; });
+      var order=items.slice().sort(function(a,b){ return b.den-a.den || a.f-b.f; });
+      var dots=items.map(function(it){return it.p;}), placed=[], ok=true;
+      order.forEach(function(it){
+        if(!ok) return; var best=null;
+        [22,48,80,115,155,200,250,300,360].some(function(dist){
+          for(var a=0;a<24;a++){
+            var ang=a*Math.PI/12, cx=Math.cos(ang), cy=Math.sin(ang), half=Math.abs(cx)*it.w/2+Math.abs(cy)*it.h/2;
+            var mx=it.p.x+cx*(dist+half), my=it.p.y+cy*(dist+half), r={x:mx-it.w/2,y:my-it.h/2,w:it.w,h:it.h};
+            if(r.x<0||r.y<0||r.x+r.w>W||r.y+r.h>H-6) continue;
+            if(obstacles.some(function(o){return hit(r,o,6);})) continue;
+            if(placed.some(function(o){return hit(r,o.r,12);})) continue;
+            if(dots.some(function(d){return inside(d,r,10);})) continue;
+            var e={x:Math.max(r.x,Math.min(it.p.x,r.x+r.w)),y:Math.max(r.y,Math.min(it.p.y,r.y+r.h))}, pen=dist;
+            var cover=samples.filter(function(s){return inside(s,r,8);}).length; pen+=cover? 260+cover*12 : 0;
+            for(var k=1;k<10;k++){ var sp={x:it.p.x+(e.x-it.p.x)*k/10,y:it.p.y+(e.y-it.p.y)*k/10}; if(placed.some(function(o){return inside(sp,o.r,4);})){ pen+=900; break; } }
+            if(!best||pen<best.pen) best={pen:pen,r:r,e:e};
+          }
+          return best && best.pen<dist+1;
+        });
+        if(!best){ ok=false; return; }
+        it.r=best.r; it.e=best.e; placed.push(it);
+      });
+      if(!ok){ stacked(); return; }
+      items.forEach(function(it,idx){
+        it.el.style.left=it.r.x+'px'; it.el.style.top=it.r.y+'px'; it.el.style.setProperty('--t',it.f);
+        var st=el('line',{x1:it.p.x,y1:it.p.y,x2:it.e.x,y2:it.e.y,class:'stem pop'+(it.past?' past':''),style:'--t:'+it.f},svg);
+        var g=el('g',{class:'pop',style:'--t:'+it.f},svg);
+        if(!it.past) el('circle',{cx:it.p.x,cy:it.p.y,r:9,class:'dhalo'},g);
+        el('circle',{cx:it.p.x,cy:it.p.y,r:it.past?4:4.5,class:'ddot'+(it.past?' past':'')},g);
+        it.el.onmouseenter=function(){ st.classList.add('hot'); }; it.el.onmouseleave=function(){ st.classList.remove('hot'); };
+      });
+      first=false;
+    }
+    var tmr; function later(){ clearTimeout(tmr); tmr=setTimeout(function(){ first=false; layout(); },120); }
+    var done=false; function init(){ if(done) return; done=true; hero.classList.remove('pending'); layout(); }
+    if(window.innerWidth>=1024) hero.classList.add('placed','pending');
+    if(document.fonts && document.fonts.status!=='loaded'){ document.fonts.ready.then(init); setTimeout(init,1500); } else init();
+    window.addEventListener('resize',later);
+  })();
+
+  /* ---------- Gentle rise (transform only; content never hidden) ---------- */
+  var riseIO = io && !reduce ? new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); riseIO.unobserve(e.target); } }); },{threshold:.15}) : null;
+  if(riseIO) document.querySelectorAll('.rise').forEach(function(n){ var r=n.getBoundingClientRect(); if(r.top>window.innerHeight){ n.classList.add('rise-arm'); riseIO.observe(n); } });
+
+  /* ---------- Off-ramps: highlight each exit, count 10 down to 5. Base state (5 of 10, all exits shown) needs no JS. ---------- */
+  (function(){
+    var ramps=document.getElementById('ramps'), out=document.getElementById('count');
+    if(!io || reduce) return;
+    var r=ramps.getBoundingClientRect(); if(r.top<window.innerHeight*.8) return;
+    out.textContent='10';
+    var rio=new IntersectionObserver(function(es){ es.forEach(function(e){ if(!e.isIntersecting) return; rio.disconnect();
+      ramps.classList.add('play');
+      for(var i=0;i<5;i++){ (function(i){ setTimeout(function(){ out.textContent=String(9-i); }, 380*i+600); })(i); }
+    }); },{threshold:.35});
+    rio.observe(ramps);
+    window.addEventListener('beforeprint',function(){ out.textContent='5'; });
+  })();
+
+  /* ---------- Reuse threads ---------- */
+  var DESTS=[
+    {t:'International Machine Learning Competition',via:'data analysis · python',c:true},
+    {t:'Congressional App Challenge',via:'technical project · python · computer vision · portfolio github',c:true},
+    {t:'NASA Space Apps Challenge 2026',via:'data analysis · python'},
+    {t:'Cosmo Hacks 2026',via:'technical project · python'},
+    {t:'Global Appathon',via:'technical project'},
+    {t:'OpenCV AI Competition',via:'computer vision · technical project · python · portfolio github',locked:'Needs 30 h, 18.5 h available by Oct 26'}
+  ];
+  var tid=0;
+  function buildThreads(root){
+    var planner=root.getAttribute('data-threads')==='planner', fid='tg'+(tid++);
+    var src=document.createElement('div'); src.className='t-src'; src.innerHTML='<small>Your project</small><strong>Tennis Analytics App</strong>';
+    var ul=document.createElement('ul'); ul.className='t-dests';
+    DESTS.forEach(function(d){
+      var state = d.locked ? 'locked' : (planner && d.c ? 'committed' : 'open');
+      var li=document.createElement('li'); li.className='t-dest'; li.setAttribute('data-state',state);
+      li.innerHTML='<strong>'+d.t+(state==='committed'?'<span class="tag-word">Committed</span>':'')+'</strong><span class="via">via <b>'+d.via+'</b></span>'+(d.locked?'<span class="lock">Locked: '+d.locked+'</span>':'');
+      ul.appendChild(li);
+    });
+    var svg=document.createElementNS(NS,'svg'); svg.setAttribute('class','lines'); svg.setAttribute('aria-hidden','true');
+    root.appendChild(svg); root.appendChild(src); root.appendChild(ul);
+    function draw(){
+      while(svg.firstChild) svg.removeChild(svg.firstChild);
+      var defs=el('defs',{},svg), fl=el('filter',{id:fid,x:'-20%',y:'-20%',width:'140%',height:'140%'},defs); el('feGaussianBlur',{stdDeviation:'4'},fl);
+      var R=root.getBoundingClientRect(), S=src.getBoundingClientRect();
+      svg.setAttribute('viewBox','0 0 '+R.width+' '+R.height);
+      var stacked = ul.getBoundingClientRect().top >= S.bottom - 1;
+      var sx = stacked ? 16 : S.right-R.left, sy = stacked ? S.bottom-R.top : S.top-R.top+S.height/2;
+      [].forEach.call(ul.children,function(li,i){
+        var D=li.getBoundingClientRect(), dx=D.left-R.left, dy=D.top-R.top+D.height/2, st=li.getAttribute('data-state'), d;
+        if(stacked){ d='M '+sx+' '+sy+' L '+sx+' '+(dy-12)+' Q '+sx+' '+dy+' '+(sx+12)+' '+dy+' L '+dx+' '+dy; }
+        else { var m=(dx-sx)*.55; d='M '+sx+' '+sy+' C '+(sx+m)+' '+sy+', '+(dx-m)+' '+dy+', '+dx+' '+dy; }
+        if(st!=='locked') el('path',{d:d,class:'thread-glow '+st,filter:'url(#'+fid+')'},svg);
+        el('path',{d:d,class:'thread '+st},svg);
+        if(st!=='locked') el('path',{d:d,class:'thread-hl',pathLength:1,style:'--i:'+i},svg);
+        el('circle',{cx:dx,cy:dy,r:4.5,class:'tnode'+(st==='locked'?' locked':'')},svg);
+      });
+      el('circle',{cx:sx,cy:sy,r:5,class:'tnode'},svg);
+    }
+    draw();
+    if('ResizeObserver' in window) new ResizeObserver(draw).observe(root); else window.addEventListener('resize',draw);
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+    if(io && !reduce){ var tio=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ root.classList.add('in'); tio.disconnect(); } }); },{threshold:.3}); tio.observe(root); }
+  }
+  document.querySelectorAll('[data-threads]').forEach(buildThreads);
+
+  /* ---------- Weeks (numbers only, no bars) ---------- */
+  function weekCol(w){
+    var d=document.createElement('div'); d.className='wk'+(w.busy?' busy':'')+(w.dl?' dl':'')+(w.now?' now':'')+(w.plan>0?' has':' zero');
+    var html='<span class="lab">'+w.label+'</span><span class="dates">'+w.dates+'</span>'+
+      '<span class="hrs"><b>'+w.plan+'</b>of '+w.avail+' h</span>';
+    if(w.busy) html+='<span class="busy-note">Midterms · <span class="mono">'+w.busy+'</span> days</span>';
+    (w.items||[]).forEach(function(it){ html+='<span class="item"><b>'+it[0]+'</b> '+it[1]+'</span>'; });
+    if(w.dl) html+='<span class="dlm">Deadline: '+w.dl+'</span>';
+    d.innerHTML=html; return d;
+  }
+  var WEEKS=[
+    {label:'This week',dates:'Oct 11-17',plan:0,avail:10,now:true},
+    {label:'Week 2',dates:'Oct 18-24',plan:0.5,avail:3,busy:5},
+    {label:'Week 3',dates:'Oct 25-31',plan:5.5,avail:5.5,busy:3,items:[['5.5 h','Congressional App Challenge']],dl:'Congressional App Challenge'},
+    {label:'Week 4',dates:'Nov 1-7',plan:0,avail:10},
+    {label:'Week 5',dates:'Nov 8-14',plan:0,avail:10},
+    {label:'Week 6',dates:'Nov 15-21',plan:0,avail:10},
+    {label:'Week 7',dates:'Nov 22-28',plan:0,avail:10},
+    {label:'Week 8',dates:'Nov 29-Dec 5',plan:0,avail:10},
+    {label:'Week 9',dates:'Dec 6-12',plan:0,avail:10},
+    {label:'Week 10',dates:'Dec 13-19',plan:6,avail:10,items:[['6 h','International Machine Learning Competition']],dl:'International Machine Learning Competition'}
+  ];
+  var wm=document.getElementById('weeksMain'); WEEKS.forEach(function(w){ wm.appendChild(weekCol(w)); });
+  var MINI=[
+    {label:'This week',dates:'Oct 11-17',plan:0,avail:2,now:true},
+    {label:'Week 2',dates:'Oct 18-24',plan:0,avail:0.5,busy:5},
+    {label:'Week 3',dates:'Oct 25-31',plan:0,avail:1,busy:3}
+  ];
+  var mm=document.getElementById('weeksMini'); MINI.forEach(function(w){ mm.appendChild(weekCol(w)); });
+
+  /* ---------- What if ---------- */
+  (function(){
+    var s=document.getElementById('wi'), v=document.getElementById('wiVal');
+    var p10=document.getElementById('wi10'), prev=document.getElementById('wiPreview'), p2=document.getElementById('wi2'), other=document.getElementById('wiOther');
+    function set(){ var x=parseFloat(s.value); v.textContent=String(x);
+      p10.hidden = x!==10; prev.hidden = x===10; p2.hidden = x!==2; other.hidden = (x===2||x===10); }
+    s.addEventListener('input',set);
+    document.getElementById('wiReset').addEventListener('click',function(){ s.value=10; set(); });
+    set();
+  })();
+
+  /* ---------- Not now toggle ---------- */
+  (function(){
+    var b=document.getElementById('nnToggle'), l=document.getElementById('nnList');
+    b.addEventListener('click',function(){ var open=l.hidden; l.hidden=!open; b.setAttribute('aria-expanded',String(open)); b.textContent= open ? 'Hide' : 'Show 5'; });
+  })();
+
+  /* ---------- Ask why dialog ---------- */
+  (function(){
+    var dlg=document.getElementById('why'), title=document.getElementById('whyTitle'), body=document.getElementById('whyBody'), orig=body.innerHTML;
+    document.querySelectorAll('[data-why]').forEach(function(b){
+      b.addEventListener('click',function(){
+        var k=b.getAttribute('data-why');
+        if(k==='imlc'){ title.textContent='Why: International Machine Learning Competition'; body.innerHTML=orig; }
+        else { title.textContent='Why: '+k; body.innerHTML='<p class="ans">[TODO] Explanation text for this card was not captured. The example captured is International Machine Learning Competition.</p>'; }
+        if(dlg.showModal) dlg.showModal(); else dlg.setAttribute('open','');
+      });
+    });
+    document.getElementById('whyClose').addEventListener('click',function(){ dlg.close ? dlg.close() : dlg.removeAttribute('open'); });
+    dlg.addEventListener('click',function(e){ if(e.target===dlg) dlg.close(); });
+  })();
+
+  /* ---------- Add your own ---------- */
+  (function(){
+    var tags=['technical project','portfolio github','competition experience','writing sample','python','computer vision','data analysis','web dev','ai ml','research writing','public speaking','leadership'];
+    var box=document.getElementById('tagpick');
+    tags.forEach(function(t,i){ var id='tg'+i+'x'; box.insertAdjacentHTML('beforeend','<input type="checkbox" id="'+id+'"><label for="'+id+'">'+t+'</label>'); });
+    document.getElementById('checkIt').addEventListener('click',function(){ document.getElementById('resultMsg').scrollIntoView({behavior: reduce?'auto':'smooth', block:'nearest'}); });
+  })();
+
+  /* ---------- Nav: Skip intro / Story, active link ---------- */
+  (function(){
+    var t=document.getElementById('introToggle'), pl=document.getElementById('planner');
+    var links=[].slice.call(document.querySelectorAll('.links a'));
+    if(!io) return;
+    new IntersectionObserver(function(es){ es.forEach(function(e){
+      var inPlanner = e.boundingClientRect.top < window.innerHeight*0.5;
+      t.textContent = inPlanner ? 'Story' : 'Skip intro'; t.setAttribute('href', inPlanner ? '#top' : '#plan');
+    }); },{threshold:[0,0.01,0.5,1],rootMargin:'0px 0px -50% 0px'}).observe(pl);
+    var secs=['plan','opportunities','weeks','reuse','add'].map(function(id){return document.getElementById(id);});
+    var sio=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(a){ a.classList.toggle('on', a.getAttribute('href')==='#'+e.target.id); }); } }); },{rootMargin:'-45% 0px -50% 0px'});
+    secs.forEach(function(s){ sio.observe(s); });
+  })();
+})();
+</script>
+</body>
+</html>

@@ -6,6 +6,8 @@
 
 **A planner that tells students which opportunities are worth their limited hours, and exactly why.**
 
+*Originally created for Dublin HacX; I'm currently refining it.*
+
 ![Opportunity OS: ten opportunities, 160 hours of work, 10 hours a week](docs/screenshots/story-hero.png)
 
 > **10** opportunities on the list · **160 h** of estimated work · **10 h** a week to spend.
@@ -92,6 +94,8 @@ The chain is: live answer (8 s limit) → saved answer → rule text. On the hos
 ---
 
 ## The hackathon story
+
+Opportunity OS was originally created for Dublin HacX. I'm currently refining it: the latest pass gave it a new night-city design and generated images, with every feature unchanged.
 
 **Inspiration.** I'm a competitive student juggling school with hackathons, science fairs, competitions, and clubs like Speech and Debate. Every season I had a list of twenty "great opportunities" and nowhere near enough hours. The one trick that worked was building a single solid project and submitting it to several contests, but deciding which ones were worth it, and which of my existing work counted for each, was all gut feeling and messy spreadsheets. Existing tools either just list opportunities or rank them with a number nobody can explain. I wanted something that makes those calls with me and shows its reasoning.
 

@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
-import { ArrowDown, ArrowRight } from 'lucide-react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Threads } from '@/components/Threads'
 import { useRevealOnEnter } from '@/hooks/use-reveal-on-enter'
 import { useCountUp } from '@/hooks/use-count-up'
+import { heroChipWidth, layoutHeroChips, type ChipSpot } from '@/lib/hero-layout'
 import { humanTag, shortDate } from '@/lib/exit-reason'
 import type { StoryData, StoryExit, StoryPileCard, StoryReuseFan } from '@/lib/story-data'
 
@@ -12,115 +14,96 @@ export interface StoryProps {
   reducedMotion: boolean
 }
 
-const DISPLAY = 'text-[56px] font-semibold leading-[1.05] tracking-[-0.02em]'
-const COUNTER = 'text-[72px] font-semibold leading-none tracking-[-0.03em] tabular-nums'
-const BEAT = 'flex min-h-[calc(100svh-56px)] flex-col items-center justify-center px-8 py-24'
+const CHIP_H = 74
 
-function Reveal({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  const [ref, revealed] = useRevealOnEnter<HTMLDivElement>()
-  return <div ref={ref} data-revealed={revealed} className={`reveal ${className}`}>{children}</div>
-}
-
-// Card pile around the headline: [left %, top %, rotate deg, scale, opacity].
-// Fixed values (deterministic); the centre column stays clear for the text.
-const PILE_POS: [number, number, number, number, number][] = [
-  [2, 7, -7, 0.92, 0.7], [22, 2, 4, 0.82, 0.5], [68, 3, -4, 0.86, 0.55], [84, 10, 6, 0.96, 0.75],
-  [0, 40, 5, 0.86, 0.55], [85, 42, -6, 0.9, 0.65],
-  [3, 73, -4, 0.96, 0.75], [20, 86, 6, 0.8, 0.45], [67, 85, -5, 0.84, 0.5], [83, 74, 4, 0.92, 0.7],
-]
-
-function HeroCard({ card, i, reducedMotion }: { card: StoryPileCard; i: number; reducedMotion: boolean }) {
-  const [left, top, r, sc, o] = PILE_POS[i % PILE_POS.length]
+function Chip({ card, spot, width, i }: { card: StoryPileCard; spot?: ChipSpot; width?: number; i: number }) {
   const style = {
-    left: `${left}%`, top: `${top}%`,
-    ['--r' as string]: `${r}deg`, ['--s' as string]: sc, ['--o' as string]: o,
-    ['--d' as string]: `${200 + i * 90}ms`,
-  } as React.CSSProperties
-  const floatStyle = {
-    ['--fx' as string]: `${i % 2 ? -10 : 12}px`, ['--fy' as string]: `${i % 3 ? 14 : -12}px`,
-    ['--fd' as string]: `${7 + (i * 3) % 6}s`, ['--fdelay' as string]: `${1.2 + i * 0.09}s`,
+    ['--r' as string]: `${spot ? spot.rotate : [-1, 1, -0.5, 0.5][i % 4]}deg`,
+    ['--d' as string]: `${7 + (i * 3) % 5}s`,
+    ['--dl' as string]: `${-(i * 0.7)}s`,
+    ...(spot ? { left: spot.x, top: spot.y, width } : {}),
   } as React.CSSProperties
   return (
-    <div className={`hero-card absolute w-[210px] ${reducedMotion ? '' : 'hero-card-anim'}`} style={style}>
-      <div className={reducedMotion ? '' : 'hero-float'} style={floatStyle}>
-        <div className="rounded-xl border border-border bg-card/90 p-3.5">
-          <p className="truncate text-[13px] font-semibold text-foreground">{card.title}</p>
-          <p className="mt-1.5 flex items-center justify-between text-[12px] text-muted-foreground tabular-nums">
-            <span>{card.deadline ? `due ${shortDate(card.deadline)}` : 'no deadline'}</span>
-            <span>~{card.effortHours} h</span>
-          </p>
-        </div>
-      </div>
-    </div>
+    <li className="chip" style={style}>
+      <strong title={card.title}>{card.title}</strong>
+      <span className="meta">
+        <span>{card.deadline ? `due ${shortDate(card.deadline)}` : 'no deadline'}</span>
+        <span className="h">~{card.effortHours} h</span>
+      </span>
+    </li>
   )
 }
-
-function Stat({ value, unit, label }: { value: number; unit?: string; label: string }) {
-  return (
-    <div className="flex flex-col items-center px-8">
-      <p className="text-[56px] font-semibold leading-none tracking-[-0.03em] tabular-nums">
-        {value}{unit && <span className="ml-1 text-[28px] font-medium text-muted-foreground">{unit}</span>}
-      </p>
-      <p className="mt-2 text-[13px] font-medium uppercase tracking-[0.06em] text-muted-foreground">{label}</p>
-    </div>
-  )
-}
-
-const LINE_1 = ['Too', 'many', 'opportunities.']
-const LINE_2 = ['Too', 'little', 'time.']
 
 function HeroBeat({ data, onOpenPlanner, onSeeHow, reducedMotion }: {
   data: StoryData; onOpenPlanner: () => void; onSeeHow: () => void; reducedMotion: boolean
 }) {
-  const [scrolled, setScrolled] = useState(false)
-  useEffect(() => {
-    const on = () => { if (window.scrollY > 40) setScrolled(true) }
-    window.addEventListener('scroll', on, { passive: true })
-    return () => window.removeEventListener('scroll', on)
-  }, [])
-  const total = useCountUp(data.total, 900, 900, reducedMotion)
-  const work = useCountUp(data.totalEffortHours, 1300, 1000, reducedMotion)
-  const weekly = useCountUp(data.weeklyCapacityHours, 900, 1100, reducedMotion)
-  // The gradient sits on each word: background-clip text does not reach transformed children.
-  const word = (w: string, i: number, gradient = false) => (
-    <span key={`${w}-${i}`} className={`inline-block ${gradient ? 'hero-gradient' : ''} ${reducedMotion ? '' : 'hero-word'}`} style={{ ['--d' as string]: `${i * 80}ms` } as React.CSSProperties}>
-      {w}&nbsp;
-    </span>
+  const heroRef = useRef<HTMLElement>(null)
+  const copyRef = useRef<HTMLDivElement>(null)
+  const [spots, setSpots] = useState<{ list: ChipSpot[]; width: number } | null>(null)
+  const total = useCountUp(data.total, 900, 600, reducedMotion)
+  const work = useCountUp(data.totalEffortHours, 1300, 700, reducedMotion)
+  const weekly = useCountUp(data.weeklyCapacityHours, 900, 800, reducedMotion)
+
+  // Wide screens: spread the chips over the city, clear of the headline. Narrow: a simple grid.
+  useLayoutEffect(() => {
+    const hero = heroRef.current
+    const copy = copyRef.current
+    if (!hero || !copy) return
+    const place = () => {
+      const h = hero.getBoundingClientRect()
+      if (h.width <= 960) { setSpots(null); return }
+      const c = copy.getBoundingClientRect()
+      const width = heroChipWidth(h.width)
+      const copyBox = { x: c.left - h.left - 24, y: c.top - h.top - 24, w: c.width + 48, h: c.height + 48 }
+      // Chips cluster to the right of the headline, level with it; the band only grows if all 10 don't fit.
+      const rightOf = copyBox.x + copyBox.w
+      // Stay inside the first screen, so no chip hides below the fold on short laptops.
+      const visibleH = Math.min(h.height, window.innerHeight - Math.max(0, h.top))
+      const tryBand = (extra: number, gap: number, stagger: boolean, scatter: number) => layoutHeroChips({
+        width: h.width, height: visibleH, count: data.pile.length, chip: { w: width, h: CHIP_H }, gap, pad: gap, stagger, scatter,
+        avoid: [copyBox],
+        region: { x: rightOf + gap, y: copyBox.y - extra, w: h.width - rightOf - gap, h: copyBox.h + extra * 2 },
+      })
+      // Loosest look first; tighter packing only when the screen is small.
+      const tries: [number, number, boolean, number][] = [
+        [0.12, 18, true, 1], [0.25, 18, true, 1], [0.25, 18, true, 0.28], [1, 18, true, 0.28], [1, 12, true, 0.28], [1, 12, false, 0.28],
+      ]
+      const list = tries.map(([f, gap, stagger, scatter]) => tryBand(visibleH * f, gap, stagger, scatter)).find((l) => l.length === data.pile.length) ?? []
+      setSpots(list.length === data.pile.length ? { list, width } : null)
+    }
+    place()
+    const ro = new ResizeObserver(place)
+    ro.observe(hero)
+    return () => ro.disconnect()
+  }, [data.pile.length])
+
+  const chips = (
+    <ul className={`chips ${spots ? 'placed' : ''}`} aria-label="The pile: every opportunity on the list">
+      {data.pile.map((c, i) => <Chip key={c.id} card={c} i={i} spot={spots?.list[i]} width={spots?.width} />)}
+    </ul>
   )
+
   return (
-    <section className={`story-hero ${BEAT} text-center`} aria-labelledby="beat-0">
-      <div className="fog-layer fog-a" aria-hidden="true" />
-      <div className="fog-layer fog-b" aria-hidden="true" />
-      <div className="fog-layer fog-c" aria-hidden="true" />
-      <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-        {data.pile.slice(0, PILE_POS.length).map((c, i) => <HeroCard key={c.id} card={c} i={i} reducedMotion={reducedMotion} />)}
+    <section ref={heroRef} className="hero" aria-labelledby="beat-0">
+      <div className="city" aria-hidden="true" />
+      {spots && chips}
+      <div className="wrap hero-in">
+        <div ref={copyRef} className="hero-copy">
+          <span className="rule" aria-hidden="true" />
+          <h1 id="beat-0">Too many opportunities.<span className="l2">Too little time.</span></h1>
+          <p className="hero-line">For students juggling more opportunities than hours.</p>
+          <div className="stats">
+            <div className="stat"><b>{total}</b><span>opportunities</span></div>
+            <div className="stat"><b>{work} h</b><span>of work, estimated</span></div>
+            <div className="stat"><b>{weekly} h</b><span>a week to spend</span></div>
+          </div>
+          <div className="cta-row">
+            <Button onClick={onOpenPlanner}>Open the planner <ArrowRight aria-hidden="true" /></Button>
+            <Button variant="outline" onClick={onSeeHow}>See how it narrows</Button>
+          </div>
+        </div>
       </div>
-
-      <h1 id="beat-0" className="max-w-[880px]">
-        <span className="block text-[60px] font-semibold leading-[1.02] tracking-[-0.03em]">{LINE_1.map((w, i) => word(w, i))}</span>
-        <span className="block pb-2 text-[84px] font-semibold leading-[1.02] tracking-[-0.035em]">{LINE_2.map((w, i) => word(w, i + 3, true))}</span>
-      </h1>
-
-      <div className={`mt-12 flex items-stretch divide-x divide-border ${reducedMotion ? '' : 'hero-rise'}`} style={{ ['--d' as string]: '700ms' } as React.CSSProperties}>
-        <Stat value={total} label="opportunities" />
-        <Stat value={work} unit="h" label="of work, estimated" />
-        <Stat value={weekly} unit="h" label="a week to spend" />
-      </div>
-      <p className={`mt-8 text-[18px] ${reducedMotion ? '' : 'hero-rise'}`} style={{ ['--d' as string]: '900ms' } as React.CSSProperties}>
-        For students juggling more opportunities than hours.
-      </p>
-
-      <div className={`mt-10 flex items-center gap-3 ${reducedMotion ? '' : 'hero-rise'}`} style={{ ['--d' as string]: '1100ms' } as React.CSSProperties}>
-        <Button size="lg" className="h-10 px-5 text-[15px]" onClick={onOpenPlanner}>
-          Open the planner <ArrowRight aria-hidden="true" />
-        </Button>
-        <Button size="lg" variant="outline" className="h-10 px-5 text-[15px]" onClick={onSeeHow}>See how it narrows</Button>
-      </div>
-
-      <ArrowDown
-        className={`absolute bottom-8 size-5 text-muted-foreground transition-opacity duration-500 ${scrolled ? 'opacity-0' : 'opacity-100'} ${reducedMotion ? '' : 'hero-cue'}`}
-        aria-hidden="true"
-      />
+      {!spots && chips}
     </section>
   )
 }
@@ -132,109 +115,87 @@ function FunnelBeat({ total, remaining, exits, titles, reducedMotion }: {
   const [step, setStep] = useState(0)
   useEffect(() => {
     if (!revealed || reducedMotion) return
-    const timers = exits.map((_, i) => window.setTimeout(() => setStep(i + 1), 400 + i * 120 * 3))
+    const timers = exits.map((_, i) => window.setTimeout(() => setStep(i + 1), 400 + i * 360))
     return () => timers.forEach((t) => window.clearTimeout(t))
   }, [revealed, reducedMotion, exits])
   const shown = reducedMotion ? exits.length : step
   const outReason = new Map(exits.slice(0, shown).map((e) => [e.title, e.reason]))
+  const done = shown === exits.length
   return (
-    <section className={BEAT} aria-labelledby="beat-1">
-      <div ref={ref} className="w-full max-w-[1056px] text-center">
-        <h2 id="beat-1" className={DISPLAY}>Most of them aren't for you.</h2>
-        <p className="mt-8"><span className={COUNTER}>{total - shown}</span></p>
-        <p className="mt-2 text-[15px] text-muted-foreground tabular-nums">
-          {shown === exits.length ? `left of ${total}, each exit with its reason` : `of ${total}`}
-        </p>
-        <ul className="mt-12 grid grid-cols-5 gap-3 text-left">
-          {titles.map((t) => {
-            const reason = outReason.get(t)
-            return (
-              <li key={t} data-out={reason !== undefined} className="funnel-card flex min-h-[104px] flex-col justify-between rounded-xl border border-border bg-card p-3">
-                <span className="funnel-title text-[13px] font-medium leading-snug">{t}</span>
-                <span className="funnel-chip mt-2 self-start rounded-full border border-border px-2 py-0.5 text-[12px]">{reason ?? ''}</span>
-              </li>
-            )
-          })}
-        </ul>
-        <p className="sr-only" aria-live="polite">{shown === exits.length ? `${remaining} of ${total} left.` : ''}</p>
+    <section className="sec" aria-labelledby="beat-1">
+      <div className="wrap">
+        <div ref={ref} className="spined funnel">
+          <span className="stop" aria-hidden="true" />
+          <div className="funnel-side">
+            <h2 id="beat-1">Most of them aren't for you.</h2>
+            <p className="count"><span className="n">{total - shown}</span><span className="of">of {total}</span></p>
+            <p className="count-note">{done ? 'left, each exit with its reason' : ''}</p>
+          </div>
+          <ul className="exits">
+            {titles.map((t) => {
+              const reason = outReason.get(t)
+              return (
+                <li key={t} className={`exit ${reason !== undefined ? 'out' : ''}`}>
+                  <h3>{t}</h3>
+                  {reason !== undefined && <span className="why"><em>Out</em>{reason}</span>}
+                </li>
+              )
+            })}
+          </ul>
+          <p className="sr-only" aria-live="polite">{done ? `${remaining} of ${total} left.` : ''}</p>
+        </div>
       </div>
     </section>
   )
 }
 
 function ReuseBeat({ fan }: { fan: StoryReuseFan }) {
-  const [ref, revealed] = useRevealOnEnter<HTMLDivElement>()
-  const W = 1000
-  const ROW = 64
-  const H = Math.max(1, fan.targets.length) * ROW
-  const px = 280
-  const ox = 640
   return (
-    <section className={BEAT} aria-labelledby="beat-3">
-      <div ref={ref} data-revealed={revealed} className="w-full max-w-[1056px]">
-        <h2 id="beat-3" className={`${DISPLAY} text-center`}>One project. Several doors.</h2>
-        <p className="mx-auto mt-4 max-w-[68ch] text-center text-muted-foreground">Each thread is a tag {fan.project.title} shows that the opportunity asks for.</p>
-        <svg viewBox={`0 0 ${W} ${H}`} className="mt-12 w-full" aria-hidden="true">
-          {fan.targets.map((t, i) => {
-            const y1 = H / 2
-            const y2 = i * ROW + ROW / 2
-            return (
-              <g key={t.id}>
-                <path
-                  d={`M${px},${y1} C${(px + ox) / 2},${y1} ${(px + ox) / 2},${y2} ${ox},${y2}`}
-                  fill="none" stroke="var(--fog-2)" strokeWidth={1.5}
-                  className="thread-draw" style={{ transitionDelay: `${i * 120}ms` }}
-                />
-                <text x={ox - 12} y={y2 - 8} textAnchor="end" fontSize="12" fill="var(--muted-text)" stroke="var(--ink)" strokeWidth={4} paintOrder="stroke">{t.matchedTags.map(humanTag).join(' · ')}</text>
-                <rect x={ox} y={y2 - 20} width={W - ox} height={40} rx={10} fill="var(--surface)" stroke="var(--hairline)" />
-                <text x={ox + 16} y={y2 + 5} fontSize="15" fill="var(--text)">{t.title}</text>
-              </g>
-            )
-          })}
-          <rect x={0} y={H / 2 - 24} width={px} height={48} rx={12} fill="var(--surface-2)" stroke="var(--fog-2)" />
-          <text x={20} y={H / 2 + 5} fontSize="16" fontWeight={600} fill="var(--text)">{fan.project.title}</text>
-        </svg>
-        <ul className="sr-only">
-          {fan.targets.map((t) => <li key={t.id}>{fan.project.title} to {t.title}, via {t.matchedTags.map(humanTag).join(', ')}</li>)}
-        </ul>
+    <section className="sec" aria-labelledby="beat-3">
+      <div className="wrap">
+        <div className="spined">
+          <span className="stop" aria-hidden="true" />
+          <h2 id="beat-3">One project. Several doors.</h2>
+          <p className="lead" style={{ marginTop: 14 }}>Each thread is a tag {fan.project.title} shows that the opportunity asks for.</p>
+          <Threads
+            sources={[{ id: fan.project.id, title: fan.project.title }]}
+            dests={fan.targets.map((t) => ({ id: t.id, title: t.title, state: 'open', via: t.matchedTags.map(humanTag).join(' · ') }))}
+            links={fan.targets.map((t) => ({ from: fan.project.id, to: t.id, state: 'open' }))}
+          />
+        </div>
       </div>
     </section>
   )
 }
 
-const PREVIEW_BARS = [4, 7, 10, 5]
-
 function HandoffBeat({ onOpenPlanner }: { onOpenPlanner: () => void }) {
   return (
-    <section className={BEAT} aria-labelledby="beat-4">
-      <Reveal className="flex flex-col items-center text-center">
-        <h2 id="beat-4" className={DISPLAY}>Now plan your weeks.</h2>
-        <div className="mt-12 flex items-end gap-3" aria-hidden="true">
-          {PREVIEW_BARS.map((h, i) => (
-            <div key={i} className="flex h-[120px] w-16 flex-col justify-end rounded-lg border border-border bg-card p-1.5">
-              <div className="rounded-[3px] bg-fog-2" style={{ height: `${h * 10}px` }} />
-            </div>
-          ))}
+    <section className="handoff-sec" aria-labelledby="beat-4">
+      <div className="wrap">
+        <div className="spined handoff">
+          <span className="stop end" aria-hidden="true" />
+          <h2 id="beat-4">Now plan your weeks.</h2>
+          <Button onClick={onOpenPlanner}>Open the planner</Button>
         </div>
-        <p className="mt-3 text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Preview</p>
-        <Button className="mt-10" size="lg" onClick={onOpenPlanner}>Open the planner</Button>
-      </Reveal>
+      </div>
     </section>
   )
 }
 
 export function Story({ data, onOpenPlanner, reducedMotion }: StoryProps) {
   return (
-    <div>
+    <>
       <HeroBeat
         data={data}
         onOpenPlanner={onOpenPlanner}
         onSeeHow={() => document.getElementById('beat-1')?.closest('section')?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' })}
         reducedMotion={reducedMotion}
       />
-      <FunnelBeat total={data.total} remaining={data.remaining} exits={data.exits} titles={data.titles} reducedMotion={reducedMotion} />
-      {data.reuseFan && <ReuseBeat fan={data.reuseFan} />}
-      <HandoffBeat onOpenPlanner={onOpenPlanner} />
-    </div>
+      <div className="story">
+        <FunnelBeat total={data.total} remaining={data.remaining} exits={data.exits} titles={data.titles} reducedMotion={reducedMotion} />
+        {data.reuseFan && <ReuseBeat fan={data.reuseFan} />}
+        <HandoffBeat onOpenPlanner={onOpenPlanner} />
+      </div>
+    </>
   )
 }

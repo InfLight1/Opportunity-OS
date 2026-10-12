@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opportunity OS: 10 versions</title>
+<style>
+  :root { --bg:#f4f4f2; --ink:#1b1b1a; --muted:#6b6b67; --line:#dcdcd7; --card:#fff; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { padding:32px 32px 8px; max-width:1500px; margin:0 auto; }
+  h1 { font-size:22px; margin:0 0 4px; font-weight:600; }
+  header p { margin:0; color:var(--muted); }
+  .grid { max-width:1500px; margin:0 auto; padding:16px 32px 64px; display:grid; grid-template-columns:180px 1fr 1fr; gap:20px 24px; align-items:start; }
+  .colhead { font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); padding-top:8px; }
+  .rowhead { padding-top:8px; }
+  .rowhead strong { display:block; font-size:16px; }
+  .rowhead span { color:var(--muted); font-size:13px; }
+  .rowhead img { width:100%; border-radius:6px; margin-top:10px; border:1px solid var(--line); }
+  figure { margin:0; background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .frame { position:relative; width:100%; aspect-ratio:1440/900; overflow:hidden; background:#e9e9e5; }
+  .frame iframe { position:absolute; top:0; left:0; width:1440px; height:900px; border:0; transform-origin:0 0; pointer-events:none; }
+  figcaption { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; font-size:13px; border-top:1px solid var(--line); }
+  figcaption a { color:var(--ink); font-weight:600; text-decoration:none; }
+  figcaption a:hover { text-decoration:underline; }
+  @media (max-width:900px) { .grid { grid-template-columns:1fr; padding:16px; } .colhead { display:none; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Opportunity OS: 10 design versions</h1>
+  <p>Rows are the 5 looks. Left column follows the "impeccable" approach, right column the "taste" approach. Same content in all 10. Click "Open full" to scroll the whole page, or <a href="viewer.html" style="color:inherit;font-weight:600">open the viewer</a> to flip through them full size.</p>
+</header>
+<main class="grid" id="grid">
+  <div></div><div class="colhead">Impeccable</div><div class="colhead">Taste</div>
+</main>
+<script>
+  const styles = [
+    ["night-route", "Night Route", "Dark city, glowing route line", "BeamsSection.webp"],
+    ["unfair-advantage", "Unfair Advantage", "Black and white, serif accents", "MedTechLandingPage.png"],
+    ["greater-care", "Greater Care", "Nature, numbered grid", "EarthDayPage.webp"],
+    ["quiet-lake", "Quiet Lake", "Misty calm, step cards", "MentalHealthSection.webp"],
+    ["cobalt-horizon", "Cobalt Horizon", "Blue glow, then bright", "AILandingPage.webp"],
+  ];
+  const grid = document.getElementById("grid");
+  for (const [slug, name, note, ref] of styles) {
+    const head = document.createElement("div");
+    head.className = "rowhead";
+    head.innerHTML = `<strong>${name}</strong><span>${note}</span><img src="../references/${ref}" alt="${name} reference">`;
+    grid.appendChild(head);
+    for (const skill of ["impeccable", "taste"]) {
+      const url = `${slug}-${skill}/index.html`;
+      const fig = document.createElement("figure");
+      fig.innerHTML = `<div class="frame"><iframe src="${url}" loading="lazy" title="${name} ${skill}"></iframe></div>
+        <figcaption><span>${name} · ${skill}</span><a href="${url}" target="_blank">Open full ↗</a></figcaption>`;
+      grid.appendChild(fig);
+    }
+  }
+  const fit = () => document.querySelectorAll(".frame").forEach(f => {
+    f.querySelector("iframe").style.transform = `scale(${f.clientWidth / 1440})`;
+  });
+  addEventListener("resize", fit); fit();
+</script>
+</body>
+</html>

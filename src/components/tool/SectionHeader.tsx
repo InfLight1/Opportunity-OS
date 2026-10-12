@@ -10,11 +10,11 @@ export interface SectionHeaderProps {
 
 export function SectionHeader({ id, eyebrow, title, description, aside }: SectionHeaderProps) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+    <div className="sec-head">
       <div>
-        <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">{eyebrow}</p>
-        <h2 id={id} className="mt-1 text-[28px] font-semibold leading-[1.2] tracking-[-0.01em]">{title}</h2>
-        {description && <p className="mt-1.5 max-w-[68ch] text-[15px] text-muted-foreground">{description}</p>}
+        <p className="eyebrow">{eyebrow}</p>
+        <h2 id={id}>{title}</h2>
+        {description && <p className="lead">{description}</p>}
       </div>
       {aside}
     </div>

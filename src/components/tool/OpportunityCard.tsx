@@ -6,13 +6,16 @@ import { formatHours, relativeDays, TIER_WORD, type OpportunityCardModel } from 
 
 const SOON_DAYS = 30
 
-const BADGE = 'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-medium uppercase tracking-[0.06em]'
+const TIER_CLASS = { FOCUS: 'focus', CONSIDER: 'consider', SKIP: 'notnow' } as const
 
 export function TierBadge({ card }: { card: Pick<OpportunityCardModel, 'tier' | 'expired'> }) {
-  if (card.expired) return <span className={`${BADGE} border border-border text-muted-foreground`}><Lock className="size-3" aria-hidden="true" />Closed</span>
-  if (card.tier === 'FOCUS') return <span className={`${BADGE} bg-fog-1 text-ink`}>{TIER_WORD.FOCUS}</span>
-  if (card.tier === 'CONSIDER') return <span className={`${BADGE} border border-fog-2 text-fog-2`}>{TIER_WORD.CONSIDER}</span>
-  return <span className={`${BADGE} border border-border text-muted-foreground`}><Lock className="size-3" aria-hidden="true" />{TIER_WORD.SKIP}</span>
+  if (card.expired) return <span className="tierword closed"><Lock className="size-3" aria-hidden="true" />Closed</span>
+  return (
+    <span className={`tierword ${TIER_CLASS[card.tier]}`}>
+      {card.tier === 'SKIP' && <Lock className="size-3" aria-hidden="true" />}
+      {TIER_WORD[card.tier]}
+    </span>
+  )
 }
 
 export interface OpportunityCardProps {
@@ -30,48 +33,37 @@ export function OpportunityCard({ card, onToggleCommit, onAskWhy, onRemove, foot
   const lockId = `lock-${card.id}`
   // A near deadline stands out only on cards you can still act on.
   const soon = !locked && !card.expired && card.deadline !== '' && card.daysLeft <= SOON_DAYS
+  // Lines that say what's missing or what collides are the card's catch.
+  const shows = card.reasons.filter((r) => r.startsWith('Your projects show'))
+  const catches = card.reasons.filter((r) => !r.startsWith('Your projects show'))
+  const variant = locked && !footer ? 'notnow' : TIER_CLASS[card.tier]
   return (
-    <article
-      className={[
-        'flex flex-col gap-3 rounded-xl border p-5 transition-colors duration-200',
-        card.committed ? 'border-fog-2 bg-secondary' : locked ? 'border-border bg-card' : 'border-border bg-card hover:border-fog-3',
-        locked ? 'text-muted-foreground' : '',
-      ].join(' ')}
-      aria-label={card.title}
-    >
-      <div className="flex items-center justify-between gap-3 text-[13px] tabular-nums">
+    <article className={`card ${variant} ${card.committed ? 'is-committed' : ''}`} aria-label={card.title}>
+      <div className="card-top">
         {badge ?? <TierBadge card={card} />}
-        <span className={`inline-flex items-center gap-1.5 ${soon ? 'text-foreground' : 'text-muted-foreground'}`}>
+        <span className={`mono inline-flex items-center gap-1.5 ${soon ? 'soon' : ''}`}>
           {soon && <Clock className="size-3.5" aria-hidden="true" />}
           {card.deadline ? <>due {shortDate(card.deadline)} · {relativeDays(card.daysLeft)}</> : 'no deadline yet'}
         </span>
       </div>
       <div>
-        <h3 className={`text-[18px] font-semibold leading-[1.3] ${locked ? 'text-muted-foreground' : 'text-foreground'}`}>
+        <h4>
           {card.sourceUrl ? (
-            <a href={card.sourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-start gap-1.5 hover:underline">
-              {card.title}<ExternalLink className="mt-1 size-3.5 shrink-0 text-muted-foreground" aria-label="(opens organiser page)" />
+            <a href={card.sourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-start gap-1.5">
+              {card.title}<ExternalLink className="mt-1.5 size-3.5 shrink-0 opacity-60" aria-label="(opens organiser page)" />
             </a>
           ) : card.title}
-        </h3>
-        {card.organization && <p className="text-[13px] text-muted-foreground">{card.organization}</p>}
-        <p className="mt-1 text-[13px] text-muted-foreground tabular-nums">
-          {card.effortHours > 0 ? `~${formatHours(card.effortHours)} h (estimate)` : 'effort not given'}
-        </p>
+        </h4>
+        {card.organization && <span className="org">{card.organization}</span>}
+        <p className="hrs"><span className="mono">{card.effortHours > 0 ? `~${formatHours(card.effortHours)} h` : 'effort not given'}</span>{card.effortHours > 0 && ' (estimate)'}</p>
       </div>
-      {!locked && card.reasons.length > 0 && (
-        <ul className="space-y-1 text-[15px] text-muted-foreground">
-          {card.reasons.slice(0, 3).map((r) => <li key={r}>{r}</li>)}
-        </ul>
-      )}
-      <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
+      {!locked && shows.length > 0 && <ul className="shows">{shows.map((r) => <li key={r}>{r}</li>)}</ul>}
+      {!locked && catches.map((r) => <p key={r} className="catch"><em>Catch</em>{r}</p>)}
+      <div className="card-foot">
         {footer ?? (locked ? (
           <>
-            <Button size="sm" variant="outline" disabled aria-describedby={lockId}>
-              <Lock aria-hidden="true" />Commit
-            </Button>
-            <span id={lockId} className="text-[13px] text-muted-foreground">{card.lockReason}</span>
-            {onAskWhy && <Button size="sm" variant="ghost" onClick={() => onAskWhy(card.id)}>Ask why</Button>}
+            <span id={lockId} className="lockwhy">{card.lockReason}</span>
+            {onAskWhy && <Button size="sm" variant="ghost" onClick={() => onAskWhy(card.id)} aria-describedby={lockId}>Ask why</Button>}
             {card.userAdded && onRemove && <Button size="sm" variant="ghost" onClick={() => onRemove(card.id)}>Remove</Button>}
           </>
         ) : (
@@ -81,14 +73,13 @@ export function OpportunityCard({ card, onToggleCommit, onAskWhy, onRemove, foot
               variant={card.committed ? 'outline' : 'default'}
               aria-pressed={card.committed}
               onClick={() => onToggleCommit(card.id)}
-              className={card.committed ? 'border-accent-blue' : ''}
             >
               {card.committed && <Check aria-hidden="true" />}
               {card.committed ? 'Committed' : 'Commit'}
             </Button>
-            {onAskWhy && <Button size="sm" variant="ghost" onClick={() => onAskWhy(card.id)}>Ask why</Button>}
+            {onAskWhy && <Button size="sm" variant="outline" onClick={() => onAskWhy(card.id)}>Ask why</Button>}
             {card.committed && card.startByBucketStart && (
-              <span className="text-[13px] text-muted-foreground tabular-nums">Start by week of {shortDate(card.startByBucketStart)}</span>
+              <span className="startby">Start by week of <span className="mono">{shortDate(card.startByBucketStart)}</span></span>
             )}
             {card.userAdded && onRemove && <Button size="sm" variant="ghost" onClick={() => onRemove(card.id)}>Remove</Button>}
           </>

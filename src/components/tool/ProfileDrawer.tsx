@@ -46,7 +46,7 @@ function Chips<T extends Tag>({ value, options, onChange, label }: { value: T[];
             type="button"
             aria-pressed={on}
             onClick={() => onChange(toggle(value, o.value))}
-            className={`rounded-full border px-3 py-1 text-[13px] transition-colors ${on ? 'border-fog-2 bg-fog-2 text-ink' : 'border-input text-muted-foreground hover:text-foreground'}`}
+            className="pill-toggle"
           >
             {o.label}
           </button>
@@ -85,15 +85,15 @@ export function ProfileDrawer({ open, onOpenChange, formData, onSave, demoData }
       aria-labelledby="profile-title"
       onClose={() => onOpenChange(false)}
       onClick={(e) => { if (e.target === ref.current) onOpenChange(false) }}
-      className="fixed inset-y-0 right-0 left-auto m-0 h-full max-h-none w-[440px] max-w-full border-l border-border bg-popover p-0 text-foreground backdrop:bg-black/60"
+      className="nr-drawer"
     >
       <form
         className="flex h-full flex-col"
         onSubmit={(e) => { e.preventDefault(); onSave(draft); onOpenChange(false) }}
       >
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
-          <h2 id="profile-title" className="text-[18px] font-semibold">Profile</h2>
-          <Button type="button" variant="ghost" size="icon-sm" aria-label="Close profile" onClick={() => onOpenChange(false)}><X /></Button>
+          <h2 id="profile-title" className="text-[22px] font-medium tracking-[-0.01em]">Profile</h2>
+          <Button type="button" variant="outline" size="icon-sm" aria-label="Close profile" onClick={() => onOpenChange(false)}><X /></Button>
         </div>
 
         <div className="flex-1 space-y-6 overflow-y-auto px-6 py-5">
@@ -119,16 +119,16 @@ export function ProfileDrawer({ open, onOpenChange, formData, onSave, demoData }
           </div>
 
           <fieldset className="space-y-2">
-            <legend className="mb-1 text-sm font-medium">Projects you've built</legend>
-            <p className="text-[13px] text-muted-foreground">Projects are what count as proof.</p>
+            <legend className="mb-1 text-[15px] font-medium text-[#D3E0EE]">Projects you've built</legend>
+            <p className="text-[15px] text-muted-foreground">Projects are what count as proof.</p>
             {draft.projects.map((p, i) => (
-              <div key={p.id || i} className="space-y-2 rounded-xl border border-border bg-card p-3">
+              <div key={p.id || i} className="space-y-2 rounded-[var(--nr-r-card)] border border-[var(--nr-line-2)] bg-[rgba(11,42,74,.32)] p-3">
                 <div className="flex gap-2">
                   <Input aria-label="Project title" placeholder="Project title" value={p.title} onChange={(e) => set({ projects: draft.projects.map((q, j) => (j === i ? { ...q, title: e.target.value } : q)) })} />
                   <Button type="button" variant="ghost" size="sm" onClick={() => set({ projects: draft.projects.filter((_, j) => j !== i) })}>Remove</Button>
                 </div>
                 <Input aria-label="Project description" placeholder="Description" value={p.description} onChange={(e) => set({ projects: draft.projects.map((q, j) => (j === i ? { ...q, description: e.target.value } : q)) })} />
-                <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">What this project shows</p>
+                <p className="text-[15px] font-medium text-[var(--nr-blue-hi)]">What this project shows</p>
                 <Chips<Tag>
                   label={`What ${p.title || 'this project'} shows`}
                   value={p.tags}
@@ -141,19 +141,19 @@ export function ProfileDrawer({ open, onOpenChange, formData, onSave, demoData }
           </fieldset>
 
           <fieldset className="space-y-2">
-            <legend className="mb-1 text-sm font-medium">Skills</legend>
+            <legend className="mb-1 text-[15px] font-medium text-[#D3E0EE]">Skills</legend>
             <Chips<SkillTag> label="Skills" value={draft.skills} options={SKILL_OPTIONS} onChange={(next) => set({ skills: next })} />
           </fieldset>
 
           <fieldset className="space-y-2">
-            <legend className="mb-1 text-sm font-medium">Interests</legend>
+            <legend className="mb-1 text-[15px] font-medium text-[#D3E0EE]">Interests</legend>
             <Chips<InterestTag> label="Interests" value={draft.interests} options={INTEREST_OPTIONS} onChange={(next) => set({ interests: next })} />
           </fieldset>
 
           <fieldset className="space-y-2">
-            <legend className="mb-1 text-sm font-medium">Busy periods (exams, travel)</legend>
+            <legend className="mb-1 text-[15px] font-medium text-[#D3E0EE]">Busy periods (exams, travel)</legend>
             {draft.busy_weeks.map((w, i) => (
-              <div key={i} className="grid grid-cols-[1fr_1fr] gap-2 rounded-xl border border-border bg-card p-3">
+              <div key={i} className="grid grid-cols-[1fr_1fr] gap-2 rounded-[var(--nr-r-card)] border border-[var(--nr-line-2)] bg-[rgba(11,42,74,.32)] p-3">
                 <Input aria-label="Busy from" type="date" value={w.start || ''} onChange={(e) => set({ busy_weeks: draft.busy_weeks.map((b, j) => (j === i ? { ...b, start: e.target.value } : b)) })} />
                 <Input aria-label="Busy until" type="date" value={w.end || ''} onChange={(e) => set({ busy_weeks: draft.busy_weeks.map((b, j) => (j === i ? { ...b, end: e.target.value } : b)) })} />
                 <Input aria-label="Label" placeholder="Label, e.g. Midterms" value={w.label || ''} onChange={(e) => set({ busy_weeks: draft.busy_weeks.map((b, j) => (j === i ? { ...b, label: e.target.value } : b)) })} />

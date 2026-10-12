@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opportunity OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Cobalt Horizon: atmospheric gradient (native CSS, no library). */
+:root{
+  --night:#020B2E; --night-2:#061545; --cobalt:#0A4BFF; --sky:#3D8BFF; --ice:#EAF2FF; --ink:#0B1B3F;
+  --paper:#F5F9FF; --surface:#FFFFFF; --surface-2:#EEF4FF; --line:rgba(11,27,63,.12); --line-2:rgba(11,27,63,.2);
+  --text:#0B1B3F; --muted:#475778; --soft:#5F6F90;
+  --accent:#0A4BFF; --accent-ink:#FFFFFF; --accent-soft:rgba(10,75,255,.1);
+  --over:#C8283F; --over-soft:rgba(200,40,63,.1);
+  --r-card:16px; --r-in:10px; --r-pill:999px;
+  --shadow:0 18px 40px -24px rgba(10,40,140,.35);
+  --sans:"Hanken Grotesk",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#06102F; --surface:#0B1B44; --surface-2:#0E2152; --line:rgba(234,242,255,.12); --line-2:rgba(234,242,255,.22);
+    --text:#EAF2FF; --muted:#AFC0E0; --soft:#93A6CC; --accent:#3D8BFF; --accent-ink:#020B2E; --accent-soft:rgba(61,139,255,.16);
+    --over:#FF6B80; --over-soft:rgba(255,107,128,.14); --shadow:0 18px 40px -24px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#06102F; --surface:#0B1B44; --surface-2:#0E2152; --line:rgba(234,242,255,.12); --line-2:rgba(234,242,255,.22);
+  --text:#EAF2FF; --muted:#AFC0E0; --soft:#93A6CC; --accent:#3D8BFF; --accent-ink:#020B2E; --accent-soft:rgba(61,139,255,.16);
+  --over:#FF6B80; --over-soft:rgba(255,107,128,.14); --shadow:0 18px 40px -24px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;font-family:var(--sans);color:var(--text);background:var(--paper);line-height:1.55;overflow-x:hidden}
+a{color:inherit}
+button,input,textarea{font:inherit;color:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:0 32px}
+.num{font-family:var(--mono);font-feature-settings:"tnum"}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 10px}
+h1,h2,h3{margin:0;letter-spacing:-.025em;line-height:1.08}
+h2{font-size:clamp(32px,4.4vw,52px);font-weight:500}
+h2 em,h1 em{font-style:italic;font-weight:400;color:var(--sky)}
+.sub{color:var(--muted);max-width:62ch;margin:14px 0 0;font-size:17px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;border-radius:var(--r-pill);padding:12px 22px;font-weight:600;font-size:15px;text-decoration:none;border:1px solid transparent;cursor:pointer;transition:transform .2s cubic-bezier(.16,1,.3,1),background .2s,border-color .2s}
+.btn:active{transform:translateY(1px) scale(.98)}
+.btn-primary{background:var(--cobalt);color:#fff}
+.btn-primary:hover{background:#0840DB}
+.btn-ghost{background:transparent;border-color:var(--line-2);color:var(--text)}
+.btn-ghost:hover{border-color:var(--accent)}
+.btn-sm{padding:8px 16px;font-size:14px}
+:focus-visible{outline:2px solid var(--sky);outline-offset:3px}
+
+/* Nav */
+.nav{position:fixed;inset:0 0 auto 0;z-index:30;height:64px;display:flex;align-items:center;transition:background .3s,border-color .3s;border-bottom:1px solid transparent}
+.nav.solid{background:rgba(2,11,46,.72);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);border-color:rgba(234,242,255,.1)}
+.nav .wrap{display:flex;align-items:center;gap:24px;width:100%}
+.brand{display:flex;align-items:center;gap:10px;color:#EAF2FF;text-decoration:none;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+.brand-mark{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 50% 120%,#EAF2FF 0 38%,#3D8BFF 46%,#0A4BFF 56%,transparent 60%);border:1px solid rgba(234,242,255,.5)}
+.nav-links{display:flex;gap:26px;margin:0 auto;padding:0;list-style:none}
+.nav-links a{color:#C9D9F7;text-decoration:none;font-size:14px}
+.nav-links a:hover{color:#fff}
+.nav-right{display:flex;gap:10px;align-items:center}
+.nav-right .skip{color:#C9D9F7;font-size:14px;text-decoration:none;white-space:nowrap}
+.nav-right .btn{background:rgba(234,242,255,.1);border-color:rgba(234,242,255,.2);color:#EAF2FF}
+
+/* Hero */
+.hero{position:relative;min-height:100dvh;background:var(--night);overflow:hidden;color:#EAF2FF;display:flex;flex-direction:column;align-items:center;padding:clamp(96px,14vh,128px) 0 72px}
+.stars{position:absolute;inset:0;pointer-events:none;opacity:.8;background-image:
+  radial-gradient(1px 1px at 12% 18%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 27% 34%,#cfe0ff 50%,transparent 51%),
+  radial-gradient(1.5px 1.5px at 44% 12%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 63% 26%,#fff 50%,transparent 51%),
+  radial-gradient(1px 1px at 78% 15%,#cfe0ff 50%,transparent 51%),radial-gradient(1.5px 1.5px at 88% 38%,#fff 50%,transparent 51%),
+  radial-gradient(1px 1px at 7% 44%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 55% 41%,#cfe0ff 50%,transparent 51%),
+  radial-gradient(1px 1px at 35% 52%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 93% 8%,#fff 50%,transparent 51%),
+  radial-gradient(1px 1px at 20% 6%,#cfe0ff 50%,transparent 51%),radial-gradient(1px 1px at 70% 48%,#fff 50%,transparent 51%)}
+.beam{position:absolute;top:0;width:1px;height:38%;background:linear-gradient(#3D8BFF00,#3D8BFFaa,#3D8BFF00);pointer-events:none}
+.horizon{position:absolute;left:50%;top:50%;width:max(2400px,190vw);aspect-ratio:1;transform:translateX(-50%);border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle closest-side,var(--paper) 0 90%,#DCE8FF 93%,#7FB0FF 96%,#3D8BFF 98.4%,#0A4BFF 100%);
+  box-shadow:0 0 30px 6px rgba(61,139,255,.75),0 0 140px 50px rgba(10,75,255,.6),0 0 320px 140px rgba(10,75,255,.28)}
+.hero-copy{position:relative;z-index:2;text-align:center;padding:0 20px;max-width:1100px}
+.hero h1 .l1{display:block}
+@media (min-width:768px){.hero h1 .l1,.hero h1 em{white-space:nowrap}}
+.hero h1{font-size:clamp(40px,6vw,84px);font-weight:500;letter-spacing:-.04em;line-height:1.02}
+.hero h1 em{display:block;color:#EAF2FF;font-weight:300;line-height:1.12;padding-bottom:4px}
+.hero-line{margin:22px auto 0;color:#C9D9F7;font-size:18px;max-width:52ch}
+
+/* Glass bar: the hero object */
+.glassbar{position:relative;z-index:3;margin-top:clamp(64px,13vh,140px);width:min(760px,calc(100% - 32px));border-radius:22px;padding:18px 18px 14px;
+  background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(234,242,255,.5));border:1px solid rgba(255,255,255,.8);
+  backdrop-filter:blur(22px) saturate(170%);-webkit-backdrop-filter:blur(22px) saturate(170%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 24px 60px -30px rgba(10,60,200,.55);color:#0B1B3F}
+@media (prefers-reduced-transparency: reduce){.glassbar{background:#F5F9FF;backdrop-filter:none}}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.stat{padding:6px 14px}
+.stat + .stat{border-left:1px solid rgba(11,27,63,.12)}
+.stat b{display:block;font-size:clamp(30px,4vw,44px);font-weight:500;letter-spacing:-.03em;line-height:1}
+.stat span{display:block;margin-top:6px;font-size:14px;color:#475778}
+.glass-actions{display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-top:16px;padding-top:12px;border-top:1px solid rgba(11,27,63,.1);flex-wrap:wrap}
+.glass-actions .btn-ghost{color:#0B1B3F;border-color:rgba(11,27,63,.2)}
+
+/* Floating opportunity chips */
+.chips{position:absolute;inset:0;z-index:2;pointer-events:none}
+.chip{position:absolute;display:flex;flex-direction:column;gap:2px;max-width:200px;padding:8px 12px;border-radius:12px;font-size:12.5px;line-height:1.3;
+  background:rgba(10,30,90,.45);border:1px solid rgba(125,170,255,.35);color:#EAF2FF;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.chip small{font-family:var(--mono);font-size:11px;color:#9FBDF5}
+.chip.lower{background:rgba(255,255,255,.55);border-color:rgba(10,75,255,.25);color:#0B1B3F}
+.chip.lower small{color:#2F4E8C}
+@media (prefers-reduced-motion: no-preference){
+  .chip{animation:float 9s ease-in-out infinite}
+  .chip:nth-child(2n){animation-duration:11s;animation-delay:-3s}
+  .chip:nth-child(3n){animation-duration:13s;animation-delay:-6s}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .rise{opacity:0;transform:translateY(16px);animation:rise .9s cubic-bezier(.16,1,.3,1) forwards}
+  .rise.d2{animation-delay:.12s}.rise.d3{animation-delay:.24s}
+  @keyframes rise{to{opacity:1;transform:none}}
+}
+.chip-strip{display:none}
+
+/* Story sections */
+section{position:relative}
+.story{padding:120px 0}
+.funnel{display:grid;grid-template-columns:5fr 7fr;gap:64px;align-items:start;margin-top:48px}
+.counter{position:sticky;top:110px}
+.counter .big{font-size:clamp(96px,14vw,184px);font-weight:300;letter-spacing:-.06em;line-height:.9;color:var(--accent)}
+.counter .of{font-size:20px;color:var(--muted);margin-top:10px}
+.pile{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.pile li{display:grid;grid-template-columns:1fr auto;gap:4px 16px;align-items:baseline;padding:14px 18px;border-radius:var(--r-in);background:var(--surface);border:1px solid var(--line);transition:opacity .6s,background .6s,border-color .6s}
+.pile li .t{font-weight:600}
+.pile li .reason{grid-column:1/-1;font-size:14px;color:var(--over);max-height:0;overflow:hidden;opacity:0;transition:max-height .5s,opacity .5s}
+.pile li .kept{font-size:13px;color:var(--soft)}
+.pile li.out{background:transparent;border-style:dashed}
+.pile li.out .t{text-decoration:line-through;text-decoration-color:var(--line-2);color:var(--soft)}
+.pile li.out .reason{max-height:40px;opacity:1}
+
+.reuse-story{background:linear-gradient(var(--paper),var(--surface-2))}
+.doors{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:56px}
+.hub{grid-column:1/-1;justify-self:center;display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px 28px;border-radius:var(--r-card);background:var(--cobalt);color:#fff;box-shadow:var(--shadow);text-align:center}
+.hub small{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.8}
+.hub strong{font-size:22px;font-weight:600}
+.door{grid-column:span 2;position:relative;padding:18px;border-radius:var(--r-card);background:var(--surface);border:1px solid var(--line)}
+.door:nth-of-type(4),.door:nth-of-type(5){grid-column:span 3}
+.door::before{content:"";position:absolute;left:50%;top:-14px;width:1px;height:14px;background:var(--accent)}
+.door h3{font-size:17px;font-weight:600;letter-spacing:-.01em}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tag{font-family:var(--mono);font-size:11.5px;padding:3px 9px;border-radius:var(--r-pill);background:var(--accent-soft);color:var(--accent)}
+.door.locked{border-style:dashed;background:transparent;grid-column:1/-1}
+.door.locked::before{background:none;border-left:1px dashed var(--line-2)}
+.door.locked .tag{background:transparent;border:1px dashed var(--line-2);color:var(--soft)}
+.lockline{margin:10px 0 0;font-size:14px;color:var(--over)}
+
+.handoff{padding:120px 0;text-align:center;background:linear-gradient(var(--surface-2),var(--paper))}
+.handoff h2{font-size:clamp(40px,6vw,76px);font-weight:400}
+.handoff .btn{margin-top:28px}
+
+/* Planner */
+.planner{padding:96px 0 40px;border-top:1px solid var(--line)}
+.block{padding:56px 0}
+.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:28px}
+.cell{padding:20px;border-radius:var(--r-card);background:var(--surface);border:1px solid var(--line);grid-column:span 2;display:flex;flex-direction:column;gap:6px}
+.cell .k{font-size:13px;color:var(--soft)}
+.cell .v{font-size:28px;font-weight:500;letter-spacing:-.02em;line-height:1.15}
+.cell .d{font-size:14px;color:var(--muted)}
+.cell.hero-cell{grid-column:span 3;background:linear-gradient(140deg,var(--cobalt),#2B6BFF 60%,var(--sky));color:#fff;border:0}
+.cell.hero-cell .k,.cell.hero-cell .d{color:#DCE8FF}
+.cell.busy{grid-column:span 3;background:repeating-linear-gradient(135deg,var(--surface) 0 10px,var(--surface-2) 10px 20px)}
+.cell.next{grid-column:1/-1;flex-direction:row;align-items:center;justify-content:space-between;gap:20px;background:var(--surface-2)}
+.cell.next .v{font-size:22px}
+
+.tier-head{display:flex;align-items:baseline;gap:12px;margin:40px 0 14px}
+.tier-head h3{font-size:22px;font-weight:600}
+.tier-head .count{font-family:var(--mono);font-size:13px;color:var(--soft)}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.card{padding:22px;border-radius:var(--r-card);background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;gap:10px;transition:transform .3s cubic-bezier(.16,1,.3,1),box-shadow .3s}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.card-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--soft)}
+.tier{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:3px 9px;border-radius:var(--r-pill);background:var(--accent-soft);color:var(--accent)}
+.tier.consider{background:transparent;border:1px solid var(--accent);}
+.tier.notnow{background:transparent;border:1px dashed var(--line-2);color:var(--soft)}
+.card h4{margin:0;font-size:19px;font-weight:600;letter-spacing:-.01em;line-height:1.25}
+.card .org{font-size:14px;color:var(--soft);margin-top:-6px}
+.card .meta{font-size:14px;color:var(--muted)}
+.card .shows b{font-weight:600}
+.catch{font-size:14px;padding:8px 12px;border-radius:var(--r-in);background:var(--surface-2);border-left:2px solid var(--accent)}
+.card-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:auto;padding-top:6px}
+.btn-commit{background:var(--surface-2);border-color:var(--line-2);color:var(--text)}
+.btn-commit[aria-pressed="true"]{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+.startby{font-size:13px;color:var(--accent);font-weight:500}
+.card.consider{grid-column:1/-1}
+.toggle-notnow{margin-top:40px;width:100%;display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-radius:var(--r-card);background:transparent;border:1px dashed var(--line-2);cursor:pointer;text-align:left}
+.toggle-notnow .chev{transition:transform .3s}
+.toggle-notnow[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.notnow-list{display:none;list-style:none;margin:10px 0 0;padding:0;gap:8px}
+.notnow-list.open{display:grid}
+.notnow-list li{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.4fr) minmax(0,1.6fr);gap:6px 18px;align-items:center;padding:14px 20px;border-radius:var(--r-in);background:var(--surface);border:1px dashed var(--line-2);font-size:14px}
+.notnow-list .t{font-weight:600;font-size:15px}
+.notnow-list .m{color:var(--soft)}
+.notnow-list .why{color:var(--over)}
+.closed{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;padding:2px 7px;border-radius:var(--r-pill);border:1px solid var(--line-2);color:var(--soft);margin-left:6px;vertical-align:2px}
+
+/* Dialog */
+dialog{border:0;padding:0;border-radius:20px;width:min(620px,calc(100% - 32px));background:var(--surface);color:var(--text);box-shadow:0 40px 80px -30px rgba(2,11,46,.6)}
+dialog::backdrop{background:rgba(2,11,46,.55);backdrop-filter:blur(4px)}
+.dlg{padding:28px}
+.dlg-top{display:flex;justify-content:space-between;gap:16px;align-items:start}
+.dlg h3{font-size:22px;font-weight:600;letter-spacing:-.015em;line-height:1.25}
+.xbtn{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid var(--line-2);background:transparent;cursor:pointer;font-size:18px;line-height:1}
+.dlg p.ans{font-size:16.5px;margin:16px 0 8px}
+.dlg .note{font-size:13px;color:var(--soft);margin:0}
+.dlg details{margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
+.dlg summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--accent)}
+.dlg details p{font-size:14.5px;color:var(--muted);margin:10px 0 0}
+
+/* Weeks */
+.weeks-scroll{margin-top:28px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px}
+.weeks{display:grid;grid-template-columns:repeat(10,minmax(96px,1fr));gap:10px;min-width:0}
+.wk{scroll-snap-align:start;display:flex;flex-direction:column;gap:8px;padding:14px 12px;border-radius:var(--r-in);background:var(--surface);border:1px solid var(--line);min-height:300px}
+.wk .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--soft)}
+.wk.now .lbl{color:var(--accent)}
+.wk .dt{font-size:13px;font-weight:600}
+.cap{position:relative;height:140px;display:flex;align-items:flex-end}
+.cap-box{position:relative;width:100%;border-radius:8px;border:1px solid var(--line-2);background:var(--surface-2);overflow:hidden}
+.cap-box.busyd{background:repeating-linear-gradient(135deg,var(--surface-2) 0 6px,transparent 6px 12px)}
+.fill{position:absolute;left:0;right:0;bottom:0;background:var(--cobalt)}
+.wk .hrs{font-size:13px}
+.wk .hrs b{font-weight:600}
+.wk .note{font-size:12px;color:var(--muted);line-height:1.35}
+.wk .lands{font-size:12px;color:var(--accent);font-weight:500;line-height:1.35}
+.pin{margin-top:auto;font-size:11.5px;line-height:1.3;padding:6px 8px;border-radius:8px;background:var(--accent-soft);color:var(--accent);border-top:2px solid var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:20px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.sw{width:14px;height:14px;border-radius:4px;display:inline-block;border:1px solid var(--line-2)}
+.sw.planned{background:var(--cobalt);border-color:var(--cobalt)}
+.sw.avail{background:var(--surface-2)}
+.sw.over{background:var(--over-soft);border:1.5px solid var(--over)}
+.sw.dl{background:var(--accent-soft);border-top:3px solid var(--accent)}
+.sw.exam{background:var(--ink);border-color:var(--ink)}
+.sw.busy{background:repeating-linear-gradient(135deg,var(--surface-2) 0 3px,var(--line-2) 3px 6px)}
+.foot{font-size:13px;color:var(--soft);margin-top:12px}
+.exam-tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;padding:2px 6px;border-radius:var(--r-pill);background:var(--ink);color:var(--ice);align-self:flex-start}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .exam-tag,:root:not([data-theme="light"]) .sw.exam{background:var(--ice);color:var(--night);border-color:var(--ice)}}
+
+/* What if */
+.whatif{display:grid;grid-template-columns:5fr 7fr;gap:28px;margin-top:28px;align-items:start}
+.panel{padding:24px;border-radius:var(--r-card);background:var(--surface);border:1px solid var(--line)}
+.readout{display:flex;align-items:baseline;gap:8px}
+.readout b{font-size:64px;font-weight:300;letter-spacing:-.04em;line-height:1;color:var(--accent)}
+.readout span{color:var(--muted)}
+input[type=range]{width:100%;margin:22px 0 6px;accent-color:var(--cobalt);height:28px}
+.range-ends{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;color:var(--soft)}
+.saved{font-size:13px;color:var(--soft);margin-top:6px}
+.wi-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.preview-note{font-size:13px;color:var(--soft);margin:12px 0 0}
+.warn{padding:14px 16px;border-radius:var(--r-in);background:var(--over-soft);border:1px solid var(--over);color:var(--over);font-size:14.5px;font-weight:500}
+.ok{padding:14px 16px;border-radius:var(--r-in);background:var(--surface-2);font-size:14.5px}
+.mini-weeks{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.mini-weeks .wk{min-height:0}
+.mini-weeks .cap{height:70px}
+.over-demo{margin-top:14px;display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:var(--r-in);border:1.5px solid var(--over);background:var(--over-soft);font-size:13px;color:var(--over)}
+
+/* Reuse threads */
+.threads{display:grid;grid-template-columns:240px 1fr minmax(0,1.6fr);align-items:center;margin-top:36px}
+.t-hub{padding:22px;border-radius:var(--r-card);background:var(--cobalt);color:#fff;box-shadow:var(--shadow)}
+.t-hub small{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.8;margin-bottom:6px}
+.t-hub strong{font-size:20px;font-weight:600}
+.t-svg{width:100%;height:516px;display:block}
+.t-svg path{fill:none;stroke-width:2}
+.t-svg .on{stroke:var(--cobalt)}
+.t-svg .dim{stroke:var(--sky);opacity:.38}
+.t-svg .lock{stroke:var(--soft);stroke-dasharray:6 6;opacity:.7}
+.t-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.t-list li{height:76px;display:flex;flex-direction:column;justify-content:center;padding:0 18px;border-radius:var(--r-in);background:var(--surface);border:1px solid var(--line)}
+.t-list li.c{border-color:var(--cobalt);box-shadow:inset 3px 0 0 var(--cobalt)}
+.t-list li.l{border-style:dashed;background:transparent}
+.t-list .n{font-weight:600;font-size:15px;line-height:1.25;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.t-list .via{font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+.t-list .badge{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:var(--r-pill);background:var(--cobalt);color:#fff}
+.t-list .badge.lk{background:transparent;border:1px dashed var(--line-2);color:var(--soft)}
+.t-mini{display:none}
+.t-key{display:flex;gap:22px;flex-wrap:wrap;margin-top:18px;font-size:13px;color:var(--muted)}
+.t-key i{display:inline-block;width:26px;height:0;border-top:2px solid var(--cobalt);vertical-align:middle;margin-right:8px}
+.t-key i.d{border-top-color:var(--sky);opacity:.5}
+.t-key i.k{border-top:2px dashed var(--soft)}
+
+/* Add your own */
+.addown{display:grid;grid-template-columns:7fr 5fr;gap:24px;margin-top:28px;align-items:start}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label,.lbl-sm{font-size:14px;font-weight:600}
+.field input,.field textarea{width:100%;padding:11px 13px;border-radius:var(--r-in);border:1px solid var(--line-2);background:var(--paper);color:var(--text)}
+.field input::placeholder,.field textarea::placeholder{color:var(--soft)}
+.field input:focus,.field textarea:focus{outline:2px solid var(--sky);outline-offset:1px;border-color:var(--accent)}
+.field textarea{min-height:110px;resize:vertical}
+.help{font-size:13px;color:var(--muted);margin:0}
+.manual-h{font-family:var(--mono);font-size:12px;letter-spacing:.12em;color:var(--soft);margin:26px 0 14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid2 .full{grid-column:1/-1}
+.check{display:flex;gap:10px;align-items:center;font-size:14.5px}
+.check input{width:18px;height:18px;accent-color:var(--cobalt)}
+.tagpick{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.tagpick button{font-family:var(--mono);font-size:12.5px;padding:6px 12px;border-radius:var(--r-pill);border:1px solid var(--line-2);background:transparent;cursor:pointer}
+.tagpick button[aria-pressed="true"]{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+.result{padding:28px;border-radius:var(--r-card);border:1px dashed var(--line-2);background:linear-gradient(160deg,var(--surface-2),transparent);min-height:220px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:15px}
+
+footer{padding:64px 0 80px;text-align:center;background:linear-gradient(var(--paper),var(--surface-2))}
+footer p{margin:0;color:var(--muted);font-size:15px}
+footer .brand{color:var(--text);justify-content:center;margin-bottom:12px}
+footer .brand-mark{border-color:var(--line-2)}
+
+/* Responsive */
+@media (max-width:1180px){
+  .chips{display:none}
+  .chip-strip{display:block;position:relative;z-index:3;width:100%;overflow:hidden;margin-top:28px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}
+  .strip-track{display:flex;gap:10px;width:max-content}
+  .strip-track .chip{position:static;animation:none;flex:none}
+  @media (prefers-reduced-motion: no-preference){.strip-track{animation:marq 48s linear infinite}@keyframes marq{to{transform:translateX(-50%)}}}
+}
+@media (max-width:900px){
+  .nav-links{display:none}
+  .nav-right{margin-left:auto}
+  .funnel,.whatif,.addown{grid-template-columns:1fr;gap:32px}
+  .counter{position:static}
+  .threads{grid-template-columns:1fr}
+  .t-svg{display:none}
+  .t-hub{margin-bottom:6px}
+  .t-list li{height:auto;padding:14px 16px 14px 34px;position:relative}
+  .t-mini{display:block;position:absolute;left:10px;top:0;height:100%;width:18px}
+  .bento{grid-template-columns:1fr 1fr}
+  .cell,.cell.hero-cell,.cell.busy{grid-column:span 1}
+  .cell.next{grid-column:1/-1}
+}
+@media (max-width:767px){
+  .wrap{padding:0 16px}
+  .hero{padding-top:96px}
+  .glassbar{margin-top:48px}
+  .stats{grid-template-columns:1fr}
+  .stat + .stat{border-left:0;border-top:1px solid rgba(11,27,63,.12)}
+  .stat{display:flex;align-items:baseline;gap:12px;padding:10px 6px}
+  .stat b{font-size:30px}
+  .stat span{margin:0}
+  .glass-actions{justify-content:stretch}
+  .glass-actions .btn{flex:1}
+  .story,.handoff{padding:80px 0}
+  .doors{grid-template-columns:1fr}
+  .door,.door:nth-of-type(4),.door:nth-of-type(5){grid-column:1/-1}
+  .cards{grid-template-columns:1fr}
+  .bento{grid-template-columns:1fr}
+  .cell.next{flex-direction:column;align-items:flex-start}
+  .notnow-list li{grid-template-columns:1fr}
+  .weeks{grid-template-columns:repeat(10,150px)}
+  .grid2{grid-template-columns:1fr}
+  .mini-weeks{grid-template-columns:1fr}
+  .nav-right .skip{display:none}
+  .block{padding:40px 0}
+}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav" aria-label="Main">
+  <div class="wrap">
+    <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>Opportunity OS</a>
+    <ul class="nav-links">
+      <li><a href="#plan">Plan</a></li>
+      <li><a href="#opportunities">Opportunities</a></li>
+      <li><a href="#weeks">Weeks</a></li>
+      <li><a href="#reuse">Reuse</a></li>
+      <li><a href="#add">Add your own</a></li>
+    </ul>
+    <div class="nav-right">
+      <a class="skip" href="#planner">Skip intro</a>
+      <button class="btn btn-sm" type="button">Profile</button>
+    </div>
+  </div>
+</nav>
+
+<main id="top">
+<!-- HERO -->
+<section class="hero" aria-labelledby="hero-h">
+  <div class="stars" aria-hidden="true"></div>
+  <span class="beam" style="left:24%" aria-hidden="true"></span>
+  <span class="beam" style="left:73%;height:30%" aria-hidden="true"></span>
+  <div class="horizon" aria-hidden="true"></div>
+
+  <div class="chips" aria-hidden="true">
+    <div class="chip" style="left:2.5%;top:16%">International Machine Learning Competition<small>due Dec 13 · ~6 h</small></div>
+    <div class="chip hide-md" style="left:5%;top:31%">Congressional App Challenge<small>due Oct 26 · ~6 h</small></div>
+    <div class="chip" style="left:2%;top:46%">OpenCV AI Competition<small>due Oct 26 · ~30 h</small></div>
+    <div class="chip lower" style="left:3%;top:70%">Regeneron Science Talent Search<small>due Nov 5 · ~40 h</small></div>
+    <div class="chip lower hide-md" style="left:2%;top:84%">NASA Space Apps Challenge 2026<small>due Nov 14 · ~12 h</small></div>
+    <div class="chip" style="right:2.5%;top:15%">K-State High School Programming Contest<small>due Nov 4 · ~6 h</small></div>
+    <div class="chip hide-md" style="right:5%;top:30%">Cosmo Hacks 2026<small>due Dec 21 · ~24 h</small></div>
+    <div class="chip" style="right:2%;top:45%">3M Young Scientist Challenge<small>due Apr 30 · ~6 h</small></div>
+    <div class="chip lower" style="right:3%;top:69%">Australian STEM Video Game Challenge 2026<small>due Sep 9 · ~20 h</small></div>
+    <div class="chip lower hide-md" style="right:2%;top:83%">Global Appathon<small>due Apr 2 · ~10 h</small></div>
+  </div>
+
+  <div class="hero-copy">
+    <h1 id="hero-h" class="rise"><span class="l1">Too many opportunities.</span> <em>Too little time.</em></h1>
+    <p class="hero-line rise d2">For students juggling more opportunities than hours.</p>
+  </div>
+
+  <div class="chip-strip" aria-hidden="true">
+    <div class="strip-track" id="strip"></div>
+  </div>
+
+  <div class="glassbar rise d3">
+    <div class="stats">
+      <div class="stat"><b class="num">10</b><span>opportunities</span></div>
+      <div class="stat"><b class="num">160 h</b><span>of work, estimated</span></div>
+      <div class="stat"><b class="num">10 h</b><span>a week to spend</span></div>
+    </div>
+    <div class="glass-actions">
+      <a class="btn btn-ghost" href="#funnel">See how it narrows</a>
+      <a class="btn btn-primary" href="#planner">Open the planner</a>
+    </div>
+  </div>
+</section>
+
+<!-- FUNNEL -->
+<section class="story" id="funnel" aria-labelledby="funnel-h">
+  <div class="wrap">
+    <h2 id="funnel-h">Most of them <em>aren't for you.</em></h2>
+    <div class="funnel">
+      <div class="counter" aria-live="polite">
+        <div class="big num" id="count">10</div>
+        <div class="of">of 10</div>
+      </div>
+      <ul class="pile" id="pile">
+        <li data-exit="1"><span class="t">3M Young Scientist Challenge</span><span class="reason">Grade 5-8 only</span></li>
+        <li><span class="t">International Machine Learning Competition</span></li>
+        <li data-exit="2"><span class="t">Australian STEM Video Game Challenge 2026</span><span class="reason">Closed Sep 9</span></li>
+        <li><span class="t">Congressional App Challenge</span></li>
+        <li data-exit="3"><span class="t">OpenCV AI Competition</span><span class="reason">Needs 30 h, 18.5 h available by Oct 26</span></li>
+        <li><span class="t">NASA Space Apps Challenge 2026</span></li>
+        <li data-exit="4"><span class="t">K-State High School Programming Contest</span><span class="reason">Manhattan, KS, US only</span></li>
+        <li><span class="t">Cosmo Hacks 2026</span></li>
+        <li data-exit="5"><span class="t">Regeneron Science Talent Search</span><span class="reason">Grade 12 only</span></li>
+        <li><span class="t">Global Appathon</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- REUSE STORY -->
+<section class="story reuse-story" aria-labelledby="reuse-story-h">
+  <div class="wrap">
+    <h2 id="reuse-story-h">One project. <em>Several doors.</em></h2>
+    <p class="sub">Each thread is a tag Tennis Analytics App shows that the opportunity asks for.</p>
+    <div class="doors">
+      <div class="hub"><small>Your project</small><strong>Tennis Analytics App</strong></div>
+      <article class="door"><h3>International Machine Learning Competition</h3><div class="tags"><span class="tag">data analysis</span><span class="tag">python</span></div></article>
+      <article class="door"><h3>Congressional App Challenge</h3><div class="tags"><span class="tag">technical project</span><span class="tag">python</span><span class="tag">computer vision</span><span class="tag">portfolio github</span></div></article>
+      <article class="door"><h3>NASA Space Apps Challenge 2026</h3><div class="tags"><span class="tag">data analysis</span><span class="tag">python</span></div></article>
+      <article class="door"><h3>Cosmo Hacks 2026</h3><div class="tags"><span class="tag">technical project</span><span class="tag">python</span></div></article>
+      <article class="door"><h3>Global Appathon</h3><div class="tags"><span class="tag">technical project</span></div></article>
+      <article class="door locked"><h3>OpenCV AI Competition</h3><div class="tags"><span class="tag">computer vision</span><span class="tag">technical project</span><span class="tag">python</span><span class="tag">portfolio github</span></div><p class="lockline">Needs 30 h, 18.5 h available by Oct 26</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- HAND-OFF -->
+<section class="handoff" aria-labelledby="handoff-h">
+  <div class="wrap">
+    <h2 id="handoff-h">Now plan <em>your weeks.</em></h2>
+    <a class="btn btn-primary" href="#planner">Open the planner</a>
+  </div>
+</section>
+
+<!-- PLANNER -->
+<div class="planner" id="planner">
+  <div class="wrap">
+
+    <section class="block" id="plan" aria-labelledby="plan-h">
+      <p class="eyebrow">Today · Oct 11</p>
+      <h2 id="plan-h">Your plan</h2>
+      <div class="bento">
+        <div class="cell hero-cell"><span class="k">Committed</span><span class="v">2 of 5 you can do</span><span class="d">2 opportunities on your plan</span></div>
+        <div class="cell busy"><span class="k">Next busy period</span><span class="v">Midterms</span><span class="d">Oct 20-27 · in 9 days</span></div>
+        <div class="cell"><span class="k">Work committed</span><span class="v num">12 h</span><span class="d">Estimated, across all deadlines</span></div>
+        <div class="cell"><span class="k">Next deadline</span><span class="v">Oct 26 · in 15 days</span><span class="d">Congressional App Challenge</span></div>
+        <div class="cell"><span class="k">This week (Oct 11-17)</span><span class="v">0 h of 10 h planned</span></div>
+        <div class="cell next"><div><span class="k">Next step</span><div class="v">Work on Tennis Analytics App for NASA Space Apps Challenge 2026, due Nov 14</div></div></div>
+      </div>
+    </section>
+
+    <section class="block" id="opportunities" aria-labelledby="opps-h">
+      <p class="eyebrow">Sorted by fixed rules</p>
+      <h2 id="opps-h">Opportunities</h2>
+      <p class="sub">Focus: your projects already show what it asks for and the hours fit. Consider: possible, with a catch. Not now: locked, with the reason.</p>
+
+      <div class="tier-head"><h3>Focus</h3><span class="count">4</span></div>
+      <div class="cards">
+        <article class="card">
+          <div class="card-top"><span class="tier">Focus</span><span>due Nov 14 · in 34 days</span></div>
+          <h4>NASA Space Apps Challenge 2026</h4>
+          <div class="meta">~12 h (estimate)</div>
+          <div class="meta shows">Your projects show <b>data analysis, python</b></div>
+          <div class="card-actions"><button class="btn btn-sm btn-commit" aria-pressed="false" type="button">Commit</button><button class="btn btn-sm btn-ghost why" type="button" data-title="NASA Space Apps Challenge 2026">Ask why</button></div>
+        </article>
+        <article class="card">
+          <div class="card-top"><span class="tier">Focus</span><span>due Dec 13 · in 63 days</span></div>
+          <h4>International Machine Learning Competition</h4>
+          <div class="meta">~6 h (estimate)</div>
+          <div class="meta shows">Your projects show <b>data analysis, python</b></div>
+          <div class="card-actions"><button class="btn btn-sm btn-commit" aria-pressed="true" type="button">Committed</button><button class="btn btn-sm btn-ghost why" type="button" data-example="imlc">Ask why</button><span class="startby">Start by week of Dec 13</span></div>
+        </article>
+        <article class="card">
+          <div class="card-top"><span class="tier">Focus</span><span>due Dec 21 · in 71 days</span></div>
+          <h4>Cosmo Hacks 2026</h4>
+          <div class="meta">~24 h (estimate)</div>
+          <div class="meta shows">Your projects show <b>technical project, python</b></div>
+          <div class="card-actions"><button class="btn btn-sm btn-commit" aria-pressed="false" type="button">Commit</button><button class="btn btn-sm btn-ghost why" type="button" data-title="Cosmo Hacks 2026">Ask why</button></div>
+        </article>
+        <article class="card">
+          <div class="card-top"><span class="tier">Focus</span><span>due Apr 2 · in 173 days</span></div>
+          <h4>Global Appathon</h4>
+          <div class="org">App Inventor Foundation (MIT App Inventor)</div>
+          <div class="meta">~10 h (estimate)</div>
+          <div class="meta shows">Your projects show <b>technical project</b></div>
+          <div class="card-actions"><button class="btn btn-sm btn-commit" aria-pressed="false" type="button">Commit</button><button class="btn btn-sm btn-ghost why" type="button" data-title="Global Appathon">Ask why</button></div>
+        </article>
+      </div>
+
+      <div class="tier-head"><h3>Consider</h3><span class="count">1</span></div>
+      <div class="cards">
+        <article class="card consider">
+          <div class="card-top"><span class="tier consider">Consider</span><span>due Oct 26 · in 15 days</span></div>
+          <h4>Congressional App Challenge</h4>
+          <div class="meta">~6 h (estimate)</div>
+          <div class="meta shows">Your projects show <b>technical project, python, computer vision, portfolio github</b></div>
+          <div class="catch">Due during Midterms</div>
+          <div class="card-actions"><button class="btn btn-sm btn-commit" aria-pressed="true" type="button">Committed</button><button class="btn btn-sm btn-ghost why" type="button" data-title="Congressional App Challenge">Ask why</button></div>
+        </article>
+      </div>
+
+      <button class="toggle-notnow" type="button" aria-expanded="false" aria-controls="notnow" id="notnow-btn">
+        <span><strong style="font-size:18px">Not now</strong> <span class="num" style="color:var(--soft);font-size:13px;margin-left:8px">5</span></span>
+        <svg class="chev" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 7l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+      </button>
+      <ul class="notnow-list" id="notnow">
+        <li><span class="t">3M Young Scientist Challenge<span class="closed">CLOSED</span></span><span class="m">due Apr 30 · closed 164 days ago · ~6 h</span><span class="why">Grade 5-8 only</span></li>
+        <li><span class="t">Australian STEM Video Game Challenge 2026<span class="closed">CLOSED</span></span><span class="m">due Sep 9 · closed 32 days ago · ~20 h</span><span class="why">Closed Sep 9</span></li>
+        <li><span class="t">OpenCV AI Competition</span><span class="m">due Oct 26 · in 15 days · ~30 h</span><span class="why">Needs 30 h, 18.5 h available by Oct 26</span></li>
+        <li><span class="t">K-State High School Programming Contest</span><span class="m">due Nov 4 · in 24 days · ~6 h</span><span class="why">Manhattan, KS, US only</span></li>
+        <li><span class="t">Regeneron Science Talent Search</span><span class="m">due Nov 5 · in 25 days · ~40 h</span><span class="why">Grade 12 only</span></li>
+      </ul>
+    </section>
+
+    <section class="block" id="weeks" aria-labelledby="weeks-h">
+      <p class="eyebrow">Backward from each deadline</p>
+      <h2 id="weeks-h">Your weeks</h2>
+      <p class="sub">Each column is 7 days from today. Hours fill the deadline week first, then earlier weeks.</p>
+      <div class="weeks-scroll">
+        <div class="weeks" id="weeks-grid"></div>
+      </div>
+      <div class="legend">
+        <span><i class="sw planned"></i>Planned hours</span>
+        <span><i class="sw avail"></i>Hours available that week</span>
+        <span><i class="sw over"></i>Over capacity</span>
+        <span><i class="sw dl"></i>Deadline</span>
+        <span><i class="sw exam"></i>Exams</span>
+        <span><i class="sw busy"></i>Busy days (fewer hours)</span>
+      </div>
+      <p class="foot">The week a deadline falls in counts in full.</p>
+    </section>
+
+    <section class="block" aria-labelledby="wi-h">
+      <h2 id="wi-h">What if you had <em>more or less time?</em></h2>
+      <div class="whatif">
+        <div class="panel">
+          <div class="readout"><b class="num" id="wi-val">2 h</b><span>a week</span></div>
+          <input type="range" id="wi" min="0" max="30" step="1" value="2" aria-label="Weekly hours preview">
+          <div class="range-ends"><span>0 h</span><span>30 h</span></div>
+          <p class="saved">Saved: 10 h a week</p>
+          <div class="wi-actions">
+            <button class="btn btn-sm btn-primary" type="button">Save as my weekly hours</button>
+            <button class="btn btn-sm btn-ghost" type="button" id="wi-reset">Reset to 10 h</button>
+          </div>
+          <p class="preview-note">Preview only. Nothing changes until you save.</p>
+        </div>
+        <div class="panel" aria-live="polite">
+          <div id="wi-at2">
+            <div class="warn">Can't be done in time at 2 h a week (would be uncommitted if you save): Congressional App Challenge (Needs 6 h, 3.5 h available by Oct 26)</div>
+            <div class="mini-weeks">
+              <div class="wk now"><span class="lbl">THIS WEEK</span><span class="dt">Oct 11-17</span><span class="hrs"><b class="num">0</b> of 2 h</span></div>
+              <div class="wk"><span class="lbl">WEEK 2</span><span class="dt">Oct 18-24</span><span class="hrs"><b class="num">0</b> of 0.5 h</span><span class="exam-tag">Midterms</span><span class="note">5 days</span></div>
+              <div class="wk"><span class="lbl">WEEK 3</span><span class="dt">Oct 25-31</span><span class="hrs"><b class="num">0</b> of 1 h</span><span class="exam-tag">Midterms</span><span class="note">3 days</span></div>
+            </div>
+          </div>
+          <div id="wi-at10" hidden>
+            <div class="ok">At 10 h a week, no combination of what you can commit overloads a week. Drag lower to see where it breaks.</div>
+          </div>
+          <div id="wi-other" hidden>
+            <div class="ok">Preview at <span class="num" id="wi-other-v"></span> a week. [TODO]</div>
+          </div>
+          <div class="over-demo"><i class="sw over" aria-hidden="true"></i>Over capacity: overloaded weeks turn this color, with a sentence naming what lands there.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="reuse" aria-labelledby="reuse-h">
+      <p class="eyebrow">Reuse</p>
+      <h2 id="reuse-h">One project, several doors</h2>
+      <p class="sub">Each thread is a tag your project shows that the opportunity asks for. Bright threads lead to what you've committed; dashed ones are locked.</p>
+      <div class="threads">
+        <div class="t-hub"><small>Your project</small><strong>Tennis Analytics App</strong></div>
+        <svg class="t-svg" viewBox="0 0 300 516" preserveAspectRatio="none" aria-hidden="true">
+          <path class="on"   d="M0 258 C150 258 150 38 300 38"/>
+          <path class="on"   d="M0 258 C150 258 150 126 300 126"/>
+          <path class="dim"  d="M0 258 C150 258 150 214 300 214"/>
+          <path class="dim"  d="M0 258 C150 258 150 302 300 302"/>
+          <path class="dim"  d="M0 258 C150 258 150 390 300 390"/>
+          <path class="lock" d="M0 258 C150 258 150 478 300 478"/>
+          <circle cx="3" cy="258" r="4" fill="var(--cobalt)"/>
+        </svg>
+        <ul class="t-list">
+          <li class="c"><svg class="t-mini" viewBox="0 0 18 60" preserveAspectRatio="none" aria-hidden="true"><path d="M9 0 V60" stroke="var(--cobalt)" stroke-width="2"/></svg><span class="n">International Machine Learning Competition <span class="badge">Committed</span></span><span class="via">via data analysis · python</span></li>
+          <li class="c"><svg class="t-mini" viewBox="0 0 18 60" preserveAspectRatio="none" aria-hidden="true"><path d="M9 0 V60" stroke="var(--cobalt)" stroke-width="2"/></svg><span class="n">Congressional App Challenge <span class="badge">Committed</span></span><span class="via">via technical project · python · computer vision · portfolio github</span></li>
+          <li><svg class="t-mini" viewBox="0 0 18 60" preserveAspectRatio="none" aria-hidden="true"><path d="M9 0 V60" stroke="var(--sky)" stroke-opacity=".45" stroke-width="2"/></svg><span class="n">NASA Space Apps Challenge 2026</span><span class="via">via data analysis · python</span></li>
+          <li><svg class="t-mini" viewBox="0 0 18 60" preserveAspectRatio="none" aria-hidden="true"><path d="M9 0 V60" stroke="var(--sky)" stroke-opacity=".45" stroke-width="2"/></svg><span class="n">Cosmo Hacks 2026</span><span class="via">via technical project · python</span></li>
+          <li><svg class="t-mini" viewBox="0 0 18 60" preserveAspectRatio="none" aria-hidden="true"><path d="M9 0 V60" stroke="var(--sky)" stroke-opacity=".45" stroke-width="2"/></svg><span class="n">Global Appathon</span><span class="via">via technical project</span></li>
+          <li class="l"><svg class="t-mini" viewBox="0 0 18 60" preserveAspectRatio="none" aria-hidden="true"><path d="M9 0 V60" stroke="var(--soft)" stroke-dasharray="5 5" stroke-width="2"/></svg><span class="n">OpenCV AI Competition <span class="badge lk">Locked</span></span><span class="via">via computer vision · technical project · python · portfolio github</span><span class="via" style="color:var(--over)">Needs 30 h, 18.5 h available by Oct 26</span></li>
+        </ul>
+      </div>
+      <div class="t-key"><span><i></i>Committed</span><span><i class="d"></i>Not committed yet</span><span><i class="k"></i>Locked</span></div>
+    </section>
+
+    <section class="block" id="add" aria-labelledby="add-h">
+      <p class="eyebrow">Your list</p>
+      <h2 id="add-h">Add your own</h2>
+      <p class="sub">Found something not on the list? The same rules check it before it joins your plan.</p>
+      <div class="addown">
+        <form class="panel" id="addform" novalidate>
+          <div class="field">
+            <label for="paste">Paste the opportunity text</label>
+            <textarea id="paste" disabled></textarea>
+            <p class="help">Reading pasted text needs the AI extractor, which is off. Fill in manually below.</p>
+          </div>
+          <p class="manual-h">FILL IN MANUALLY</p>
+          <div class="grid2">
+            <div class="field full"><label for="f-title">Title</label><input id="f-title" type="text"></div>
+            <div class="field"><label for="f-org">Organizer</label><input id="f-org" type="text"></div>
+            <div class="field"><label for="f-link">Link</label><input id="f-link" type="url"></div>
+            <div class="field"><label for="f-dl">Deadline</label><input id="f-dl" type="date"></div>
+            <div class="field"><label for="f-h">Hours it takes (estimate)</label><input id="f-h" type="number" min="0" step="0.5"></div>
+            <div class="field"><label for="f-lo">Lowest grade</label><input id="f-lo" type="number" min="1" max="12"></div>
+            <div class="field"><label for="f-hi">Highest grade</label><input id="f-hi" type="number" min="1" max="12"></div>
+            <label class="check full"><input type="checkbox"> Online, open from anywhere</label>
+            <div class="full">
+              <span class="lbl-sm">What it asks for</span>
+              <div class="tagpick" id="tagpick">
+                <button type="button" aria-pressed="false">technical project</button><button type="button" aria-pressed="false">portfolio github</button><button type="button" aria-pressed="false">competition experience</button><button type="button" aria-pressed="false">writing sample</button><button type="button" aria-pressed="false">python</button><button type="button" aria-pressed="false">computer vision</button><button type="button" aria-pressed="false">data analysis</button><button type="button" aria-pressed="false">web dev</button><button type="button" aria-pressed="false">ai ml</button><button type="button" aria-pressed="false">research writing</button><button type="button" aria-pressed="false">public speaking</button><button type="button" aria-pressed="false">leadership</button>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:22px"><button class="btn btn-primary" type="submit">Check it</button></div>
+        </form>
+        <div class="result">Fill in the form and press "Check it" to see the card and what still blocks it.</div>
+      </div>
+    </section>
+  </div>
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>Opportunity OS</a>
+    <p>Rule-based. Every reason shown. AI only explains and extracts.</p>
+  </div>
+</footer>
+
+<dialog id="why" aria-labelledby="why-h">
+  <div class="dlg">
+    <div class="dlg-top"><h3 id="why-h">Why: International Machine Learning Competition</h3><button class="xbtn" type="button" id="why-x" aria-label="Close">&times;</button></div>
+    <div id="why-body">
+      <p class="ans">This project is Focus because your projects show data analysis and python. You have 99 h available before the deadline to complete the 6 h needed. This work also counts for the Congressional App Challenge, NASA Space Apps Challenge 2026, Cosmo Hacks 2026, and Global Appathon.</p>
+      <p class="note">Plain-language version, checked against the rules.</p>
+      <details><summary>Exact rule details</summary><p>Tennis Analytics App shows data analysis and python, which International Machine Learning Competition asks for. It needs about 6 h, and you have 99 h before Dec 13 at 10 h a week. Focus: nothing it asks for is missing, and the deadline is outside your busy periods. The same work also counts for Congressional App Challenge, NASA Space Apps Challenge 2026, Cosmo Hacks 2026 and Global Appathon.</p></details>
+    </div>
+    <div id="why-todo" hidden><p class="ans">[TODO]</p></div>
+  </div>
+</dialog>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Nav turns solid once the hero top leaves view
+  var nav = document.getElementById('nav');
+  var sentinel = document.querySelector('.hero-copy');
+  new IntersectionObserver(function(e){ nav.classList.toggle('solid', !e[0].isIntersecting); }).observe(sentinel);
+
+  // Mobile chip marquee (duplicated for a seamless loop)
+  var strip = document.getElementById('strip');
+  var chips = document.querySelectorAll('.chips .chip');
+  for (var r = 0; r < 2; r++) chips.forEach(function(c){ var n = c.cloneNode(true); n.className = 'chip'; n.removeAttribute('style'); strip.appendChild(n); });
+
+  // Funnel: 10 narrows to 5, each exit shows its reason
+  var pile = document.getElementById('pile'), count = document.getElementById('count');
+  var exits = Array.prototype.slice.call(pile.querySelectorAll('[data-exit]'));
+  function runFunnel(){
+    if (reduce){ exits.forEach(function(li){ li.classList.add('out'); }); count.textContent = '5'; return; }
+    exits.forEach(function(li, i){ setTimeout(function(){ li.classList.add('out'); count.textContent = String(9 - i); }, 500 + i * 650); });
+  }
+  var fo = new IntersectionObserver(function(e){ if (e[0].isIntersecting){ runFunnel(); fo.disconnect(); } }, {threshold: .35});
+  fo.observe(pile);
+
+  // Not now toggle
+  var nb = document.getElementById('notnow-btn'), nl = document.getElementById('notnow');
+  nb.addEventListener('click', function(){ var o = nb.getAttribute('aria-expanded') === 'true'; nb.setAttribute('aria-expanded', String(!o)); nl.classList.toggle('open', !o); });
+
+  // Ask why dialog
+  var dlg = document.getElementById('why'), wh = document.getElementById('why-h');
+  var body = document.getElementById('why-body'), todo = document.getElementById('why-todo');
+  document.querySelectorAll('.why').forEach(function(b){
+    b.addEventListener('click', function(){
+      var ex = b.dataset.example === 'imlc';
+      wh.textContent = 'Why: ' + (ex ? 'International Machine Learning Competition' : b.dataset.title);
+      body.hidden = !ex; todo.hidden = ex;
+      dlg.showModal();
+    });
+  });
+  document.getElementById('why-x').addEventListener('click', function(){ dlg.close(); });
+  dlg.addEventListener('click', function(e){ if (e.target === dlg) dlg.close(); });
+
+  // Weeks timeline (data from design/content.md)
+  var weeks = [
+    {l:'THIS WEEK', d:'Oct 11-17', p:0, a:10, now:true},
+    {l:'WEEK 2', d:'Oct 18-24', p:0.5, a:3, busy:'5 days'},
+    {l:'WEEK 3', d:'Oct 25-31', p:5.5, a:5.5, busy:'3 days', lands:'5.5 h Congressional App Challenge', pin:'Congressional App Challenge'},
+    {l:'WEEK 4', d:'Nov 1-7', p:0, a:10},
+    {l:'WEEK 5', d:'Nov 8-14', p:0, a:10},
+    {l:'WEEK 6', d:'Nov 15-21', p:0, a:10},
+    {l:'WEEK 7', d:'Nov 22-28', p:0, a:10},
+    {l:'WEEK 8', d:'Nov 29-Dec 5', p:0, a:10},
+    {l:'WEEK 9', d:'Dec 6-12', p:0, a:10},
+    {l:'WEEK 10', d:'Dec 13-19', p:6, a:10, lands:'6 h International Machine Learning Competition', pin:'International Machine Learning Competition'}
+  ];
+  var grid = document.getElementById('weeks-grid'), html = '';
+  weeks.forEach(function(w){
+    var boxH = Math.max(6, w.a / 10 * 100), fillH = w.a ? (w.p / w.a * 100) : 0;
+    html += '<div class="wk' + (w.now ? ' now' : '') + '">' +
+      '<span class="lbl">' + w.l + '</span><span class="dt">' + w.d + '</span>' +
+      '<div class="cap" aria-hidden="true"><div class="cap-box' + (w.busy ? ' busyd' : '') + '" style="height:' + boxH + '%"><div class="fill" style="height:' + fillH + '%"></div></div></div>' +
+      '<span class="hrs"><b class="num">' + w.p + '</b> of ' + w.a + ' h</span>' +
+      (w.busy ? '<span class="exam-tag">Midterms</span><span class="note">' + w.busy + '</span>' : '') +
+      (w.lands ? '<span class="lands">' + w.lands + '</span>' : '') +
+      (w.pin ? '<span class="pin">Deadline: ' + w.pin + '</span>' : '') +
+      '</div>';
+  });
+  grid.innerHTML = html;
+
+  // What-if slider (preview only)
+  var wi = document.getElementById('wi'), wv = document.getElementById('wi-val');
+  var a2 = document.getElementById('wi-at2'), a10 = document.getElementById('wi-at10'), ao = document.getElementById('wi-other'), aov = document.getElementById('wi-other-v');
+  function upd(){
+    var v = +wi.value; wv.textContent = v + ' h';
+    a2.hidden = v !== 2; a10.hidden = v !== 10; ao.hidden = (v === 2 || v === 10); aov.textContent = v + ' h';
+  }
+  wi.addEventListener('input', upd);
+  document.getElementById('wi-reset').addEventListener('click', function(){ wi.value = 10; upd(); });
+  upd();
+
+  // Add-your-own tag chips and form
+  document.querySelectorAll('#tagpick button').forEach(function(b){
+    b.addEventListener('click', function(){ b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true')); });
+  });
+  document.getElementById('addform').addEventListener('submit', function(e){ e.preventDefault(); });
+})();
+</script>
+</body>
+</html>

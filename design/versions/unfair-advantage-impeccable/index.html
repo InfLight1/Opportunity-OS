@@ -1,0 +1,906 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opportunity OS</title>
+<meta name="description" content="A rule-based planner for students with more opportunities than hours.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#000;
+  --ink-1:#0A0A0A;
+  --ink-2:#121212;
+  --ink-3:#1A1A1A;
+  --line:#2A2A2A;
+  --line-2:#3A3A3A;
+  --grey:#8A8A8A;
+  --grey-2:#B4B4B4;
+  --paper:#EDEDED;
+  --white:#FFFFFF;
+  --sans:"Geist",ui-sans-serif,system-ui,sans-serif;
+  --serif:"Instrument Serif",Georgia,serif;
+  --mono:"Geist Mono",ui-monospace,monospace;
+  --r:14px;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --gut:clamp(16px,4vw,48px);
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--black);color:var(--paper);font-family:var(--sans);font-size:16px;line-height:1.55;font-weight:400;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:var(--white);color:var(--black)}
+:focus-visible{outline:1.5px solid var(--white);outline-offset:3px;border-radius:6px}
+html{scrollbar-color:var(--line-2) var(--black);scrollbar-width:thin}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-track{background:var(--black)}::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:10px;border:2px solid var(--black)}
+a{color:inherit;text-underline-offset:4px;text-decoration-thickness:1px}
+button,input,textarea{font:inherit;color:inherit}
+.num{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--mono);font-size:.78rem;letter-spacing:.01em}
+.wrap{max-width:1200px;margin:0 auto;padding:0 var(--gut)}
+.it{font-family:var(--serif);font-style:italic;font-weight:400;letter-spacing:-.005em}
+h1,h2,h3{margin:0;font-weight:400;text-wrap:balance;color:var(--white)}
+h2{font-size:clamp(2rem,4.6vw,3.6rem);line-height:1.04;letter-spacing:-.03em}
+h3{font-size:1.05rem;font-weight:500;letter-spacing:-.01em;line-height:1.3}
+p{margin:0}
+.smallcaps{font-family:var(--sans);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--grey);font-weight:500}
+.lede{color:var(--grey-2);max-width:60ch;font-size:1.02rem}
+
+/* pills */
+.pill{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 20px;border-radius:999px;font-size:.92rem;font-weight:500;text-decoration:none;cursor:pointer;border:1px solid transparent;transition:background .3s var(--ease),color .3s var(--ease),border-color .3s var(--ease),transform .3s var(--ease);white-space:nowrap}
+.pill.solid{background:var(--white);color:var(--black)}
+.pill.solid:hover{background:var(--paper)}
+.pill.outline{border-color:rgba(255,255,255,.55);color:var(--white);background:transparent}
+.pill.outline:hover{border-color:var(--white);background:rgba(255,255,255,.06)}
+.pill.ghost{background:var(--ink-3);color:var(--paper);border-color:var(--line)}
+.pill.ghost:hover{background:#222}
+.pill.sm{height:34px;padding:0 14px;font-size:.82rem}
+.pill:active{transform:translateY(1px)}
+.pill[disabled]{opacity:.4;cursor:not-allowed}
+.pill svg{width:14px;height:14px}
+
+/* nav */
+.nav{position:sticky;top:12px;z-index:50;margin:12px var(--gut) 0;}
+.nav-in{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;height:56px;padding:0 8px 0 18px;background:rgba(14,14,14,.82);border:1px solid var(--line);border-radius:999px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--white);font-weight:500;letter-spacing:-.01em;white-space:nowrap}
+.brand-mark{width:22px;height:22px}
+.nav-links{display:flex;gap:26px;list-style:none;margin:0;padding:0}
+.nav-links a{font-size:.84rem;color:var(--grey-2);text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--white)}
+.nav-right{display:flex;gap:8px}
+
+/* hero */
+.hero{position:relative;overflow:hidden;margin-top:-68px;padding:128px 0 24px;isolation:isolate}
+.tunnel{position:absolute;inset:0;z-index:-1;width:100%;height:100%;
+  -webkit-mask-image:radial-gradient(ellipse 70% 65% at 50% 58%,#000 20%,transparent 80%);mask-image:radial-gradient(ellipse 70% 65% at 50% 58%,#000 20%,transparent 80%)}
+.tunnel line,.tunnel rect{stroke:#fff;fill:none;vector-effect:non-scaling-stroke}
+.hero::after{content:"";position:absolute;inset:auto 0 0 0;height:220px;background:linear-gradient(transparent,var(--black));z-index:-1}
+.hero-copy{text-align:center;max-width:1100px;margin:0 auto;padding:0 var(--gut)}
+.hero h1{font-size:clamp(2.5rem,6vw,5.2rem);line-height:.98;letter-spacing:-.035em}
+.hero h1 .it{font-size:1.08em;letter-spacing:-.01em}
+.hero .lede{margin:22px auto 0;text-align:center}
+.stats{display:flex;justify-content:center;flex-wrap:wrap;gap:0;margin:28px auto 0;color:var(--grey)}
+.stats span{padding:0 18px;font-size:.92rem;border-left:1px solid var(--line-2)}
+.stats span:first-child{border-left:0}
+.stats b{color:var(--white);font-weight:500}
+.hero-cta{display:flex;justify-content:center;gap:12px;margin-top:30px;flex-wrap:wrap}
+
+/* stack of chips */
+.stack{position:relative;max-width:640px;margin:48px auto 0;height:430px;padding:0 var(--gut);perspective:1200px}
+.chip{position:absolute;left:var(--gut);right:var(--gut);bottom:calc(var(--i) * 30px + 44px);margin:0 auto;
+  width:calc(100% - (var(--i) * 4%));
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:14px 20px;border-radius:12px;background:linear-gradient(180deg,#151515,#0B0B0B);
+  border:1px solid rgba(255,255,255,calc(.16 - var(--i) * .012));
+  opacity:calc(1 - var(--i) * .095);
+  box-shadow:0 18px 40px -18px rgba(0,0,0,.9);
+  transform:translateZ(calc(var(--i) * -30px));
+  transition:transform .9s var(--ease),opacity .9s var(--ease)}
+.chip .t{display:flex;align-items:center;gap:10px;font-size:.92rem;color:var(--paper);letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.chip .t svg{flex:none;width:10px;height:10px}
+.chip .m{flex:none;color:var(--grey);font-family:var(--mono);font-size:.74rem;white-space:nowrap}
+.chip.front{bottom:0;width:100%;padding:22px 24px 20px;display:grid;grid-template-columns:1fr auto;align-items:end;row-gap:6px;background:linear-gradient(180deg,#1C1C1C,#0E0E0E);border-color:rgba(255,255,255,.22);box-shadow:0 30px 70px -20px rgba(0,0,0,1),inset 0 1px 0 rgba(255,255,255,.08)}
+.chip.front .t{font-size:1.15rem;color:var(--white);font-weight:500;white-space:normal}
+.chip.front .sub{grid-column:1;color:var(--grey-2);font-size:.92rem}
+.ruler{grid-column:2;grid-row:1 / span 2;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.ruler-bars{display:flex;align-items:flex-end;gap:5px;height:40px}
+.ruler-bars i{display:block;width:7px;border-radius:2px;background:var(--line-2)}
+.ruler-bars i.on{background:var(--white)}
+.ruler small{font-family:var(--mono);font-size:.7rem;color:var(--grey)}
+.js .stack:not(.in) .chip:not(.front){transform:translateZ(calc(var(--i) * -30px)) translateY(calc(var(--i) * 6px))}
+
+section{position:relative}
+.sec{padding:clamp(96px,14vw,168px) 0}
+.sec-head{display:grid;gap:18px;margin-bottom:56px}
+.center{text-align:center;justify-items:center}
+
+/* funnel */
+.funnel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:clamp(32px,6vw,96px);align-items:start}
+.counter{position:sticky;top:120px}
+.count-big{font-family:var(--serif);font-size:clamp(6rem,14vw,11rem);line-height:.85;color:var(--white);letter-spacing:-.03em}
+.count-big .of{font-family:var(--sans);font-size:.18em;color:var(--grey);letter-spacing:0;vertical-align:.4em;margin-left:10px}
+.count-note{margin-top:20px;color:var(--grey-2);max-width:34ch}
+.flist{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.flist li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 18px;align-items:baseline;padding:18px 0;border-bottom:1px solid var(--line);transition:opacity .8s var(--ease),color .8s var(--ease)}
+.flist .name{color:var(--white);font-size:1.02rem}
+.flist .why{grid-column:1 / -1;font-size:.88rem;color:var(--grey);display:flex;gap:8px;align-items:center;max-height:40px;transition:max-height .6s var(--ease),opacity .6s var(--ease)}
+.flist .why svg{width:12px;height:12px;flex:none}
+.flist .tag{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--grey)}
+.flist li.out .name{color:var(--grey);text-decoration:line-through;text-decoration-color:var(--line-2);text-decoration-thickness:1px}
+.flist li.stay .tag{color:var(--white)}
+.js .funnel:not(.done) li.out{opacity:1}
+.js .funnel:not(.done) li.out .name{color:var(--white);text-decoration-color:transparent}
+.js .funnel:not(.done) li.out .why{max-height:0;opacity:0;overflow:hidden}
+.js .funnel:not(.done) li.out .tag{opacity:0}
+
+/* reuse */
+.reuse{position:relative;display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:clamp(80px,12vw,180px);align-items:center}
+.threads{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.threads path{fill:none;stroke-linecap:round}
+.src{position:relative;z-index:1;padding:26px 24px;border-radius:var(--r);background:var(--white);color:var(--black)}
+.src .smallcaps{color:#555}
+.src h3{color:var(--black);font-size:1.4rem;font-family:var(--serif);font-style:italic;font-weight:400;margin-top:8px;letter-spacing:-.01em}
+.src p{font-size:.86rem;color:#444;margin-top:10px}
+.targets{list-style:none;margin:0;padding:0;display:grid;gap:12px;position:relative;z-index:1}
+.target{padding:14px 18px;border-radius:12px;background:var(--ink-1);border:1px solid var(--line);display:grid;gap:4px}
+.target .tt{color:var(--white);font-size:.98rem;display:flex;gap:10px;align-items:center;justify-content:space-between}
+.target .via{font-size:.82rem;color:var(--grey)}
+.target .via b{font-weight:400;color:var(--grey-2)}
+.target[data-state=locked]{border-style:dashed;border-color:var(--line-2);background:transparent}
+.target[data-state=locked] .tt{color:var(--grey-2)}
+.target[data-state=dim]{background:transparent}
+.target[data-state=dim] .tt{color:var(--grey-2)}
+.target[data-state=committed]{border-color:rgba(255,255,255,.6)}
+.badge{flex:none;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;padding:3px 9px;border-radius:999px;border:1px solid var(--line-2);color:var(--grey-2);white-space:nowrap}
+.badge.inv{background:var(--white);color:var(--black);border-color:var(--white)}
+.reason{display:flex;gap:8px;align-items:center;font-size:.84rem;color:var(--grey-2)}
+.reason svg{width:12px;height:12px;flex:none}
+
+/* handoff */
+.handoff{text-align:center;padding:clamp(80px,12vw,140px) 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:radial-gradient(ellipse 50% 80% at 50% 100%,#161616,transparent 70%)}
+.handoff h2{font-size:clamp(2.4rem,6vw,4.6rem)}
+.handoff .pill{margin-top:34px}
+
+/* planner */
+.planner-intro{padding-top:clamp(80px,10vw,128px)}
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.fact{padding:22px 22px 24px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;gap:6px;align-content:start;min-width:0}
+.fact dt{order:0}
+.fact .v{font-size:1.5rem;color:var(--white);letter-spacing:-.02em;line-height:1.2}
+.fact .s{color:var(--grey);font-size:.88rem}
+.fact.wide{grid-column:span 2}
+.fact.next{grid-column:span 2;background:var(--white);color:var(--black)}
+.fact.next .smallcaps{color:#555}
+.fact.next .v{color:var(--black);font-family:var(--serif);font-style:italic;font-size:1.65rem;letter-spacing:-.01em}
+.weekmini{display:flex;align-items:center;gap:12px;margin-top:6px}
+.weekmini .track{flex:1;height:8px;border-radius:4px;border:1px solid var(--line-2)}
+dl{margin:0}dd{margin:0}
+
+.tier{margin-top:56px}
+.tier-head{display:flex;align-items:baseline;gap:14px;padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.tier-head h3{font-family:var(--serif);font-style:italic;font-weight:400;font-size:2rem;letter-spacing:-.01em}
+.tier-head .cnt{color:var(--grey);font-size:.9rem}
+.tier-head .rule{margin-left:auto;color:var(--grey);font-size:.86rem;text-align:right}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{position:relative;padding:22px 22px 20px;border-radius:var(--r);background:linear-gradient(180deg,#121212,#0A0A0A);border:1px solid var(--line);display:flex;flex-direction:column;gap:12px;min-width:0;transition:border-color .3s var(--ease)}
+.card:hover{border-color:var(--line-2)}
+.card.is-committed{border-color:rgba(255,255,255,.55)}
+.card-top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.tiertag{font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;font-weight:500;padding:4px 10px;border-radius:999px;background:var(--white);color:var(--black)}
+.tiertag.c{background:transparent;color:var(--white);border:1px solid rgba(255,255,255,.6)}
+.tiertag.n{background:transparent;color:var(--grey);border:1px dashed var(--line-2)}
+.due{color:var(--grey);font-size:.84rem}
+.due b{color:var(--paper);font-weight:500}
+.card h4{margin:0;font-size:1.22rem;font-weight:500;color:var(--white);letter-spacing:-.015em;line-height:1.25}
+.org{color:var(--grey);font-size:.86rem;margin-top:-6px}
+.hrs{display:flex;align-items:center;gap:10px;color:var(--grey-2);font-size:.88rem}
+.hrs .ticks{display:flex;gap:3px}
+.hrs .ticks i{width:4px;height:12px;border-radius:1px;background:var(--grey-2)}
+.shows{font-size:.9rem;color:var(--grey-2)}
+.shows b{font-weight:400;color:var(--white)}
+.catch{display:inline-flex;gap:8px;align-items:center;font-size:.86rem;color:var(--white);padding:6px 12px;border-radius:999px;border:1px solid var(--line-2);align-self:flex-start}
+.catch svg{width:13px;height:13px}
+.startby{font-size:.84rem;color:var(--grey)}
+.actions{display:flex;gap:8px;margin-top:auto;padding-top:6px;flex-wrap:wrap}
+.btn-commit[aria-pressed=true]{background:transparent;color:var(--white);border-color:rgba(255,255,255,.55)}
+.btn-commit svg{display:none}
+.btn-commit[aria-pressed=true] svg{display:inline}
+
+details.notnow{margin-top:56px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+details.notnow summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:14px;padding:22px 0}
+details.notnow summary::-webkit-details-marker{display:none}
+details.notnow summary h3{font-family:var(--serif);font-style:italic;font-weight:400;font-size:2rem;color:var(--grey-2)}
+details.notnow summary .tog{margin-left:auto;display:inline-flex;align-items:center;gap:8px;color:var(--grey-2);font-size:.86rem}
+details.notnow summary .tog svg{width:14px;height:14px;transition:transform .4s var(--ease)}
+details.notnow[open] summary .tog svg{transform:rotate(180deg)}
+.locked-list{list-style:none;margin:0;padding:0 0 24px}
+.locked-list li{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.3fr);gap:8px 24px;align-items:center;padding:16px 0;border-top:1px dashed var(--line)}
+.locked-list .ln{color:var(--grey-2);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.locked-list .ln .tiertag{font-size:.6rem}
+.locked-list .ld{color:var(--grey);font-size:.84rem}
+
+/* dialog */
+dialog{max-width:620px;width:calc(100% - 32px);padding:0;border:1px solid var(--line-2);border-radius:18px;background:#0D0D0D;color:var(--paper);box-shadow:0 40px 120px -20px rgba(0,0,0,1)}
+dialog::backdrop{background:rgba(0,0,0,.72);backdrop-filter:blur(4px)}
+dialog[open]{animation:pop .5s var(--ease)}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.985)}}
+.dlg{padding:28px 28px 24px;display:grid;gap:18px}
+.dlg-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.dlg h3{font-size:1.5rem;font-weight:400;letter-spacing:-.02em;line-height:1.2}
+.dlg h3 .it{display:block;font-size:1.1em}
+.x{flex:none;width:36px;height:36px;border-radius:999px;border:1px solid var(--line-2);background:transparent;cursor:pointer;display:grid;place-items:center}
+.x:hover{background:var(--ink-3)}
+.x svg{width:14px;height:14px}
+.dlg .ans{font-size:1.04rem;color:var(--white);line-height:1.6}
+.dlg .note{font-size:.8rem;color:var(--grey);display:flex;gap:8px;align-items:center}
+.dlg .note svg{width:12px;height:12px}
+.dlg details{border-top:1px solid var(--line);padding-top:14px}
+.dlg details summary{cursor:pointer;color:var(--grey-2);font-size:.88rem}
+.dlg details p{margin-top:12px;font-size:.9rem;color:var(--grey-2);font-family:var(--mono);font-size:.8rem;line-height:1.7}
+
+/* weeks */
+.weeks{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:10px;align-items:start;padding-top:12px}
+.wk{display:grid;gap:8px;min-width:0;align-content:start}
+.wk .col{margin:6px 0 4px}
+.wk .lbl{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--grey);white-space:nowrap}
+.wk .dt{font-size:.8rem;color:var(--grey-2);white-space:nowrap}
+.col{position:relative;height:220px;border-radius:8px;border:1px dashed #222;display:flex;flex-direction:column;justify-content:flex-end;overflow:visible}
+.cap{position:relative;height:calc(var(--cap) / 10 * 100%);border:1px solid var(--line-2);border-radius:7px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;background:var(--ink-1)}
+.busy{position:absolute;left:0;right:0;top:0;height:calc((10 - var(--cap)) / 10 * 100%);border-radius:7px 7px 0 0;background-image:radial-gradient(circle,#4a4a4a 1px,transparent 1.3px);background-size:6px 6px}
+.plan{height:calc(var(--plan) / var(--cap) * 100%);background:var(--paper);border-radius:4px}
+.dl{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:2px;height:calc(100% + 10px);background:transparent;border-left:1.5px solid var(--white);pointer-events:none}
+.dl::before{content:"";position:absolute;top:-6px;left:-6.5px;width:10px;height:10px;background:var(--white);transform:rotate(45deg)}
+.wk .h{font-size:.92rem;color:var(--white)}
+.wk .h small{color:var(--grey);font-size:.8rem}
+.wk .notes{font-size:.76rem;color:var(--grey);line-height:1.45;min-height:3.2em}
+.wk .notes .ex{display:inline-block;padding:1px 7px;border-radius:999px;border:1px solid var(--line-2);color:var(--grey-2);margin-bottom:3px}
+.wk .notes b{color:var(--paper);font-weight:400}
+.wk.this .lbl{color:var(--white)}
+.legend{display:flex;flex-wrap:wrap;gap:12px 26px;margin-top:36px;padding-top:20px;border-top:1px solid var(--line);font-size:.84rem;color:var(--grey-2)}
+.legend span{display:inline-flex;align-items:center;gap:10px}
+.sw{width:18px;height:14px;border-radius:3px;flex:none}
+.sw-plan{background:var(--paper)}
+.sw-cap{border:1px solid var(--line-2);background:var(--ink-1)}
+.sw-over{background:repeating-linear-gradient(135deg,var(--white) 0 3px,var(--black) 3px 6px);outline:1.5px solid var(--white);outline-offset:1px}
+.sw-dl{width:10px;height:10px;background:var(--white);transform:rotate(45deg);border-radius:0;margin:0 4px}
+.sw-ex{width:auto;height:auto;padding:1px 7px;border-radius:999px;border:1px solid var(--line-2);font-size:.72rem;color:var(--grey-2)}
+.sw-busy{background-image:radial-gradient(circle,#666 1px,transparent 1.3px);background-size:5px 5px;border:1px dashed #333}
+.foot-note{margin-top:14px;font-size:.82rem;color:var(--grey)}
+
+/* what if */
+.whatif{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(32px,5vw,72px);align-items:start;padding:clamp(28px,4vw,48px);border-radius:20px;border:1px solid var(--line);background:linear-gradient(180deg,#0E0E0E,#060606)}
+.whatif h3{font-size:clamp(1.6rem,3vw,2.3rem);font-weight:400;letter-spacing:-.025em;line-height:1.1}
+.readout{display:flex;align-items:baseline;gap:12px;margin-top:28px}
+.readout .val{font-family:var(--serif);font-size:5rem;line-height:.9;color:var(--white)}
+.readout .unit{color:var(--grey-2)}
+.readout .saved{margin-left:auto;font-size:.84rem;color:var(--grey)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;margin:18px 0 6px;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:linear-gradient(90deg,var(--white) var(--p),var(--line-2) var(--p))}
+input[type=range]::-moz-range-track{height:2px;background:var(--line-2)}
+input[type=range]::-moz-range-progress{height:2px;background:var(--white)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--white);margin-top:-10px;box-shadow:0 0 0 6px rgba(255,255,255,.08)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radius:50%;background:var(--white)}
+.scale{display:flex;justify-content:space-between;font-size:.74rem;color:var(--grey);font-family:var(--mono)}
+.wi-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.preview-note{margin-top:14px;font-size:.84rem;color:var(--grey)}
+.warn{display:grid;grid-template-columns:auto 1fr;gap:14px;padding:18px 20px;border-radius:12px;background:var(--white);color:var(--black);font-size:.94rem;line-height:1.5}
+.warn svg{width:20px;height:20px;margin-top:2px}
+.warn b{font-weight:600}
+.wi-weeks{list-style:none;margin:20px 0 0;padding:0;border-top:1px solid var(--line)}
+.wi-weeks li{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.wi-weeks .wl{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--grey)}
+.wi-weeks .wl span{display:block;font-size:.8rem;letter-spacing:0;text-transform:none;color:var(--grey-2);margin-top:2px}
+.hbar{height:10px;border-radius:3px;border:1px solid var(--line-2);width:calc(var(--cap) / 10 * 100%);min-width:6px;background:var(--ink-1)}
+.wi-weeks .wh{font-size:.88rem;color:var(--white);text-align:right;white-space:nowrap}
+.wi-weeks .wh small{display:block;color:var(--grey);font-size:.76rem}
+.wi-ok{color:var(--grey-2);font-size:1rem;line-height:1.6;padding:18px 0}
+.hide{display:none!important}
+
+/* form */
+.addown{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:start}
+.panel{padding:clamp(22px,3vw,32px);border-radius:18px;border:1px solid var(--line);background:var(--ink-1)}
+label.f{display:grid;gap:8px;font-size:.84rem;color:var(--grey-2)}
+.field{width:100%;height:46px;padding:0 14px;border-radius:10px;border:1px solid var(--line-2);background:var(--black);color:var(--white);transition:border-color .2s}
+.field::placeholder{color:#7a7a7a}
+.field:hover{border-color:#4a4a4a}
+.field:focus{outline:none;border-color:var(--white)}
+textarea.field{height:110px;padding:12px 14px;resize:vertical}
+textarea.field[disabled]{opacity:.5;cursor:not-allowed}
+.paste-note{display:flex;gap:10px;align-items:flex-start;font-size:.84rem;color:var(--grey);margin-top:12px}
+.paste-note svg{width:14px;height:14px;flex:none;margin-top:3px}
+.divider{display:flex;align-items:center;gap:14px;margin:30px 0 22px}
+.divider::before,.divider::after{content:"";height:1px;background:var(--line);flex:1}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.grid2 .full{grid-column:1 / -1}
+.check{display:flex;align-items:center;gap:12px;font-size:.92rem;color:var(--paper);cursor:pointer}
+.check input{appearance:none;-webkit-appearance:none;width:20px;height:20px;border-radius:6px;border:1px solid var(--line-2);background:var(--black);display:grid;place-items:center;cursor:pointer;margin:0}
+.check input:checked{background:var(--white);border-color:var(--white)}
+.check input:checked::after{content:"";width:9px;height:5px;border-left:2px solid var(--black);border-bottom:2px solid var(--black);transform:rotate(-45deg) translate(1px,-1px)}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+legend{font-size:.84rem;color:var(--grey-2);margin-bottom:10px;padding:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label{position:relative}
+.chips input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.chips span{display:inline-flex;height:34px;align-items:center;padding:0 14px;border-radius:999px;border:1px solid var(--line-2);font-size:.84rem;color:var(--grey-2);transition:all .2s var(--ease)}
+.chips label:hover span{border-color:#555;color:var(--white)}
+.chips input:checked+span{background:var(--white);color:var(--black);border-color:var(--white)}
+.chips input:focus-visible+span{outline:1.5px solid var(--white);outline-offset:3px}
+.result{position:sticky;top:100px;min-height:240px;border-style:dashed;display:grid;place-items:center;text-align:center;background:transparent}
+.result p{color:var(--grey);max-width:30ch}
+.result svg{width:28px;height:28px;margin:0 auto 14px;display:block;opacity:.6}
+
+footer{border-top:1px solid var(--line);padding:56px 0 64px;margin-top:clamp(96px,12vw,160px)}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.foot p{font-family:var(--serif);font-style:italic;font-size:1.5rem;color:var(--white);letter-spacing:-.01em}
+
+/* responsive */
+@media (max-width:1080px){
+  .nav-links{display:none}
+  .weeks{grid-template-columns:repeat(5,minmax(0,1fr));row-gap:34px}
+}
+@media (max-width:860px){
+  .funnel,.reuse,.whatif,.addown{grid-template-columns:minmax(0,1fr)}
+  .counter{position:static}
+  .reuse{gap:40px}
+  .targets{padding-left:36px}
+  .summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cards{grid-template-columns:minmax(0,1fr)}
+  .locked-list li{grid-template-columns:minmax(0,1fr)}
+  .result{position:static;min-height:160px}
+  .tier-head{flex-wrap:wrap}
+  .tier-head .rule{margin-left:0;text-align:left;flex-basis:100%}
+}
+@media (max-width:640px){
+  .hero{padding-top:128px;min-height:auto}
+  .stats span{padding:4px 12px;font-size:.84rem}
+  .stack{height:440px;margin-top:48px}
+  .chip{bottom:calc(var(--i) * 30px + 40px);padding:11px 14px}
+  .chip .t{font-size:.76rem}
+  .chip .m{font-size:.66rem}
+  .chip.front{grid-template-columns:1fr;padding:18px}
+  .ruler{grid-column:1;grid-row:auto;align-items:flex-start}
+  .summary{grid-template-columns:minmax(0,1fr)}
+  .fact.wide,.fact.next{grid-column:auto}
+  .weeks{grid-template-columns:minmax(0,1fr);gap:0}
+  .wk{grid-template-columns:78px minmax(0,1fr);grid-template-areas:"lbl col" "dt col" "h notes";column-gap:14px;row-gap:2px;padding:14px 0;border-bottom:1px solid var(--line);align-items:start}
+  .wk .lbl{grid-area:lbl}.wk .dt{grid-area:dt}.wk .h{grid-area:h;align-self:end}
+  .wk .notes{grid-area:notes;min-height:0}
+  .wk .col{grid-area:col;height:24px;flex-direction:row;justify-content:flex-start;border-radius:5px}
+  .cap{height:100%;width:calc(var(--cap) / 10 * 100%);flex-direction:row;justify-content:flex-start;border-radius:5px}
+  .busy{top:0;bottom:0;left:auto;right:0;width:calc((10 - var(--cap)) / 10 * 100%);height:100%;position:absolute;border-radius:0 5px 5px 0}
+  .col .busy{left:calc(var(--cap) / 10 * 100%);right:auto}
+  .plan{height:100%;width:calc(var(--plan) / var(--cap) * 100%);border-radius:3px}
+  .dl{top:50%;left:auto;right:-2px;transform:translateY(-50%);height:34px;width:0}
+  .dl::before{top:-8px}
+  .wi-weeks li{grid-template-columns:82px minmax(0,1fr) auto}
+  .grid2{grid-template-columns:minmax(0,1fr)}
+  .readout .val{font-size:4rem}
+  .nav-right .pill{height:36px;padding:0 14px;font-size:.82rem}
+  .brand span{font-size:.92rem}
+}
+@media (max-width:380px){ .nav-right .ghost-hide{display:none} }
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-lock" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" fill="none" stroke="currentColor" stroke-width="1.4"/></symbol>
+    <symbol id="i-tri" viewBox="0 0 10 10"><path d="M5 1 9.5 9h-9z" fill="currentColor"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 20 20"><path d="M10 2.5 18.5 17h-17z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 8v4.2M10 14.4v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 16 16"><path d="m3.5 8.5 3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-x" viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+    <symbol id="i-info" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4M8 5v.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 16 16"><rect x="2.5" y="3.5" width="11" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 6.5h11M5.5 2v3M10.5 2v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></symbol>
+    <symbol id="i-doc" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z M14 3v4h4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M9 12h6M9 15.5h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></symbol>
+  </defs>
+</svg>
+
+<nav class="nav" aria-label="Main">
+  <div class="nav-in">
+    <a class="brand" href="#top">
+      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5" fill="none" stroke="#fff" stroke-width="1.3"/><rect x="6.5" y="6.5" width="11" height="11" rx="3" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.1"/><rect x="10" y="10" width="4" height="4" rx="1" fill="#fff"/></svg>
+      <span>Opportunity OS</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#plan">Plan</a></li>
+      <li><a href="#opportunities">Opportunities</a></li>
+      <li><a href="#weeks">Weeks</a></li>
+      <li><a href="#reuse-planner">Reuse</a></li>
+      <li><a href="#add">Add your own</a></li>
+    </ul>
+    <div class="nav-right">
+      <a class="pill ghost sm ghost-hide" href="#plan">Skip intro</a>
+      <button class="pill solid sm" type="button">Profile</button>
+    </div>
+  </div>
+</nav>
+
+<main id="top">
+<!-- ============ STORY: HERO ============ -->
+<header class="hero">
+  <svg class="tunnel" viewBox="0 0 1440 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true" id="tunnel"></svg>
+  <div class="hero-copy">
+    <p class="smallcaps">For students juggling more opportunities than hours.</p>
+    <h1 style="margin-top:20px">Too many opportunities.<br>Too little <span class="it">time.</span></h1>
+    <div class="stats num" aria-label="Your situation">
+      <span><b>10</b> opportunities</span>
+      <span><b>160 h</b> of work, estimated</span>
+      <span><b>10 h</b> a week to spend</span>
+    </div>
+    <div class="hero-cta">
+      <a class="pill solid" href="#plan">Open the planner</a>
+      <a class="pill outline" href="#narrow">See how it narrows</a>
+    </div>
+  </div>
+
+  <div class="stack" id="stack" aria-label="The pile: ten opportunities">
+    <div class="chip" style="--i:9"><span class="t"><svg aria-hidden="true"><use href="#i-tri"/></svg>Global Appathon</span><span class="m">due Apr 2 · ~10 h</span></div>
+    <div class="chip" style="--i:8"><span class="t"><svg aria-hidden="true"><use href="#i-tri"/></svg>Australian STEM Video Game Challenge 2026</span><span class="m">due Sep 9 · ~20 h</span></div>
+    <div class="chip" style="--i:7"><span class="t"><svg aria-hidden="true"><use href="#i-tri"/></svg>3M Young Scientist Challenge</span><span class="m">due Apr 30 · ~6 h</span></div>
+    <div class="chip" style="--i:6"><span class="t"><svg aria-hidden="true"><use href="#i-tri"/></svg>Cosmo Hacks 2026</span><span class="m">due Dec 21 · ~24 h</span></div>
+    <div class="chip" style="--i:5"><span class="t"><svg aria-hidden="true"><use href="#i-tri"/></svg>K-State High School Programming Contest</span><span class="m">due Nov 4 · ~6 h</span></div>
+    <div class="chip" style="--i:4"><span class="t"><svg aria-hidden="true"><use href="#i-tri"/></svg>NASA Space Apps Challenge 2026</span><span class="m">due Nov 14 · ~12 h</span></div>
+    <div class="chip" style="--i:3"><span class="t"><svg aria-hidden="true"><use href="#i-tri"/></svg>Regeneron Science Talent Search</span><span class="m">due Nov 5 · ~40 h</span></div>
+    <div class="chip" style="--i:2"><span class="t"><svg aria-hidden="true"><use href="#i-tri"/></svg>OpenCV AI Competition</span><span class="m">due Oct 26 · ~30 h</span></div>
+    <div class="chip" style="--i:1"><span class="t"><svg aria-hidden="true"><use href="#i-tri"/></svg>Congressional App Challenge</span><span class="m">due Oct 26 · ~6 h</span></div>
+    <div class="chip front" style="--i:0">
+      <span class="t"><svg aria-hidden="true"><use href="#i-tri"/></svg>International Machine Learning Competition</span>
+      <span class="sub num">due Dec 13 · ~6 h</span>
+      <div class="ruler" aria-label="Estimated hours: about 6">
+        <div class="ruler-bars" aria-hidden="true"><i class="on" style="height:40px"></i><i class="on" style="height:40px"></i><i class="on" style="height:40px"></i><i class="on" style="height:40px"></i><i class="on" style="height:40px"></i><i class="on" style="height:40px"></i></div>
+        <small>~6 h</small>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ STORY: FUNNEL ============ -->
+<section class="sec" id="narrow" aria-labelledby="funnel-h">
+  <div class="wrap">
+    <div class="funnel" id="funnel">
+      <div class="counter">
+        <h2 id="funnel-h">Most of them <span class="it">aren't for you.</span></h2>
+        <div class="count-big num" style="margin-top:40px" aria-live="polite"><span id="count">5</span><span class="of">of 10</span></div>
+        <p class="count-note">Each exit with its reason.</p>
+      </div>
+      <ol class="flist">
+        <li class="stay"><span class="name">International Machine Learning Competition</span><span class="tag">Stays</span></li>
+        <li class="stay"><span class="name">Congressional App Challenge</span><span class="tag">Stays</span></li>
+        <li class="out"><span class="name">3M Young Scientist Challenge</span><span class="tag">Out</span><span class="why"><svg aria-hidden="true"><use href="#i-lock"/></svg>Grade 5-8 only</span></li>
+        <li class="out"><span class="name">Australian STEM Video Game Challenge 2026</span><span class="tag">Out</span><span class="why"><svg aria-hidden="true"><use href="#i-lock"/></svg>Closed Sep 9</span></li>
+        <li class="stay"><span class="name">NASA Space Apps Challenge 2026</span><span class="tag">Stays</span></li>
+        <li class="out"><span class="name">OpenCV AI Competition</span><span class="tag">Out</span><span class="why"><svg aria-hidden="true"><use href="#i-lock"/></svg>Needs 30 h, 18.5 h available by Oct 26</span></li>
+        <li class="stay"><span class="name">Cosmo Hacks 2026</span><span class="tag">Stays</span></li>
+        <li class="out"><span class="name">K-State High School Programming Contest</span><span class="tag">Out</span><span class="why"><svg aria-hidden="true"><use href="#i-lock"/></svg>Manhattan, KS, US only</span></li>
+        <li class="out"><span class="name">Regeneron Science Talent Search</span><span class="tag">Out</span><span class="why"><svg aria-hidden="true"><use href="#i-lock"/></svg>Grade 12 only</span></li>
+        <li class="stay"><span class="name">Global Appathon</span><span class="tag">Stays</span></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STORY: REUSE ============ -->
+<section class="sec" style="padding-top:0" aria-labelledby="reuse-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="reuse-h">One project. <span class="it">Several doors.</span></h2>
+      <p class="lede">Each thread is a tag Tennis Analytics App shows that the opportunity asks for.</p>
+    </div>
+    <div class="reuse" data-reuse="story">
+      <svg class="threads" aria-hidden="true"></svg>
+      <div class="src" data-src>
+        <p class="smallcaps">Your project</p>
+        <h3>Tennis Analytics App</h3>
+      </div>
+      <ul class="targets">
+        <li class="target" data-state="open"><span class="tt">International Machine Learning Competition</span><span class="via">via <b>data analysis · python</b></span></li>
+        <li class="target" data-state="open"><span class="tt">Congressional App Challenge</span><span class="via">via <b>technical project · python · computer vision · portfolio github</b></span></li>
+        <li class="target" data-state="open"><span class="tt">NASA Space Apps Challenge 2026</span><span class="via">via <b>data analysis · python</b></span></li>
+        <li class="target" data-state="open"><span class="tt">Cosmo Hacks 2026</span><span class="via">via <b>technical project · python</b></span></li>
+        <li class="target" data-state="open"><span class="tt">Global Appathon</span><span class="via">via <b>technical project</b></span></li>
+        <li class="target" data-state="locked"><span class="tt">OpenCV AI Competition <span class="badge">Locked</span></span><span class="via">via <b>computer vision · technical project · python · portfolio github</b></span><span class="reason"><svg aria-hidden="true"><use href="#i-lock"/></svg>Needs 30 h, 18.5 h available by Oct 26</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HAND-OFF ============ -->
+<section class="handoff" aria-labelledby="hand-h">
+  <div class="wrap">
+    <h2 id="hand-h">Now plan <span class="it">your weeks.</span></h2>
+    <a class="pill solid" href="#plan">Open the planner</a>
+  </div>
+</section>
+
+<!-- ============ PLANNER: SUMMARY ============ -->
+<section class="planner-intro" id="plan" aria-labelledby="plan-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="smallcaps num">Today · Oct 11</p>
+      <h2 id="plan-h">Your <span class="it">plan</span></h2>
+    </div>
+    <dl class="summary num">
+      <div class="fact"><dt class="smallcaps">Committed</dt><dd class="v">2 of 5 you can do</dd><dd class="s">2 opportunities on your plan</dd></div>
+      <div class="fact"><dt class="smallcaps">Work committed</dt><dd class="v">12 h</dd><dd class="s">Estimated, across all deadlines</dd></div>
+      <div class="fact"><dt class="smallcaps">Next deadline</dt><dd class="v">Oct 26 · in 15 days</dd><dd class="s">Congressional App Challenge</dd></div>
+      <div class="fact"><dt class="smallcaps">Next busy period</dt><dd class="v">Midterms</dd><dd class="s">Oct 20-27 · in 9 days</dd></div>
+      <div class="fact wide"><dt class="smallcaps">This week · Oct 11-17</dt><dd class="v">0 h of 10 h planned</dd><dd class="weekmini" aria-hidden="true"><span class="track"></span><span class="s">0 / 10 h</span></dd></div>
+      <div class="fact next"><dt class="smallcaps">Next step</dt><dd class="v">Work on Tennis Analytics App for NASA Space Apps Challenge 2026, due Nov 14</dd></div>
+    </dl>
+  </div>
+</section>
+
+<!-- ============ PLANNER: OPPORTUNITIES ============ -->
+<section class="sec" id="opportunities" style="padding-bottom:0" aria-labelledby="opp-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="smallcaps">Sorted by fixed rules</p>
+      <h2 id="opp-h">Opportunities</h2>
+      <p class="lede">Focus: your projects already show what it asks for and the hours fit. Consider: possible, with a catch. Not now: locked, with the reason.</p>
+    </div>
+
+    <div class="tier" style="margin-top:0">
+      <div class="tier-head"><h3>Focus</h3><span class="cnt num">4</span></div>
+      <div class="cards">
+        <article class="card">
+          <div class="card-top"><span class="tiertag">Focus</span><span class="due num">due <b>Nov 14</b> · in 34 days</span></div>
+          <h4>NASA Space Apps Challenge 2026</h4>
+          <div class="hrs num"><span class="ticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>~12 h (estimate)</div>
+          <p class="shows">Your projects show <b>data analysis, python</b></p>
+          <div class="actions"><button class="pill solid sm btn-commit" type="button" aria-pressed="false"><svg aria-hidden="true"><use href="#i-check"/></svg><span>Commit</span></button><button class="pill outline sm" type="button" data-why="NASA Space Apps Challenge 2026">Ask why</button></div>
+        </article>
+        <article class="card is-committed">
+          <div class="card-top"><span class="tiertag">Focus</span><span class="due num">due <b>Dec 13</b> · in 63 days</span></div>
+          <h4>International Machine Learning Competition</h4>
+          <div class="hrs num"><span class="ticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>~6 h (estimate)</div>
+          <p class="shows">Your projects show <b>data analysis, python</b></p>
+          <p class="startby"><svg width="12" height="12" aria-hidden="true" style="vertical-align:-1px;margin-right:6px"><use href="#i-cal"/></svg>Start by week of Dec 13</p>
+          <div class="actions"><button class="pill solid sm btn-commit" type="button" aria-pressed="true"><svg aria-hidden="true"><use href="#i-check"/></svg><span>Committed</span></button><button class="pill outline sm" type="button" data-why="imlc">Ask why</button></div>
+        </article>
+        <article class="card">
+          <div class="card-top"><span class="tiertag">Focus</span><span class="due num">due <b>Dec 21</b> · in 71 days</span></div>
+          <h4>Cosmo Hacks 2026</h4>
+          <div class="hrs num"><span class="ticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>~24 h (estimate)</div>
+          <p class="shows">Your projects show <b>technical project, python</b></p>
+          <div class="actions"><button class="pill solid sm btn-commit" type="button" aria-pressed="false"><svg aria-hidden="true"><use href="#i-check"/></svg><span>Commit</span></button><button class="pill outline sm" type="button" data-why="Cosmo Hacks 2026">Ask why</button></div>
+        </article>
+        <article class="card">
+          <div class="card-top"><span class="tiertag">Focus</span><span class="due num">due <b>Apr 2</b> · in 173 days</span></div>
+          <h4>Global Appathon</h4>
+          <p class="org">App Inventor Foundation (MIT App Inventor)</p>
+          <div class="hrs num"><span class="ticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>~10 h (estimate)</div>
+          <p class="shows">Your projects show <b>technical project</b></p>
+          <div class="actions"><button class="pill solid sm btn-commit" type="button" aria-pressed="false"><svg aria-hidden="true"><use href="#i-check"/></svg><span>Commit</span></button><button class="pill outline sm" type="button" data-why="Global Appathon">Ask why</button></div>
+        </article>
+      </div>
+    </div>
+
+    <div class="tier">
+      <div class="tier-head"><h3>Consider</h3><span class="cnt num">1</span></div>
+      <div class="cards">
+        <article class="card is-committed">
+          <div class="card-top"><span class="tiertag c">Consider</span><span class="due num">due <b>Oct 26</b> · in 15 days</span></div>
+          <h4>Congressional App Challenge</h4>
+          <div class="hrs num"><span class="ticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>~6 h (estimate)</div>
+          <p class="shows">Your projects show <b>technical project, python, computer vision, portfolio github</b></p>
+          <span class="catch"><svg aria-hidden="true"><use href="#i-alert"/></svg>Due during Midterms</span>
+          <div class="actions"><button class="pill solid sm btn-commit" type="button" aria-pressed="true"><svg aria-hidden="true"><use href="#i-check"/></svg><span>Committed</span></button><button class="pill outline sm" type="button" data-why="Congressional App Challenge">Ask why</button></div>
+        </article>
+      </div>
+    </div>
+
+    <details class="notnow">
+      <summary><h3>Not now</h3><span class="cnt num" style="color:var(--grey)">5</span><span class="tog"><span class="tog-t">Show</span><svg aria-hidden="true"><use href="#i-chev"/></svg></span></summary>
+      <ul class="locked-list num">
+        <li><span class="ln"><svg width="13" height="13" aria-hidden="true"><use href="#i-lock"/></svg>3M Young Scientist Challenge <span class="tiertag n">Closed</span></span><span class="ld">due Apr 30 · closed 164 days ago · ~6 h</span><span class="reason">Grade 5-8 only</span></li>
+        <li><span class="ln"><svg width="13" height="13" aria-hidden="true"><use href="#i-lock"/></svg>Australian STEM Video Game Challenge 2026 <span class="tiertag n">Closed</span></span><span class="ld">due Sep 9 · closed 32 days ago · ~20 h</span><span class="reason">Closed Sep 9</span></li>
+        <li><span class="ln"><svg width="13" height="13" aria-hidden="true"><use href="#i-lock"/></svg>OpenCV AI Competition</span><span class="ld">due Oct 26 · in 15 days · ~30 h</span><span class="reason">Needs 30 h, 18.5 h available by Oct 26</span></li>
+        <li><span class="ln"><svg width="13" height="13" aria-hidden="true"><use href="#i-lock"/></svg>K-State High School Programming Contest</span><span class="ld">due Nov 4 · in 24 days · ~6 h</span><span class="reason">Manhattan, KS, US only</span></li>
+        <li><span class="ln"><svg width="13" height="13" aria-hidden="true"><use href="#i-lock"/></svg>Regeneron Science Talent Search</span><span class="ld">due Nov 5 · in 25 days · ~40 h</span><span class="reason">Grade 12 only</span></li>
+      </ul>
+    </details>
+  </div>
+</section>
+
+<!-- Ask why dialog -->
+<dialog id="why" aria-labelledby="why-title">
+  <div class="dlg">
+    <div class="dlg-head">
+      <h3 id="why-title">Why: <span class="it" id="why-name">International Machine Learning Competition</span></h3>
+      <button class="x" type="button" aria-label="Close" data-close><svg aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div id="why-body">
+      <p class="ans">This project is Focus because your projects show data analysis and python. You have 99 h available before the deadline to complete the 6 h needed. This work also counts for the Congressional App Challenge, NASA Space Apps Challenge 2026, Cosmo Hacks 2026, and Global Appathon.</p>
+    </div>
+    <p class="note" id="why-note"><svg aria-hidden="true"><use href="#i-check"/></svg>Plain-language version, checked against the rules.</p>
+    <details id="why-details">
+      <summary>Exact rule details</summary>
+      <p>Tennis Analytics App shows data analysis and python, which International Machine Learning Competition asks for. It needs about 6 h, and you have 99 h before Dec 13 at 10 h a week. Focus: nothing it asks for is missing, and the deadline is outside your busy periods. The same work also counts for Congressional App Challenge, NASA Space Apps Challenge 2026, Cosmo Hacks 2026 and Global Appathon.</p>
+    </details>
+  </div>
+</dialog>
+
+<!-- ============ PLANNER: WEEKS ============ -->
+<section class="sec" id="weeks" aria-labelledby="weeks-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="smallcaps">Backward from each deadline</p>
+      <h2 id="weeks-h">Your <span class="it">weeks</span></h2>
+      <p class="lede">Each column is 7 days from today. Hours fill the deadline week first, then earlier weeks.</p>
+    </div>
+    <div class="weeks num" role="list">
+      <div class="wk this" role="listitem"><span class="lbl">This week</span><span class="dt">Oct 11-17</span><div class="col" style="--cap:10;--plan:0"><div class="cap"><div class="plan"></div></div></div><span class="h">0 <small>of 10 h</small></span><span class="notes"></span></div>
+      <div class="wk" role="listitem"><span class="lbl">Week 2</span><span class="dt">Oct 18-24</span><div class="col" style="--cap:3;--plan:.5"><div class="busy"></div><div class="cap"><div class="plan"></div></div></div><span class="h">0.5 <small>of 3 h</small></span><span class="notes"><span class="ex">Midterms</span><br>5 days</span></div>
+      <div class="wk" role="listitem"><span class="lbl">Week 3</span><span class="dt">Oct 25-31</span><div class="col" style="--cap:5.5;--plan:5.5"><div class="busy"></div><div class="cap"><div class="plan"></div></div><span class="dl" title="Deadline: Congressional App Challenge"></span></div><span class="h">5.5 <small>of 5.5 h</small></span><span class="notes"><span class="ex">Midterms</span> 3 days<br><b>5.5 h Congressional App Challenge</b><br>Deadline: Congressional App Challenge</span></div>
+      <div class="wk" role="listitem"><span class="lbl">Week 4</span><span class="dt">Nov 1-7</span><div class="col" style="--cap:10;--plan:0"><div class="cap"><div class="plan"></div></div></div><span class="h">0 <small>of 10 h</small></span><span class="notes"></span></div>
+      <div class="wk" role="listitem"><span class="lbl">Week 5</span><span class="dt">Nov 8-14</span><div class="col" style="--cap:10;--plan:0"><div class="cap"><div class="plan"></div></div></div><span class="h">0 <small>of 10 h</small></span><span class="notes"></span></div>
+      <div class="wk" role="listitem"><span class="lbl">Week 6</span><span class="dt">Nov 15-21</span><div class="col" style="--cap:10;--plan:0"><div class="cap"><div class="plan"></div></div></div><span class="h">0 <small>of 10 h</small></span><span class="notes"></span></div>
+      <div class="wk" role="listitem"><span class="lbl">Week 7</span><span class="dt">Nov 22-28</span><div class="col" style="--cap:10;--plan:0"><div class="cap"><div class="plan"></div></div></div><span class="h">0 <small>of 10 h</small></span><span class="notes"></span></div>
+      <div class="wk" role="listitem"><span class="lbl">Week 8</span><span class="dt">Nov 29-Dec 5</span><div class="col" style="--cap:10;--plan:0"><div class="cap"><div class="plan"></div></div></div><span class="h">0 <small>of 10 h</small></span><span class="notes"></span></div>
+      <div class="wk" role="listitem"><span class="lbl">Week 9</span><span class="dt">Dec 6-12</span><div class="col" style="--cap:10;--plan:0"><div class="cap"><div class="plan"></div></div></div><span class="h">0 <small>of 10 h</small></span><span class="notes"></span></div>
+      <div class="wk" role="listitem"><span class="lbl">Week 10</span><span class="dt">Dec 13-19</span><div class="col" style="--cap:10;--plan:6"><div class="cap"><div class="plan"></div></div><span class="dl" title="Deadline: International Machine Learning Competition"></span></div><span class="h">6 <small>of 10 h</small></span><span class="notes"><b>6 h International Machine Learning Competition</b><br>Deadline</span></div>
+    </div>
+    <div class="legend">
+      <span><i class="sw sw-plan"></i>Planned hours</span>
+      <span><i class="sw sw-cap"></i>Hours available that week</span>
+      <span><i class="sw sw-over"></i>Over capacity</span>
+      <span><i class="sw sw-dl"></i>Deadline</span>
+      <span><i class="sw sw-ex">Midterms</i>Exams</span>
+      <span><i class="sw sw-busy"></i>Busy days (fewer hours)</span>
+    </div>
+    <p class="foot-note">The week a deadline falls in counts in full.</p>
+  </div>
+</section>
+
+<!-- ============ PLANNER: WHAT IF ============ -->
+<section aria-labelledby="wi-h">
+  <div class="wrap">
+    <div class="whatif">
+      <div>
+        <h3 id="wi-h">What if you had <span class="it">more or less</span> time?</h3>
+        <div class="readout num"><span class="val" id="wi-val">2</span><span class="unit">h a week</span><span class="saved">Saved: 10 h</span></div>
+        <label for="wi" class="smallcaps" style="display:block;margin-top:18px">Weekly hours</label>
+        <input id="wi" type="range" min="0" max="30" step="0.5" value="2" style="--p:6.67%" aria-valuetext="2 hours a week">
+        <div class="scale num" aria-hidden="true"><span>0 h</span><span>10 h</span><span>20 h</span><span>30 h</span></div>
+        <div class="wi-actions" id="wi-actions">
+          <button class="pill solid" type="button">Save as my weekly hours</button>
+          <button class="pill outline" type="button" id="wi-reset">Reset to 10 h</button>
+        </div>
+        <p class="preview-note" id="wi-note">Preview only. Nothing changes until you save.</p>
+      </div>
+      <div aria-live="polite">
+        <div id="wi-2">
+          <div class="warn"><svg aria-hidden="true"><use href="#i-alert"/></svg><p><b>Can't be done in time at 2 h a week</b> (would be uncommitted if you save): Congressional App Challenge (Needs 6 h, 3.5 h available by Oct 26)</p></div>
+          <ul class="wi-weeks num">
+            <li><span class="wl">This week<span>Oct 11-17</span></span><span class="hbar" style="--cap:2"></span><span class="wh">0 of 2 h</span></li>
+            <li><span class="wl">Week 2<span>Oct 18-24</span></span><span class="hbar" style="--cap:.5"></span><span class="wh">0 of 0.5 h<small>Midterms · 5 days</small></span></li>
+            <li><span class="wl">Week 3<span>Oct 25-31</span></span><span class="hbar" style="--cap:1"></span><span class="wh">0 of 1 h<small>Midterms · 3 days</small></span></li>
+          </ul>
+        </div>
+        <p class="wi-ok hide" id="wi-10">At 10 h a week, no combination of what you can commit overloads a week. Drag lower to see where it breaks.</p>
+        <p class="wi-ok hide" id="wi-other">The planner works out this preview from your commitments. This design shows the 2 h and 10 h states.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PLANNER: REUSE ============ -->
+<section class="sec" id="reuse-planner" aria-labelledby="reuse2-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="smallcaps">Reuse</p>
+      <h2 id="reuse2-h">One project, <span class="it">several doors</span></h2>
+      <p class="lede">Each thread is a tag your project shows that the opportunity asks for. Bright threads lead to what you've committed; dashed ones are locked.</p>
+    </div>
+    <div class="reuse" data-reuse="planner">
+      <svg class="threads" aria-hidden="true"></svg>
+      <div class="src" data-src>
+        <p class="smallcaps">Your project</p>
+        <h3>Tennis Analytics App</h3>
+        <p>Counts toward 5 opportunities. 2 are on your plan.</p>
+      </div>
+      <ul class="targets">
+        <li class="target" data-state="committed"><span class="tt">International Machine Learning Competition <span class="badge inv">Committed</span></span><span class="via">via <b>data analysis · python</b></span></li>
+        <li class="target" data-state="committed"><span class="tt">Congressional App Challenge <span class="badge inv">Committed</span></span><span class="via">via <b>technical project · python · computer vision · portfolio github</b></span></li>
+        <li class="target" data-state="dim"><span class="tt">NASA Space Apps Challenge 2026</span><span class="via">via <b>data analysis · python</b></span></li>
+        <li class="target" data-state="dim"><span class="tt">Cosmo Hacks 2026</span><span class="via">via <b>technical project · python</b></span></li>
+        <li class="target" data-state="dim"><span class="tt">Global Appathon</span><span class="via">via <b>technical project</b></span></li>
+        <li class="target" data-state="locked"><span class="tt">OpenCV AI Competition <span class="badge">Locked</span></span><span class="via">via <b>computer vision · technical project · python · portfolio github</b></span><span class="reason"><svg aria-hidden="true"><use href="#i-lock"/></svg>Needs 30 h, 18.5 h available by Oct 26</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PLANNER: ADD YOUR OWN ============ -->
+<section id="add" aria-labelledby="add-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="smallcaps">Your list</p>
+      <h2 id="add-h">Add <span class="it">your own</span></h2>
+      <p class="lede">Found something not on the list? The same rules check it before it joins your plan.</p>
+    </div>
+    <div class="addown">
+      <form class="panel" id="addform" novalidate>
+        <label class="f">Paste the opportunity text
+          <textarea class="field" disabled placeholder="Paste the description, rules or eligibility here"></textarea>
+        </label>
+        <p class="paste-note"><svg aria-hidden="true"><use href="#i-info"/></svg>Reading pasted text needs the AI extractor, which is off. Fill in manually below.</p>
+        <div class="divider smallcaps">Fill in manually</div>
+        <div class="grid2">
+          <label class="f full">Title<input class="field" type="text" name="title" autocomplete="off"></label>
+          <label class="f">Organizer<input class="field" type="text" name="org" autocomplete="off"></label>
+          <label class="f">Link<input class="field" type="url" name="link" inputmode="url" autocomplete="off"></label>
+          <label class="f">Deadline<input class="field" type="date" name="deadline"></label>
+          <label class="f">Hours it takes (estimate)<input class="field num" type="number" name="hours" min="0" step="0.5" inputmode="decimal"></label>
+          <label class="f">Lowest grade<input class="field num" type="number" name="gmin" min="1" max="12" inputmode="numeric"></label>
+          <label class="f">Highest grade<input class="field num" type="number" name="gmax" min="1" max="12" inputmode="numeric"></label>
+          <label class="check full"><input type="checkbox" name="online">Online, open from anywhere</label>
+          <fieldset class="full">
+            <legend>What it asks for</legend>
+            <div class="chips">
+              <label><input type="checkbox" name="tag" value="technical-project"><span>technical project</span></label>
+              <label><input type="checkbox" name="tag" value="portfolio-github"><span>portfolio github</span></label>
+              <label><input type="checkbox" name="tag" value="competition-experience"><span>competition experience</span></label>
+              <label><input type="checkbox" name="tag" value="writing-sample"><span>writing sample</span></label>
+              <label><input type="checkbox" name="tag" value="python"><span>python</span></label>
+              <label><input type="checkbox" name="tag" value="computer-vision"><span>computer vision</span></label>
+              <label><input type="checkbox" name="tag" value="data-analysis"><span>data analysis</span></label>
+              <label><input type="checkbox" name="tag" value="web-dev"><span>web dev</span></label>
+              <label><input type="checkbox" name="tag" value="ai-ml"><span>ai ml</span></label>
+              <label><input type="checkbox" name="tag" value="research-writing"><span>research writing</span></label>
+              <label><input type="checkbox" name="tag" value="public-speaking"><span>public speaking</span></label>
+              <label><input type="checkbox" name="tag" value="leadership"><span>leadership</span></label>
+            </div>
+          </fieldset>
+        </div>
+        <div style="margin-top:26px"><button class="pill solid" type="submit">Check it</button></div>
+      </form>
+      <div class="panel result" aria-live="polite">
+        <div>
+          <svg aria-hidden="true"><use href="#i-doc"/></svg>
+          <p>Fill in the form and press "Check it" to see the card and what still blocks it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <p>Rule-based. Every reason shown. AI only explains and extracts.</p>
+    <span class="smallcaps">Opportunity OS</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var d=document; d.documentElement.classList.add('js');
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var NS='http://www.w3.org/2000/svg';
+
+  /* tunnel: nested frames receding to a vanishing point */
+  var t=d.getElementById('tunnel'), vx=720, vy=600, W=1440, H=1000;
+  function el(n,a){var e=d.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);return e}
+  for(var i=0;i<9;i++){
+    var s=Math.pow(.72,i), w=W*1.1*s, h=H*1.05*s;
+    t.appendChild(el('rect',{x:vx-w/2,y:vy-h*.62,width:w,height:h,'stroke-opacity':(.05+.06*(1-i/9)).toFixed(3),'stroke-width':1}));
+  }
+  var corners=[[-100,-100],[W+100,-100],[-100,H+120],[W+100,H+120]];
+  for(var c=0;c<corners.length;c++)t.appendChild(el('line',{x1:corners[c][0],y1:corners[c][1],x2:vx,y2:vy-20,'stroke-opacity':.14,'stroke-width':1}));
+  for(var j=1;j<8;j++){
+    var x=(W/8)*j;
+    t.appendChild(el('line',{x1:x,y1:H+120,x2:vx+(x-vx)*.05,y2:vy-20,'stroke-opacity':.07,'stroke-width':1}));
+    t.appendChild(el('line',{x1:x,y1:-100,x2:vx+(x-vx)*.05,y2:vy-20,'stroke-opacity':.04,'stroke-width':1}));
+  }
+
+  /* hero stack settles once */
+  var stack=d.getElementById('stack');
+  requestAnimationFrame(function(){requestAnimationFrame(function(){stack.classList.add('in')})});
+
+  /* funnel: the one authored moment */
+  var f=d.getElementById('funnel'), cnt=d.getElementById('count');
+  function finish(){f.classList.add('done');cnt.textContent='5'}
+  if(reduce||!('IntersectionObserver' in window)){finish()}else{
+    cnt.textContent='10';
+    var outs=f.querySelectorAll('li.out');
+    var io=new IntersectionObserver(function(es){
+      if(!es[0].isIntersecting)return; io.disconnect();
+      var n=10;
+      outs.forEach(function(li,k){
+        setTimeout(function(){
+          li.classList.add('gone');
+          n--;cnt.textContent=String(n);
+          if(k===outs.length-1)finish();
+        },450+k*380);
+      });
+    },{threshold:.35});
+    io.observe(f);
+    /* reveal each exit individually */
+    var st=d.createElement('style');
+    st.textContent='.js .funnel:not(.done) li.out.gone .name{color:var(--grey);text-decoration-color:var(--line-2)}.js .funnel:not(.done) li.out.gone .why{max-height:40px;opacity:1}.js .funnel:not(.done) li.out.gone .tag{opacity:1}';
+    d.head.appendChild(st);
+  }
+
+  /* reuse threads */
+  function draw(box){
+    var svg=box.querySelector('.threads'), src=box.querySelector('[data-src]'), tg=box.querySelectorAll('.target');
+    var b=box.getBoundingClientRect(), s=src.getBoundingClientRect();
+    var stacked=getComputedStyle(box).gridTemplateColumns.split(' ').length<2;
+    svg.setAttribute('viewBox','0 0 '+b.width+' '+b.height);
+    svg.innerHTML='';
+    var mode=box.getAttribute('data-reuse');
+    tg.forEach(function(li){
+      var r=li.getBoundingClientRect(), st=li.getAttribute('data-state'), p;
+      var ty=r.top-b.top+Math.min(26,r.height/2);
+      if(stacked){
+        var sx=18, sy=s.bottom-b.top, tx=r.left-b.left;
+        p='M'+sx+','+sy+' L'+sx+','+(ty-14)+' Q'+sx+','+ty+' '+(sx+14)+','+ty+' L'+tx+','+ty;
+      }else{
+        var sx2=s.right-b.left, sy2=s.top-b.top+s.height/2, tx2=r.left-b.left, mx=(sx2+tx2)/2;
+        p='M'+sx2+','+sy2+' C'+mx+','+sy2+' '+mx+','+ty+' '+tx2+','+ty;
+      }
+      var bright=(mode==='story'&&st==='open')||st==='committed';
+      var a={d:p,stroke:'#fff','stroke-width':bright?1.6:1,'stroke-opacity':st==='locked'?.4:(bright?.9:.28)};
+      if(st==='locked')a['stroke-dasharray']='4 6';
+      svg.appendChild(el('path',a));
+      svg.appendChild(el('circle',{cx:r.left-b.left,cy:ty,r:3,fill:bright?'#fff':'#555'}));
+    });
+  }
+  var boxes=d.querySelectorAll('[data-reuse]');
+  function drawAll(){boxes.forEach(draw)}
+  drawAll(); addEventListener('resize',drawAll);
+  if(d.fonts&&d.fonts.ready)d.fonts.ready.then(drawAll);
+  if('ResizeObserver' in window){var ro=new ResizeObserver(drawAll);boxes.forEach(function(b){ro.observe(b)})}
+
+  /* commit toggles (visual only) */
+  d.querySelectorAll('.btn-commit').forEach(function(b){
+    b.addEventListener('click',function(){
+      var on=b.getAttribute('aria-pressed')!=='true';
+      b.setAttribute('aria-pressed',on);b.querySelector('span').textContent=on?'Committed':'Commit';
+      b.closest('.card').classList.toggle('is-committed',on);
+    });
+  });
+
+  /* not now toggle label */
+  var nn=d.querySelector('details.notnow');
+  nn.addEventListener('toggle',function(){nn.querySelector('.tog-t').textContent=nn.open?'Hide':'Show'});
+
+  /* ask why */
+  var dlg=d.getElementById('why'), body=d.getElementById('why-body'), orig=body.innerHTML, name=d.getElementById('why-name'), det=d.getElementById('why-details'), note=d.getElementById('why-note');
+  d.querySelectorAll('[data-why]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var k=b.getAttribute('data-why');
+      if(k==='imlc'){name.textContent='International Machine Learning Competition';body.innerHTML=orig;det.classList.remove('hide');note.classList.remove('hide')}
+      else{name.textContent=k;body.innerHTML='<p class="ans" style="color:var(--grey-2)">[TODO] The planner writes this explanation from the rules for this card. This design shows the International Machine Learning Competition example.</p>';det.classList.add('hide');note.classList.add('hide')}
+      if(dlg.showModal)dlg.showModal();else dlg.setAttribute('open','');
+    });
+  });
+  dlg.querySelector('[data-close]').addEventListener('click',function(){dlg.close()});
+  dlg.addEventListener('click',function(e){if(e.target===dlg)dlg.close()});
+
+  /* what if slider */
+  var r=d.getElementById('wi'), v=d.getElementById('wi-val'), p2=d.getElementById('wi-2'), p10=d.getElementById('wi-10'), po=d.getElementById('wi-other'), acts=d.getElementById('wi-actions'), wn=d.getElementById('wi-note');
+  function upd(){
+    var x=parseFloat(r.value); v.textContent=(x%1?x.toFixed(1):x);
+    r.style.setProperty('--p',(x/30*100)+'%');
+    r.setAttribute('aria-valuetext',v.textContent+' hours a week');
+    p2.classList.toggle('hide',x!==2); p10.classList.toggle('hide',x!==10); po.classList.toggle('hide',x===2||x===10);
+    acts.classList.toggle('hide',x===10); wn.classList.toggle('hide',x===10);
+  }
+  r.addEventListener('input',upd);
+  d.getElementById('wi-reset').addEventListener('click',function(){r.value=10;upd()});
+  upd();
+
+  /* add your own: static demo */
+  d.getElementById('addform').addEventListener('submit',function(e){e.preventDefault()});
+})();
+</script>
+</body>
+</html>
